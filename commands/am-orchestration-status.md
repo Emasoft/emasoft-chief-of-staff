@@ -1,8 +1,8 @@
 ---
-name: ao-orchestration-status
+name: am-orchestration-status
 description: "View Orchestration Phase progress - modules, agents, assignments, verification status"
 argument-hint: "[--verbose] [--agents-only] [--modules-only]"
-allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/atlas_orchestration_status.py:*)"]
+allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/am_orchestration_status.py:*)"]
 ---
 
 # Orchestration Status Command
@@ -12,7 +12,7 @@ View the current status of Orchestration Phase including module progress, agent 
 ## Usage
 
 ```!
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/atlas_orchestration_status.py" $ARGUMENTS
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/am_orchestration_status.py" $ARGUMENTS
 ```
 
 ## What This Command Shows

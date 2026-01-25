@@ -1,8 +1,8 @@
 ---
-name: ao-planning-status
+name: am-planning-status
 description: "View Plan Phase progress - requirements completion, modules defined, exit criteria status"
 argument-hint: "[--verbose]"
-allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/atlas_planning_status.py:*)"]
+allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/am_planning_status.py:*)"]
 ---
 
 # Planning Status Command
@@ -12,7 +12,7 @@ View the current status of Plan Phase including requirements progress, module de
 ## Usage
 
 ```!
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/atlas_planning_status.py" $ARGUMENTS
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/am_planning_status.py" $ARGUMENTS
 ```
 
 ## What This Command Shows

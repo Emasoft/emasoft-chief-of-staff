@@ -1,19 +1,19 @@
 ---
-name: ao-session-memory
-description: Critical persistence mechanism for Atlas orchestrator agent enabling continuity across multiple interactions, surviving context window compaction, and graceful recovery from interruptions. Structured data storage system consisting of three coordinated documents stored in .atlas/memory/ directory - activeContext.md (current working state), patterns.md (learned patterns and heuristics), and progress.md (task tracking and completion state). Includes config snapshot integration for configuration drift detection and conflict resolution.
+name: am-session-memory
+description: Critical persistence mechanism for Assistant Manager agent enabling continuity across multiple interactions, surviving context window compaction, and graceful recovery from interruptions. Structured data storage system consisting of three coordinated documents stored in .claude/am/ directory - activeContext.md (current working state), patterns.md (learned patterns and heuristics), and progress.md (task tracking and completion state). Includes config snapshot integration for configuration drift detection and conflict resolution.
 license: Apache-2.0
-compatibility: Requires file system access to .atlas/memory/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination).
+compatibility: Requires file system access to .claude/am/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination).
 metadata:
   author: Anthropic
   version: 1.0.0
 context: fork
 ---
 
-# Atlas Orchestrator Session Memory Skill
+# Assistant Manager Session Memory Skill
 
 ## Overview
 
-Session memory is a critical persistence mechanism for the Atlas orchestrator agent. It enables the agent to maintain continuity across multiple interactions, survive context window compaction, and recover gracefully from interruptions. This skill teaches you how to implement, manage, and troubleshoot session memory in Atlas orchestrator.
+Session memory is a critical persistence mechanism for the Assistant Manager agent. It enables the agent to maintain continuity across multiple interactions, survive context window compaction, and recover gracefully from interruptions. This skill teaches you how to implement, manage, and troubleshoot session memory in Assistant Manager.
 
 ## What Is Session Memory?
 
@@ -27,7 +27,7 @@ Session memory is a structured data storage system that persists an agent's work
 
 ## Session Memory Components
 
-Session memory consists of three coordinated documents stored in the `.atlas/memory/` directory:
+Session memory consists of three coordinated documents stored in the `.claude/am/` directory:
 
 ### 1. **activeContext.md** - Current Working State
 Captures the immediate context needed to continue work:

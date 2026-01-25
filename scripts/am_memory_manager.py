@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-atlas_memory_manager.py - Automated Memory File Management for Atlas.
+am_memory_manager.py - Automated Memory File Management for Assistant Manager.
 
-Automates updates to Atlas memory files (activeContext.md, progress.md, patterns.md).
+Automates updates to Assistant Manager memory files (activeContext.md, progress.md, patterns.md).
 Dependencies: Python 3.8+ stdlib only
 """
 
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from atlas_memory_operations import (
+from am_memory_operations import (
     add_decision,
     add_pattern,
     add_progress,
@@ -38,7 +38,7 @@ from atlas_memory_operations import (
 class MemoryConfig:
     """Configuration for memory file locations."""
 
-    memory_root: Path = field(default_factory=lambda: Path(".claude/atlas"))
+    memory_root: Path = field(default_factory=lambda: Path(".claude/am"))
     active_context_file: str = "activeContext.md"
     progress_file: str = "progress.md"
     patterns_file: str = "patterns.md"
@@ -243,8 +243,8 @@ Always log errors immediately to In-Flight Errors.
 
 def _create_parser() -> argparse.ArgumentParser:
     """Create argument parser for CLI."""
-    parser = argparse.ArgumentParser(description="Atlas Memory File Management")
-    parser.add_argument("--memory-root", type=Path, default=Path(".claude/atlas"))
+    parser = argparse.ArgumentParser(description="Assistant Manager Memory File Management")
+    parser.add_argument("--memory-root", type=Path, default=Path(".claude/am"))
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("add-decision", help="Add decision")

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Atlas Notify Agent Script
+Assistant Manager Notify Agent Script
 
 Sends an AI Maestro message to a registered agent.
 
 Usage:
-    python3 atlas_notify_agent.py implementer-1 --subject "Update" --message "Requirements changed"
+    python3 am_notify_agent.py implementer-1 --subject "Update" --message "Requirements changed"
 """
 
 import argparse

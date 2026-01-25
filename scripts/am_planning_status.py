@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Atlas Planning Status Script
+Assistant Manager Planning Status Script
 
 Displays the current status of Plan Phase including requirements progress,
 module definitions, and exit criteria completion.
 
 Usage:
-    python3 atlas_planning_status.py
-    python3 atlas_planning_status.py --verbose
+    python3 am_planning_status.py
+    python3 am_planning_status.py --verbose
 """
 
 import argparse

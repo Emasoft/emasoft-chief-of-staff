@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-atlas_session_end.py - Save Atlas memory context at session end.
+am_session_end.py - Save Assistant Manager memory context at session end.
 
-SessionEnd hook that saves/updates Atlas memory files to preserve context
+SessionEnd hook that saves/updates Assistant Manager memory files to preserve context
 for future sessions.
 
 Memory files managed:
@@ -14,7 +14,7 @@ Dependencies: Python 3.8+ stdlib only
 
 Usage (as Claude Code hook):
     Receives JSON via stdin from SessionEnd hook event.
-    Updates .claude/atlas/ memory files with session context.
+    Updates .claude/am/ memory files with session context.
 
 Exit codes:
     0 - Success (memory saved)
@@ -30,15 +30,15 @@ from pathlib import Path
 
 
 def get_memory_root(cwd: str) -> Path:
-    """Get the Atlas memory root directory.
+    """Get the Assistant Manager memory root directory.
 
     Args:
         cwd: Current working directory
 
     Returns:
-        Path to .claude/atlas directory
+        Path to .claude/am directory
     """
-    return Path(cwd) / ".claude" / "atlas"
+    return Path(cwd) / ".claude" / "am"
 
 
 def get_timestamp() -> str:
@@ -74,7 +74,7 @@ def ensure_memory_files(memory_root: Path) -> bool:
     """Ensure all memory files exist with default structure.
 
     Args:
-        memory_root: Path to .claude/atlas directory
+        memory_root: Path to .claude/am directory
 
     Returns:
         True if successful, False otherwise
@@ -147,7 +147,7 @@ def add_session_end_progress(memory_root: Path, session_context: dict) -> bool:
     """Add a session end entry to progress.md.
 
     Args:
-        memory_root: Path to .claude/atlas directory
+        memory_root: Path to .claude/am directory
         session_context: Session context from hook input
 
     Returns:
@@ -192,7 +192,7 @@ def update_session_end_marker(memory_root: Path) -> bool:
     continuity checks work properly.
 
     Args:
-        memory_root: Path to .claude/atlas directory
+        memory_root: Path to .claude/am directory
 
     Returns:
         True if successful
@@ -228,7 +228,7 @@ def update_session_end_marker(memory_root: Path) -> bool:
 def main() -> int:
     """Main entry point for SessionEnd hook.
 
-    Reads session context from stdin, creates/updates Atlas memory files.
+    Reads session context from stdin, creates/updates Assistant Manager memory files.
 
     Returns:
         Exit code: 0 for success
@@ -259,7 +259,7 @@ def main() -> int:
     update_session_end_marker(memory_root)
 
     # Output confirmation (will be shown in verbose mode)
-    print(f"Atlas memory saved to {memory_root}")
+    print(f"Assistant Manager memory saved to {memory_root}")
 
     return 0
 
