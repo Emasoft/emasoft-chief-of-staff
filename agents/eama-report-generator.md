@@ -118,16 +118,18 @@ Report: docs_dev/reports/[report-name].md
 
 ## Report Templates Reference
 
-**For complete report templates and format examples, see:**
-[report-templates.md](../skills/am-code-review-patterns/references/report-templates.md)
+Report templates are embedded in each report type description above (see [Report Types](#report-types)). Each report type section includes:
+- Purpose and when to generate
+- Required content sections
+- Formatting guidelines
 
-Contents:
-- Progress Report Template (with milestones table)
-- Quality Report Template (with coverage and metrics tables)
-- Test Report Template (with Unicode results table)
-- Completion Report Template (with verification checklist)
-- Summary Report Template (with metrics dashboard and burndown chart)
-- Integration Report Template
+**Template Contents:**
+- Progress Report: Overview, completion percentages, milestones table, blockers
+- Quality Report: Test coverage metrics, lint results, documentation score
+- Test Report: Unicode results table with pass/fail/skip counts
+- Completion Report: Verification checklist with acceptance criteria
+- Summary Report: Metrics dashboard, health score, burndown indicators
+- Integration Report: Component map, API contract verification
 
 ---
 
@@ -182,7 +184,7 @@ check-aimaestro-messages.sh
 
 ### Step 5: Generate Report Content
 
-Use appropriate template from [report-templates.md](../skills/am-code-review-patterns/references/report-templates.md):
+Use the appropriate template structure from [Report Types](#report-types) section:
 - Report header (title, date, type, scope)
 - Executive summary (2-3 sentences)
 - Detailed sections with tables and checklists
