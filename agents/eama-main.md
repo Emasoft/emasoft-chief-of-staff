@@ -1,6 +1,6 @@
 ---
-name: am-main
-description: Main Assistant Manager agent - user's right hand, sole interlocutor with user
+name: eama-main
+description: Main Emasoft Assistant Manager agent - user's right hand, sole interlocutor with user
 tools:
   - Task
   - Read

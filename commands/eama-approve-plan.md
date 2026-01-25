@@ -1,8 +1,8 @@
 ---
-name: am-approve-plan
+name: eama-approve-plan
 description: "Approve the plan and transition from Plan Phase to Orchestration Phase"
 argument-hint: "[--skip-issues]"
-allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/am_approve_plan.py:*)"]
+allowed-tools: ["Bash(python3 ${CLAUDE_PLUGIN_ROOT}/scripts/eama_approve_plan.py:*)"]
 ---
 
 # Approve Plan Command
@@ -12,7 +12,7 @@ Mark the plan as approved and transition from Plan Phase to Orchestration Phase.
 ## Usage
 
 ```!
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/am_approve_plan.py" $ARGUMENTS
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/eama_approve_plan.py" $ARGUMENTS
 ```
 
 ## What This Command Does

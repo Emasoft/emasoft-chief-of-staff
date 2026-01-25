@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-am_memory_manager.py - Automated Memory File Management for Assistant Manager.
+eama_memory_manager.py - Automated Memory File Management for Emasoft Assistant Manager.
 
-Automates updates to Assistant Manager memory files (activeContext.md, progress.md, patterns.md).
+Automates updates to Emasoft Assistant Manager memory files (activeContext.md, progress.md, patterns.md).
 Dependencies: Python 3.8+ stdlib only
 """
 
@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from am_memory_operations import (
+from eama_memory_operations import (
     add_decision,
     add_pattern,
     add_progress,
@@ -38,7 +38,7 @@ from am_memory_operations import (
 class MemoryConfig:
     """Configuration for memory file locations."""
 
-    memory_root: Path = field(default_factory=lambda: Path(".claude/am"))
+    memory_root: Path = field(default_factory=lambda: Path(".claude/eama"))
     active_context_file: str = "activeContext.md"
     progress_file: str = "progress.md"
     patterns_file: str = "patterns.md"
@@ -243,8 +243,8 @@ Always log errors immediately to In-Flight Errors.
 
 def _create_parser() -> argparse.ArgumentParser:
     """Create argument parser for CLI."""
-    parser = argparse.ArgumentParser(description="Assistant Manager Memory File Management")
-    parser.add_argument("--memory-root", type=Path, default=Path(".claude/am"))
+    parser = argparse.ArgumentParser(description="Emasoft Assistant Manager Memory File Management")
+    parser.add_argument("--memory-root", type=Path, default=Path(".claude/eama"))
     sub = parser.add_subparsers(dest="command", required=True)
 
     p = sub.add_parser("add-decision", help="Add decision")

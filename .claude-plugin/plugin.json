@@ -15,8 +15,8 @@
     "claude-code": ">=1.0.0"
   },
   "agents": [
-    "./agents/am-main.md",
-    "./agents/am-report-generator.md"
+    "./agents/eama-main.md",
+    "./agents/eama-report-generator.md"
   ],
   "skills": "./skills/"
 }

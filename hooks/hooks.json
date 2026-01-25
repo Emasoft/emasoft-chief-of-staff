@@ -4,24 +4,24 @@
   "hooks": {
     "SessionStart": [
       {
-        "_id": "am-memory-load",
+        "_id": "eama-memory-load",
         "_description": "Load session memory and context at startup",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/am_session_start.py"
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/eama_session_start.py"
           }
         ]
       }
     ],
     "SessionEnd": [
       {
-        "_id": "am-memory-save",
+        "_id": "eama-memory-save",
         "_description": "Save session memory and context on exit",
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/am_session_end.py"
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/scripts/eama_session_end.py"
           }
         ]
       }

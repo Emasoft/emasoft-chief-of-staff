@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-am_memory_operations.py - Core memory file operations for Assistant Manager.
+eama_memory_operations.py - Core memory file operations for Emasoft Assistant Manager.
 
-This module provides the core operations for manipulating Assistant Manager memory files:
+This module provides the core operations for manipulating Emasoft Assistant Manager memory files:
 - Utility functions for file I/O and timestamps
 - Active Context operations (decisions, focus, errors)
 - Progress log operations
 - Pattern discovery operations
 
-Used by am_memory_manager.py for CLI interface.
+Used by eama_memory_manager.py for CLI interface.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from am_memory_manager import MemoryConfig
+    from eama_memory_manager import MemoryConfig
 
 __all__ = [
     "get_timestamp",

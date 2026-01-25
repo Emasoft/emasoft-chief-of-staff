@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-am_session_end.py - Save Assistant Manager memory context at session end.
+eama_session_end.py - Save Emasoft Assistant Manager memory context at session end.
 
-SessionEnd hook that saves/updates Assistant Manager memory files to preserve context
+SessionEnd hook that saves/updates Emasoft Assistant Manager memory files to preserve context
 for future sessions.
 
 Memory files managed:
@@ -14,7 +14,7 @@ Dependencies: Python 3.8+ stdlib only
 
 Usage (as Claude Code hook):
     Receives JSON via stdin from SessionEnd hook event.
-    Updates .claude/am/ memory files with session context.
+    Updates .claude/eama/ memory files with session context.
 
 Exit codes:
     0 - Success (memory saved)
@@ -30,15 +30,15 @@ from pathlib import Path
 
 
 def get_memory_root(cwd: str) -> Path:
-    """Get the Assistant Manager memory root directory.
+    """Get the Emasoft Assistant Manager memory root directory.
 
     Args:
         cwd: Current working directory
 
     Returns:
-        Path to .claude/am directory
+        Path to .claude/eama directory
     """
-    return Path(cwd) / ".claude" / "am"
+    return Path(cwd) / ".claude" / "eama"
 
 
 def get_timestamp() -> str:
@@ -74,7 +74,7 @@ def ensure_memory_files(memory_root: Path) -> bool:
     """Ensure all memory files exist with default structure.
 
     Args:
-        memory_root: Path to .claude/am directory
+        memory_root: Path to .claude/eama directory
 
     Returns:
         True if successful, False otherwise
@@ -147,7 +147,7 @@ def add_session_end_progress(memory_root: Path, session_context: dict) -> bool:
     """Add a session end entry to progress.md.
 
     Args:
-        memory_root: Path to .claude/am directory
+        memory_root: Path to .claude/eama directory
         session_context: Session context from hook input
 
     Returns:
@@ -192,7 +192,7 @@ def update_session_end_marker(memory_root: Path) -> bool:
     continuity checks work properly.
 
     Args:
-        memory_root: Path to .claude/am directory
+        memory_root: Path to .claude/eama directory
 
     Returns:
         True if successful

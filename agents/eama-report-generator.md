@@ -1,5 +1,5 @@
 ---
-name: am-report-generator
+name: eama-report-generator
 model: opus
 description: Generates status reports and project summaries
 type: local-helper
@@ -11,7 +11,7 @@ trigger_conditions:
   - When milestone completion verification is required
   - When quality metrics assessment needed before releases
 auto_skills:
-  - am-session-memory
+  - eama-session-memory
 memory_requirements: low
 ---
 

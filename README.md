@@ -1,10 +1,10 @@
-# Assistant Manager Agent (am-)
+# Emasoft Assistant Manager Agent (eama-)
 
 **Version**: 1.0.0
 
 ## Overview
 
-The Assistant Manager Agent is the **user's right hand** - the sole interlocutor with the user. It receives user requests, clarifies requirements, routes work to appropriate roles (Architect, Orchestrator, Integrator), and presents results back to the user.
+The Emasoft Assistant Manager Agent (EAMA) is the **user's right hand** - the sole interlocutor with the user. It receives user requests, clarifies requirements, routes work to appropriate roles (Architect, Orchestrator, Integrator), and presents results back to the user.
 
 ## Communication Hierarchy
 
@@ -16,7 +16,7 @@ The Assistant Manager Agent is the **user's right hand** - the sole interlocutor
                       │ ONLY direct communication channel
                       ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│              ASSISTANT-MANAGER-AGENT (am-)                       │
+│      EMASOFT-ASSISTANT-MANAGER-AGENT (eama-)                     │
 │   - Receives user requests, clarifies requirements               │
 │   - Requests user approvals (push, merge, publish, security)     │
 │   - Reports status to user                                       │
@@ -42,33 +42,33 @@ The Assistant Manager Agent is the **user's right hand** - the sole interlocutor
 
 | Agent | Description |
 |-------|-------------|
-| `am-main.md` | Main assistant manager agent |
-| `am-report-generator.md` | Generates status reports for user |
+| `eama-main.md` | Main assistant manager agent |
+| `eama-report-generator.md` | Generates status reports for user |
 
 ### Commands
 
 | Command | Description |
 |---------|-------------|
-| `am-planning-status` | Show planning phase status |
-| `am-orchestration-status` | Show orchestration phase status |
-| `am-approve-plan` | Approve plan for orchestration |
+| `eama-planning-status` | Show planning phase status |
+| `eama-orchestration-status` | Show orchestration phase status |
+| `eama-approve-plan` | Approve plan for orchestration |
 
 ### Skills
 
 | Skill | Description |
 |-------|-------------|
-| `am-user-communication` | User interaction patterns |
-| `am-status-reporting` | Status report generation |
-| `am-approval-workflows` | Approval request patterns |
-| `am-role-routing` | Route requests to correct role |
-| `am-shared` | Shared utilities |
+| `eama-user-communication` | User interaction patterns |
+| `eama-status-reporting` | Status report generation |
+| `eama-approval-workflows` | Approval request patterns |
+| `eama-role-routing` | Route requests to correct role |
+| `eama-shared` | Shared utilities |
 
 ### Hooks
 
 | Hook | Event | Description |
 |------|-------|-------------|
-| `am-memory-load` | SessionStart | Load session memory at startup |
-| `am-memory-save` | SessionEnd | Save session memory on exit |
+| `eama-memory-load` | SessionStart | Load session memory at startup |
+| `eama-memory-save` | SessionEnd | Save session memory on exit |
 
 ## Communication Methods
 
@@ -86,5 +86,5 @@ claude --plugin-dir ./OUTPUT_SKILLS/assistant-manager-agent
 
 ```bash
 cd OUTPUT_SKILLS/assistant-manager-agent
-uv run python scripts/am_validate_plugin.py --verbose
+uv run python scripts/eama_validate_plugin.py --verbose
 ```

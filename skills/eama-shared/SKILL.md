@@ -1,15 +1,15 @@
 ---
-name: am-session-memory
-description: Critical persistence mechanism for Assistant Manager agent enabling continuity across multiple interactions, surviving context window compaction, and graceful recovery from interruptions. Structured data storage system consisting of three coordinated documents stored in .claude/am/ directory - activeContext.md (current working state), patterns.md (learned patterns and heuristics), and progress.md (task tracking and completion state). Includes config snapshot integration for configuration drift detection and conflict resolution.
+name: eama-session-memory
+description: Critical persistence mechanism for Emasoft Assistant Manager agent enabling continuity across multiple interactions, surviving context window compaction, and graceful recovery from interruptions. Structured data storage system consisting of three coordinated documents stored in .claude/eama/ directory - activeContext.md (current working state), patterns.md (learned patterns and heuristics), and progress.md (task tracking and completion state). Includes config snapshot integration for configuration drift detection and conflict resolution.
 license: Apache-2.0
-compatibility: Requires file system access to .claude/am/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination).
+compatibility: Requires file system access to .claude/eama/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination).
 metadata:
-  author: Anthropic
+  author: Emasoft
   version: 1.0.0
 context: fork
 ---
 
-# Assistant Manager Session Memory Skill
+# Emasoft Assistant Manager Session Memory Skill
 
 ## Overview
 
@@ -27,7 +27,7 @@ Session memory is a structured data storage system that persists an agent's work
 
 ## Session Memory Components
 
-Session memory consists of three coordinated documents stored in the `.claude/am/` directory:
+Session memory consists of three coordinated documents stored in the `.claude/eama/` directory:
 
 ### 1. **activeContext.md** - Current Working State
 Captures the immediate context needed to continue work:

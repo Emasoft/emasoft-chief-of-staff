@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-am_session_start.py - Load Assistant Manager memory context at session start.
+eama_session_start.py - Load Emasoft Assistant Manager memory context at session start.
 
-SessionStart hook that loads existing Assistant Manager memory files and outputs a system
+SessionStart hook that loads existing Emasoft Assistant Manager memory files and outputs a system
 message summarizing the loaded context to help Claude resume work seamlessly.
 
 Memory files loaded:
@@ -31,15 +31,15 @@ from pathlib import Path
 
 
 def get_memory_root(cwd: str) -> Path:
-    """Get the Assistant Manager memory root directory.
+    """Get the Emasoft Assistant Manager memory root directory.
 
     Args:
         cwd: Current working directory
 
     Returns:
-        Path to .claude/am directory
+        Path to .claude/eama directory
     """
-    return Path(cwd) / ".claude" / "am"
+    return Path(cwd) / ".claude" / "eama"
 
 
 def read_file_safely(path: Path) -> str:
@@ -196,7 +196,7 @@ def format_context_summary(
     """
     lines = []
     lines.append("=" * 60)
-    lines.append("ASSISTANT MANAGER MEMORY CONTEXT LOADED")
+    lines.append("EMASOFT ASSISTANT MANAGER MEMORY CONTEXT LOADED")
     lines.append("=" * 60)
 
     if focus:
@@ -232,7 +232,7 @@ def format_context_summary(
 
     lines.append("")
     lines.append("=" * 60)
-    lines.append("Review .claude/am/ files for full context")
+    lines.append("Review .claude/eama/ files for full context")
     lines.append("=" * 60)
 
     return "\n".join(lines)
@@ -241,7 +241,7 @@ def format_context_summary(
 def main() -> int:
     """Main entry point for SessionStart hook.
 
-    Reads session info from stdin, loads Assistant Manager memory files,
+    Reads session info from stdin, loads Emasoft Assistant Manager memory files,
     and outputs a context summary to stdout.
 
     Returns:
@@ -263,7 +263,7 @@ def main() -> int:
 
     # Check if memory directory exists
     if not memory_root.exists():
-        # No Assistant Manager memory initialized - exit silently
+        # No Emasoft Assistant Manager memory initialized - exit silently
         return 0
 
     # Load memory files
