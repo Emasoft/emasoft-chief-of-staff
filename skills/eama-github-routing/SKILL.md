@@ -1,6 +1,6 @@
 ---
 name: eama-github-routing
-description: Decision trees for routing GitHub operations to appropriate specialist agents
+description: Use when routing GitHub operations (issues, PRs, projects, releases) to the appropriate specialist agent
 context: fork
 triggers:
   - User requests GitHub operation (issues, PRs, projects)
@@ -9,6 +9,22 @@ triggers:
 ---
 
 # GitHub Operation Routing Skill
+
+## Prerequisites
+
+- GitHub CLI (`gh`) must be installed and authenticated
+- AI Maestro messaging system must be running
+- EIA, EAA, and EOA agents must be available
+
+## Instructions
+
+1. Identify the type of GitHub operation requested (issue, PR, kanban, release)
+2. Use the appropriate decision tree to determine routing
+3. Check for design or module context that affects routing
+4. Create handoff document with required content
+5. Send handoff to the appropriate specialist via AI Maestro
+6. Track the handoff status
+
 ## Table of Contents
 
 1. [Purpose](#purpose)
@@ -38,7 +54,7 @@ triggers:
 ---
 
 
-## Purpose
+## Overview
 
 This skill provides decision trees for routing GitHub operations to the appropriate specialist role:
 - **EIA** (Integrator Agent) - Primary GitHub handler
@@ -340,7 +356,52 @@ If target agent is not responding:
 3. Retry after configured interval
 4. Escalate to user if repeated failures
 
-## References
+## Examples
+
+### Example 1: Routing a Bug Report Issue to EIA
+
+```
+# User request
+"Create an issue for the login timeout bug"
+
+# EAMA decision process
+1. Operation type: ISSUE
+2. Is linked to design doc? NO
+3. Is module implementation task? NO
+4. Route to: EIA
+
+# Handoff content
+## GitHub Operation Handoff
+
+**Operation Type**: issue
+**Action**: create
+**Target**: main repo
+
+### Details
+- Title: Login timeout bug
+- Labels: bug, high-priority
+- Body: Users experiencing timeout after 30 seconds
+
+### Expected Outcome
+- Issue created with appropriate labels
+- Issue number returned
+```
+
+### Example 2: Routing a Design-Linked Card to EAA
+
+```
+# User request
+"Create a kanban card for the authentication design"
+
+# EAMA decision process
+1. Operation type: KANBAN
+2. Is item design or module? DESIGN
+3. Route to: EAA
+
+# Handoff includes design UUID for linking
+```
+
+## Resources
 
 - [Role Routing SKILL](../eama-role-routing/SKILL.md)
 - [Proactive Handoff Protocol](../eama-shared/references/proactive-handoff-protocol.md)

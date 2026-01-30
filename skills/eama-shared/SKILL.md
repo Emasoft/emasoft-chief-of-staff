@@ -1,6 +1,6 @@
 ---
 name: eama-session-memory
-description: Critical persistence mechanism for Emasoft Assistant Manager agent enabling continuity across multiple interactions, surviving context window compaction, and graceful recovery from interruptions. Structured data storage system consisting of three coordinated documents stored in design/memory/ directory - activeContext.md (current working state), patterns.md (learned patterns and heuristics), and progress.md (task tracking and completion state). Includes config snapshot integration for configuration drift detection and conflict resolution.
+description: Use when managing session memory persistence across multiple interactions, surviving context window compaction, and recovering from interruptions
 license: Apache-2.0
 compatibility: Requires file system access to design/memory/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination).
 metadata:
@@ -308,7 +308,48 @@ This file is separate from authoritative configs in `design/config/` (OPTIONAL: 
 - [ ] Test memory recovery after interruptions
 - [ ] Test compaction safety
 
-## Troubleshooting
+## Examples
+
+### Example 1: Initializing Session Memory
+
+```python
+# Using the initialize-memory.py script
+python scripts/initialize-memory.py --project /path/to/project
+
+# Output
+Created design/memory/
+Created design/memory/activeContext.md
+Created design/memory/patterns.md
+Created design/memory/progress.md
+Session memory initialized successfully
+```
+
+### Example 2: Recovering After Interruption
+
+```markdown
+# In activeContext.md after recovery
+## Current State
+- **Last Active Task**: Implementing user login module
+- **Current File**: src/auth/login.py:145
+- **Pending Operations**: None
+- **Recovery Timestamp**: 2025-01-30T10:00:00Z
+
+# Agent reads this and resumes from line 145 of login.py
+```
+
+### Example 3: Updating Progress After Task Completion
+
+```markdown
+# In progress.md
+## Tasks
+
+- [x] Design authentication module (completed: 2025-01-29)
+- [x] Implement login endpoint (completed: 2025-01-30)
+- [ ] Implement logout endpoint (in progress)
+- [ ] Add session management (blocked by: logout endpoint)
+```
+
+## Error Handling
 
 ### Issue: Memory files are corrupted or have invalid Markdown
 
@@ -400,6 +441,17 @@ Implement the Python scripts from the `scripts/` directory in your project.
 - Load memory at initialization
 - Update during execution
 - Save before exit
+
+---
+
+## Resources
+
+- [Initialize Session Memory](references/01-initialize-session-memory.md)
+- [Memory Directory Structure](references/02-memory-directory-structure.md)
+- [Manage Active Context](references/03-manage-active-context.md)
+- [Memory Validation](references/04-memory-validation.md)
+- [Record Patterns](references/05-record-patterns.md)
+- [Using Memory Scripts](references/18-using-scripts.md)
 
 ---
 

@@ -51,7 +51,7 @@ python scripts/initialize-memory.py [OPTIONS]
 ```
 
 **Options:**
-- `--directory DIR` - Target directory (default: `.eama/memory`)
+- `--directory DIR` - Target directory (default: `.assistant-manager/memory`)
 - `--force` - Overwrite existing files
 - `--template TEMPLATE` - Template to use (default: standard)
 
@@ -64,7 +64,7 @@ python scripts/initialize-memory.py
 
 Output:
 ```
-Creating memory directory: .eama/memory
+Creating memory directory: .assistant-manager/memory
 Creating activeContext.md... Done
 Creating patterns.md... Done
 Creating progress.md... Done
@@ -121,7 +121,7 @@ python scripts/validate-memory.py
 
 Output:
 ```
-Validating session memory in .eama/memory
+Validating session memory in .assistant-manager/memory
 
 Checking activeContext.md...
   ✓ File exists

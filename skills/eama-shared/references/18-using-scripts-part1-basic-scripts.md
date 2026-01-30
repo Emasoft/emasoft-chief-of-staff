@@ -60,7 +60,7 @@ python scripts/initialize-memory.py [OPTIONS]
 ```
 
 **Options:**
-- `--directory DIR` - Target directory (default: `.eama/memory`)
+- `--directory DIR` - Target directory (default: `.assistant-manager/memory`)
 - `--force` - Overwrite existing files
 - `--template TEMPLATE` - Template to use (default: standard)
 
@@ -73,7 +73,7 @@ python scripts/initialize-memory.py
 
 Output:
 ```
-Creating memory directory: .eama/memory
+Creating memory directory: .assistant-manager/memory
 Creating activeContext.md... Done
 Creating patterns.md... Done
 Creating progress.md... Done
@@ -130,7 +130,7 @@ python scripts/validate-memory.py
 
 Output:
 ```
-Validating session memory in .eama/memory
+Validating session memory in .assistant-manager/memory
 
 Checking activeContext.md...
   ✓ File exists
@@ -203,7 +203,7 @@ python scripts/load-memory.py
 
 Output:
 ```
-Loading session memory from .eama/memory
+Loading session memory from .assistant-manager/memory
 
 Loaded state:
   Current Task: Implement authorization middleware
@@ -267,7 +267,7 @@ python scripts/save-memory.py --backup
 Output:
 ```
 Creating backup... Done (backup.20251231-180000)
-Saving session state to .eama/memory
+Saving session state to .assistant-manager/memory
 
 Updating activeContext.md... Done
 Updating patterns.md... Done

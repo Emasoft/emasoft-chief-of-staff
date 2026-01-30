@@ -1,6 +1,6 @@
 ---
 name: eama-approval-workflows
-description: Standard workflows for handling approval requests from other roles
+description: Use when handling approval requests from other roles that require user decisions on code, releases, or security gates
 context: fork
 triggers:
   - Any role sends an approval request via AI Maestro
@@ -10,9 +10,24 @@ triggers:
 
 # Approval Workflows Skill
 
-## Purpose
+## Overview
 
 This skill provides the Assistant Manager (EAMA) with standard workflows for handling approval requests from other roles and presenting them to the user for decision.
+
+## Prerequisites
+
+- AI Maestro messaging system must be running
+- EAMA must have access to `docs_dev/handoffs/` directory
+- State file must be writable for approval tracking
+
+## Instructions
+
+1. Listen for approval requests from other roles via AI Maestro
+2. Parse the approval request to determine type (push, merge, publish, security, design)
+3. Present the approval request to the user using the appropriate template
+4. Record the user's decision with timestamp
+5. Send the approval response back to the requesting role
+6. Update the approval state tracking file
 
 ## Plugin Prefix Reference
 
@@ -184,7 +199,61 @@ When approval is requested:
 3. Block relevant workflow until decision received
 4. Log all approval requests and decisions
 
-## References
+## Examples
+
+### Example 1: Handling a Push Approval Request
+
+```
+# Incoming message from EOA via AI Maestro
+Subject: Push Approval Requested
+Priority: high
+Content: Branch feature/user-auth ready for push. 5 files modified. All tests passed.
+
+# EAMA presents to user
+## Push Approval Requested
+
+**Branch**: feature/user-auth
+**Changes**: Added user authentication module
+**Files Modified**: 5
+**Tests Status**: All 23 tests passed
+
+Do you approve pushing these changes?
+- [Approve] - Push to remote
+- [Reject] - Cancel push
+- [Review] - Show me the changes first
+
+# User responds: "Approve"
+
+# EAMA sends response to EOA
+Subject: Push Approved
+Content: User approved push for feature/user-auth at 2025-01-30T10:00:00Z
+```
+
+### Example 2: Security Approval with Critical Risk
+
+```
+# EAMA receives security approval request
+## Security Approval Required
+
+**Action**: Update production database schema
+**Risk Level**: critical
+**Affected Systems**: users, orders, payments
+**Justification**: Required for GDPR compliance
+**Rollback Plan**: Restore from backup-2025-01-29
+
+This action has security implications. Do you authorize it?
+```
+
+## Error Handling
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| Approval request timeout | No user response in 24 hours | Auto-reject and notify requesting role |
+| Invalid approval type | Unknown type in request | Query sender for clarification |
+| State file write failure | Permissions or disk issue | Retry 3 times, then escalate to user |
+| Missing handoff context | Incomplete request | Return to sender with "INCOMPLETE" flag |
+
+## Resources
 
 - [Message Templates](../../shared/message_templates.md)
 - [Handoff Template](../../shared/handoff_template.md)

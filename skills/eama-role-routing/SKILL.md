@@ -1,6 +1,6 @@
 ---
 name: eama-role-routing
-description: Decision logic for routing user requests to appropriate specialist roles
+description: Use when routing user requests to appropriate specialist roles (Architect, Orchestrator, or Integrator)
 context: fork
 triggers:
   - User submits a new request or task
@@ -10,9 +10,27 @@ triggers:
 
 # Role Routing Skill
 
-## Purpose
+## Overview
 
 This skill provides the Assistant Manager (EAMA) with decision logic for routing user requests to the appropriate specialist role:
+
+## Prerequisites
+
+- AI Maestro messaging system must be running
+- All specialist agents (EAA, EOA, EIA) must be registered
+- `docs_dev/handoffs/` directory must exist and be writable
+- UUID generation capability required
+
+## Instructions
+
+1. Parse user message to identify primary intent
+2. Match intent to routing rule using the decision matrix
+3. If handling directly (status, approval, clarification), respond immediately
+4. If routing to specialist, create handoff document with UUID
+5. Save handoff to `docs_dev/handoffs/`
+6. Send via AI Maestro to target role
+7. Track handoff status and monitor for acknowledgment
+8. Report routing decision to user
 - **EAA** - Architect Agent
 - **EOA** - Orchestrator Agent
 - **EIA** - Integrator Agent
@@ -266,7 +284,56 @@ When routing to EOA, handoff MUST include:
 5. **Constraints**: Time, resources, technical limits
 6. **Success Criteria**: What defines "done"
 
-## References
+## Examples
+
+### Example 1: Routing a Design Request to EAA
+
+```
+# User says: "Design a user authentication system"
+
+# EAMA identifies intent: "design" -> Route to EAA
+
+# Creates handoff
+## Handoff: handoff-a1b2c3d4-eama-to-eaa.md
+
+**From**: EAMA (Assistant Manager)
+**To**: EAA (Architect)
+**Type**: task_assignment
+
+### Request
+Design a user authentication system
+
+### Requirements
+- Support OAuth2 and password-based auth
+- Include role-based access control
+- Must integrate with existing user database
+
+### Expected Deliverable
+- Design document in design/auth-system/DESIGN.md
+- Module breakdown with dependencies
+```
+
+### Example 2: Handling Status Request Directly
+
+```
+# User says: "What's the status of the project?"
+
+# EAMA identifies intent: "status" -> Handle directly
+
+# EAMA queries all roles, compiles report, presents to user
+# No handoff created - direct response
+```
+
+## Error Handling
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| Ambiguous intent | Multiple possible routes | Ask user for clarification |
+| Target agent unavailable | Session not running | Queue handoff, notify user, retry |
+| Handoff directory missing | Not initialized | Create `docs_dev/handoffs/` automatically |
+| UUID collision | Extremely rare | Generate new UUID and retry |
+
+## Resources
 
 - [Handoff Template](../../shared/handoff_template.md)
 - [Message Templates](../../shared/message_templates.md)

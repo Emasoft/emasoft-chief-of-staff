@@ -1,6 +1,6 @@
 ---
 name: eama-user-communication
-description: User communication patterns and clarification protocols
+description: Use when communicating with users for clarification, presenting options, requesting approval, or reporting completion
 context: fork
 agent: eama-main
 user-invocable: false
@@ -13,9 +13,21 @@ triggers:
 
 # User Communication Skill
 
-## Purpose
+## Overview
 
 Standardize how the assistant manager communicates with users for consistency and clarity.
+
+## Prerequisites
+
+None required. This skill provides communication patterns that can be used immediately.
+
+## Instructions
+
+1. Identify the communication type needed (clarification, options, approval, completion)
+2. Use the appropriate template from the Communication Patterns section
+3. Fill in all placeholders with specific information
+4. Follow the Quality Rules to ensure clarity
+5. Include relevant UUIDs, issue numbers, and file paths for traceability
 
 ## Communication Patterns
 
@@ -88,7 +100,48 @@ Next steps: [What happens now]
 4. **Be Concise**: Use bullets, avoid walls of text
 5. **Be Traceable**: Include UUIDs, issue numbers
 
-## Related Skills
+## Examples
 
-- eama-approval-workflows (approval communication)
-- eama-role-routing (routing communication)
+### Example 1: Clarification Request
+
+```markdown
+I need clarification on the following:
+
+1. Should the login support both email and username?
+2. What is the session timeout duration?
+
+Please provide:
+- Your preference for login identifiers
+- Timeout in minutes (e.g., 30, 60, 120)
+```
+
+### Example 2: Completion Report
+
+```markdown
+**Task Complete**
+
+Summary: Implemented user login endpoint with OAuth2 support.
+
+Changes made:
+- src/auth/login.py: Added login handler
+- src/auth/oauth.py: Added OAuth2 flow
+- tests/test_login.py: Added 15 test cases
+
+Verification: Run `pytest tests/test_login.py` - all tests should pass
+
+Next steps: Proceed with logout endpoint implementation
+```
+
+## Error Handling
+
+| Error | Cause | Resolution |
+|-------|-------|------------|
+| No user response | User inactive | Wait, then send gentle reminder |
+| Ambiguous user input | Unclear response | Ask for specific clarification |
+| Template mismatch | Wrong pattern selected | Re-evaluate and use correct template |
+
+## Resources
+
+- [eama-approval-workflows SKILL](../eama-approval-workflows/SKILL.md) - Approval communication patterns
+- [eama-role-routing SKILL](../eama-role-routing/SKILL.md) - Routing communication patterns
+- [Message Templates](../../shared/message_templates.md)
