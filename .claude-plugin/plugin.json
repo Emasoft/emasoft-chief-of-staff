@@ -1,22 +1,30 @@
 {
-  "name": "emasoft-assistant-manager-agent",
-  "version": "1.0.0",
-  "description": "User's right hand - sole interlocutor with user, directs other roles (architect, orchestrator, integrator)",
+  "name": "emasoft-chief-of-staff",
+  "version": "1.3.0",
+  "description": "Multi-project agent management - staff planning, lifecycle, approval workflows, failure recovery. Requires AI Maestro for inter-agent messaging.",
   "author": {
     "name": "Emasoft",
     "email": "713559+Emasoft@users.noreply.github.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Emasoft/emasoft-assistant-manager-agent"
+    "url": "https://github.com/Emasoft/emasoft-chief-of-staff"
   },
   "license": "MIT",
   "engines": {
     "claude-code": ">=1.0.0"
   },
   "agents": [
-    "./agents/eama-main.md",
-    "./agents/eama-report-generator.md"
+    "./agents/ecos-chief-of-staff-main-agent.md",
+    "./agents/ecos-staff-planner.md",
+    "./agents/ecos-lifecycle-manager.md",
+    "./agents/ecos-project-coordinator.md",
+    "./agents/ecos-plugin-configurator.md",
+    "./agents/ecos-skill-validator.md",
+    "./agents/ecos-resource-monitor.md",
+    "./agents/ecos-performance-reporter.md",
+    "./agents/ecos-recovery-coordinator.md",
+    "./agents/ecos-approval-coordinator.md"
   ],
   "skills": "./skills/"
 }
