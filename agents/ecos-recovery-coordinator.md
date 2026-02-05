@@ -16,7 +16,7 @@ You detect agent failures and coordinate recovery workflows across the AI Maestr
 ## Required Reading
 
 **BEFORE any recovery operation, read:**
-- [ecos-failure-recovery skill SKILL.md](../../skills/ecos-failure-recovery/SKILL.md)
+- [ecos-failure-recovery skill SKILL.md](../skills/ecos-failure-recovery/SKILL.md)
 
 > For failure detection procedures, see ecos-failure-recovery/references/recovery-operations.md section 1-3.
 > For recovery strategy decision trees, see ecos-failure-recovery/references/recovery-operations.md section 4-5.
