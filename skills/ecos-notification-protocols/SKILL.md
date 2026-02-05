@@ -456,6 +456,7 @@ See [references/failure-notifications.md](references/failure-notifications.md) f
 - [Post-Operation Notifications](references/post-operation-notifications.md)
 - [Acknowledgment Protocol](references/acknowledgment-protocol.md)
 - [Failure Notifications](references/failure-notifications.md)
+- [AI Maestro Message Templates](references/ai-maestro-message-templates.md) - Standard message templates for inter-agent communication
 
 ---
 

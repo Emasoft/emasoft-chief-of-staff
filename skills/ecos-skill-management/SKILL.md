@@ -287,6 +287,7 @@ See [references/pss-integration.md](references/pss-integration.md) for discovery
 ## Resources
 
 - [Skill Validation](references/skill-validation.md)
+- [Validation Procedures](references/validation-procedures.md) - Skill validation procedures
 - [Skill Reindexing](references/skill-reindexing.md)
 - [PSS Integration](references/pss-integration.md)
 

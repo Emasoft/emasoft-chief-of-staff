@@ -215,6 +215,8 @@ For complete examples with curl commands and expected responses, see [references
 - [Approval Escalation](references/approval-escalation.md)
 - [Approval Types Detailed](references/approval-types-detailed.md)
 - [Examples](references/examples.md)
+- [RULE 14 Enforcement](references/rule-14-enforcement.md) - User requirements are immutable
+- [Approval Workflow Engine](references/approval-workflow-engine.md) - Complete approval workflow engine procedures
 
 ---
 

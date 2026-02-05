@@ -334,6 +334,7 @@ See [references/plugin-validation.md](references/plugin-validation.md) for valid
 - [Plugin Installation](references/plugin-installation.md)
 - [Local Configuration](references/local-configuration.md)
 - [Plugin Validation](references/plugin-validation.md)
+- [Installation Procedures](references/installation-procedures.md)
 
 ---
 

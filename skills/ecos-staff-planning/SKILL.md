@@ -257,6 +257,7 @@ See [references/staffing-templates.md](references/staffing-templates.md) for tem
 - [Role Assessment](references/role-assessment.md)
 - [Capacity Planning](references/capacity-planning.md)
 - [Staffing Templates](references/staffing-templates.md)
+- [Framework Details](references/framework-details.md) - Staff planning framework details
 
 ---
 

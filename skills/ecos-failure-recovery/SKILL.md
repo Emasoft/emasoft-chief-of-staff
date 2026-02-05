@@ -357,6 +357,7 @@ Recovery scenarios with step-by-step commands.
 - [references/failure-detection.md](references/failure-detection.md) - Detection procedures
 - [references/failure-classification.md](references/failure-classification.md) - Classification criteria
 - [references/recovery-strategies.md](references/recovery-strategies.md) - Recovery steps
+- [references/recovery-operations.md](references/recovery-operations.md) - Recovery operations procedures
 - [references/agent-replacement-protocol.md](references/agent-replacement-protocol.md) - Replacement workflow
 - [references/work-handoff-during-failure.md](references/work-handoff-during-failure.md) - Work transfer procedures
 - [references/troubleshooting.md](references/troubleshooting.md) - Common issues and solutions

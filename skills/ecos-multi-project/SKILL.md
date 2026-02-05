@@ -347,6 +347,7 @@ See [references/cross-project-coordination.md](references/cross-project-coordina
 - [Project Registry](references/project-registry.md)
 - [GitHub Projects Sync](references/github-projects-sync.md)
 - [Cross-Project Coordination](references/cross-project-coordination.md)
+- [Registry Sync](references/registry-sync.md)
 
 ---
 

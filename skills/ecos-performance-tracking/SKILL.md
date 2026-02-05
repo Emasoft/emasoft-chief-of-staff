@@ -229,6 +229,7 @@ Period: 2025-01-27 to 2025-02-02
 - [Performance Metrics](references/performance-metrics.md)
 - [Strength-Weakness Analysis](references/strength-weakness-analysis.md)
 - [Performance Reporting](references/performance-reporting.md)
+- [Report Formats](references/report-formats.md) - Performance report formats
 
 ---
 

@@ -407,6 +407,11 @@ See [references/hibernation-procedures.md](references/hibernation-procedures.md)
 - [Hibernation Procedures](references/hibernation-procedures.md)
 - [Workflow Examples](references/workflow-examples.md)
 - [CLI Examples](references/cli-examples.md)
+- [Sub-Agent Role Boundaries Template](references/sub-agent-role-boundaries-template.md) - Template for defining sub-agent responsibilities
+- [Workflow Checklists](references/workflow-checklists.md) - Complete checklists for agent lifecycle workflows
+- [Success Criteria](references/success-criteria.md) - Success/completion criteria for lifecycle operations
+- [Record-Keeping](references/record-keeping.md) - Formats for logging lifecycle operations
+- [CLI Reference](references/cli-reference.md) - Complete CLI command reference for lifecycle management
 
 ---
 

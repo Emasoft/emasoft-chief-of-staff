@@ -214,6 +214,7 @@ Monitoring continues at increased frequency (5 min interval).
 - [System Resources](references/system-resources.md)
 - [Instance Limits](references/instance-limits.md)
 - [Resource Alerts](references/resource-alerts.md)
+- [Monitoring Commands](references/monitoring-commands.md)
 
 ---
 
