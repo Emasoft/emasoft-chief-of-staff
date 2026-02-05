@@ -327,6 +327,32 @@ ECOS receives escalation
       └─ YES → Route to EAMA using blocker-escalation template above
 ```
 
+### Checklist: Routing a Task Blocker Escalation
+
+Copy this checklist and track your progress:
+
+- [ ] Receive escalation from EOA
+- [ ] Determine escalation type: agent failure OR task blocker
+- [ ] If agent failure → use failure recovery workflow (Phases 1-5 above)
+- [ ] If task blocker that ECOS can resolve (agent reassignment, permission within authority) → handle directly
+- [ ] If task blocker requiring user input → compose blocker-escalation message to EAMA (use template above)
+- [ ] Include `blocker_issue_number` in the message (the GitHub issue tracking the blocker problem)
+- [ ] Send the escalation to EAMA via AI Maestro
+- [ ] Track the blocker in ECOS records
+- [ ] When EAMA responds with user's decision, route it back to EOA
+- [ ] Verify EOA acknowledges receipt of the resolution
+
+### Checklist: When EAMA Returns a Blocker Resolution
+
+Copy this checklist and track your progress:
+
+- [ ] Receive blocker-resolution message from EAMA
+- [ ] Verify the resolution includes the user's exact decision (RULE 14)
+- [ ] Route the resolution to EOA via AI Maestro
+- [ ] Verify EOA acknowledges receipt
+- [ ] Note: EOA will close the blocker issue, restore the task to its previous column, and notify the agent
+- [ ] Update ECOS records to mark the blocker as resolved
+
 ---
 
 ## File Locations
