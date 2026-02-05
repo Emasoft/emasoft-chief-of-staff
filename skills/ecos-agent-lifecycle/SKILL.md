@@ -178,21 +178,7 @@ Agent lifecycle management is the systematic control of agent states from creati
 - 3.6 Examples - Hibernation and wake scenarios
 - 3.7 Troubleshooting - Hibernation issues
 
-## Core Responsibilities and Sub-Agent Routing
-
-ECOS delegates specialized tasks to sub-agents. Use the routing table below:
-
-| Task Category | Route To | Purpose |
-|---------------|----------|---------|
-| Staffing analysis, team sizing | **ecos-staff-planner** | Analyze task and recommend team composition |
-| Agent create/terminate/hibernate/wake | **ecos-lifecycle-manager** | Manage remote agent lifecycle via tmux |
-| Multi-project tracking, GitHub sync | **ecos-project-coordinator** | Track projects and cross-project dependencies |
-| Plugin configuration for agents | **ecos-plugin-configurator** | Configure plugins for each agent |
-| Skill validation, PSS reindex | **ecos-skill-validator** | Validate and manage skills |
-| System resource monitoring | **ecos-resource-monitor** | Monitor resources and enforce limits |
-| Agent performance analysis | **ecos-performance-reporter** | Analyze and report on agent performance |
-| Approval workflows | **ecos-approval-coordinator** | Handle approval requests |
-| Failure recovery | **ecos-recovery-coordinator** | Coordinate failure recovery |
+> **Note:** Sub-agent routing is defined in the ECOS main agent definition (ecos-chief-of-staff-main-agent.md).
 
 ## The --agent Flag for Main Agent Injection
 

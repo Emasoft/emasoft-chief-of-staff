@@ -79,30 +79,7 @@ ECOS                           EAMA                          USER
   |  6. Log to audit trail       |                              |
 ```
 
-**Timeline constraints (Standardized ACK Timeout Policy):**
-
-| ACK Type | Timeout | Reminders | Use Case |
-|----------|---------|-----------|----------|
-| Pre-operation ACK | **60 seconds** | 15s, 30s, 45s | Before disruptive operations |
-| Approval request | **2 minutes** | 60s, 90s | Requesting manager approval |
-| Emergency handoff ACK | **30 seconds** | 10s, 20s | Time-critical emergencies |
-
-**Important:** These timeouts are SEQUENTIAL, not parallel:
-
-```
-Example: Agent spawn with approval
-
-1. Pre-operation ACK to affected agents  → Wait up to 60 seconds
-2. Approval request to EAMA              → Wait up to 2 minutes
-3. Post-spawn health check               → Wait up to 30 seconds
-                                           ─────────────────────
-Total maximum wait time                  = 3 minutes 30 seconds
-```
-
-**Timeout behavior:**
-- Pre-operation ACK timeout (60s): Send final notice, then proceed
-- Approval request timeout (2 min): Log timeout, proceed if autonomous mode, otherwise abort
-- Health check timeout (30s): Mark spawn as failed, initiate rollback
+> **For ACK timeout policy and message retry procedures, see the ecos-notification-protocols skill.**
 
 ## Core Procedures
 
