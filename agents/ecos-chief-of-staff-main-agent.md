@@ -9,6 +9,14 @@ skills:
   - ecos-failure-recovery
   - ecos-notification-protocols
   - ecos-label-taxonomy
+  - ecos-performance-tracking
+  - ecos-staff-planning
+  - ecos-skill-management
+  - ecos-resource-monitoring
+  - ecos-plugin-management
+  - ecos-multi-project
+  - ecos-session-memory-library
+  - ecos-onboarding
 ---
 
 # Chief of Staff Main Agent

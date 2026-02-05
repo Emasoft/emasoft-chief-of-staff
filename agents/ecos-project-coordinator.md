@@ -6,6 +6,8 @@ tools:
   - Read
   - Write
   - Bash
+skills:
+  - ecos-multi-project
 ---
 
 # Project Coordinator Agent

@@ -6,6 +6,8 @@ tools:
   - Bash
   - Read
   - Write
+skills:
+  - ecos-performance-tracking
 ---
 
 # Performance Reporter Agent

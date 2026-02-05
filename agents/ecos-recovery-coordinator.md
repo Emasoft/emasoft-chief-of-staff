@@ -5,6 +5,8 @@ tools:
   - Task
   - Bash
   - Read
+skills:
+  - ecos-failure-recovery
 ---
 
 # Recovery Coordinator Agent

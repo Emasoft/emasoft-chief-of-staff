@@ -5,6 +5,8 @@ tools:
   - Task
   - Bash
   - Read
+skills:
+  - ecos-resource-monitoring
 ---
 
 # Resource Monitor Agent

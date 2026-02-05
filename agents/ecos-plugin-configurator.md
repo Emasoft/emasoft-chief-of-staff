@@ -7,6 +7,8 @@ tools:
   - Write
   - Bash
   - Glob
+skills:
+  - ecos-plugin-management
 ---
 
 # Plugin Configurator Agent

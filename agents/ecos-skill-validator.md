@@ -5,6 +5,8 @@ tools:
   - Task
   - Bash
   - Read
+skills:
+  - ecos-skill-management
 ---
 
 # Skill Validator Agent

@@ -5,6 +5,8 @@ tools:
   - Task
   - Bash
   - Read
+skills:
+  - ecos-agent-lifecycle
 ---
 
 # Lifecycle Manager Agent

@@ -5,6 +5,8 @@ tools:
   - Task
   - Read
   - Bash
+skills:
+  - ecos-staff-planning
 ---
 
 # Staff Planner Agent

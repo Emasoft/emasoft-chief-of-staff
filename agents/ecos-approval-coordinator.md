@@ -6,6 +6,8 @@ tools:
   - Bash
   - Read
   - Write
+skills:
+  - ecos-permission-management
 ---
 
 # Approval Coordinator Agent
