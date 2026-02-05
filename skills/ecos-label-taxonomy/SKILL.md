@@ -4,6 +4,8 @@ description: "Use when applying or checking GitHub labels for agent assignment a
 license: Apache-2.0
 compatibility: Requires AI Maestro installed.
 version: 1.0.0
+metadata:
+  author: Emasoft
 ---
 
 # ECOS Label Taxonomy

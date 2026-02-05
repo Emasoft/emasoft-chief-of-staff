@@ -415,7 +415,7 @@ See [references/hibernation-procedures.md](references/hibernation-procedures.md)
 
 ---
 
-**Version:** 1.0
+**Version:** 1.0.0
 **Last Updated:** 2025-02-03
 **Target Audience:** Chief of Staff Agents
 **Difficulty Level:** Intermediate

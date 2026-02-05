@@ -483,7 +483,7 @@ Implement the Python scripts from the `scripts/` directory in your project.
 
 ---
 
-**Version:** 1.1
+**Version:** 1.0.0
 **Last Updated:** 2025-02-01
 **Target Audience:** Emasoft Chief of Staff Agent
 **Difficulty Level:** Intermediate
