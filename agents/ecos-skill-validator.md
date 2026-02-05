@@ -238,18 +238,18 @@ Validation PASSED for ./skills/code-review/
 </example>
 
 <example>
-request: Validate all skills in the atlas-orchestrator plugin and reindex PSS
+request: Validate all skills in the emasoft-architect-agent plugin and reindex PSS
 
-response: Scanning ./OUTPUT_SKILLS/atlas-orchestrator/skills/ for skills...
+response: Scanning ./OUTPUT_SKILLS/emasoft-architect-agent/skills/ for skills...
 
 Found 39 skills. Validating each...
 
 | Skill | Status | Issues |
 |-------|--------|--------|
-| ao-atlas-router | PASSED | - |
-| ao-tdd-enforcement | PASSED | - |
-| ao-worktree-management | WARNING | Missing TOC in SKILL.md |
-| ao-github-integration | PASSED | - |
+| eaa-architecture-review | PASSED | - |
+| eaa-design-patterns | PASSED | - |
+| eaa-system-modeling | WARNING | Missing TOC in SKILL.md |
+| eaa-component-design | PASSED | - |
 | ... | ... | ... |
 
 Summary:

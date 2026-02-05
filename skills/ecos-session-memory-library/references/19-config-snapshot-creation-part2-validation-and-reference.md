@@ -257,10 +257,10 @@ def initialize_session():
 **Snapshot creation output:**
 ```
 Creating config snapshot...
-Reading design/config/toolchain.md... Done    # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/standards.md... Done     # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/environment.md... Done   # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/decisions.md... Done     # (OPTIONAL: If Atlas Orchestrator plugin is installed)
+Reading design/config/toolchain.md... Done    # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/standards.md... Done     # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/environment.md... Done   # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/decisions.md... Done     # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 
 Writing snapshot to design/memory/config-snapshot.md... Done
 Validating snapshot... PASSED
@@ -303,7 +303,7 @@ Snapshot updated. Session now using:
 
 **Solution:**
 ```bash
-# Check which configs exist (OPTIONAL: If Atlas Orchestrator plugin is installed)
+# Check which configs exist (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 ls -la design/config/
 
 # If config is missing, cannot create valid snapshot
@@ -336,7 +336,7 @@ ls -la design/config/
 **Cause:** Snapshot created from wrong config files or outdated copy
 
 **Solution:**
-1. Verify `design/config/` contains authoritative configs (OPTIONAL: If Atlas Orchestrator plugin is installed)
+1. Verify `design/config/` contains authoritative configs (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 2. Delete corrupt snapshot
 3. Recreate snapshot from correct source files
 4. Validate new snapshot immediately after creation

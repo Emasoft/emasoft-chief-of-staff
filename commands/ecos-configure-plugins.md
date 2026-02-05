@@ -66,7 +66,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ecos_configure_plugins.py" $ARGUMENTS
 ### Add plugin with project scope
 
 ```bash
-/ecos-configure-plugins orchestrator-master --add atlas-orchestrator --scope project
+/ecos-configure-plugins orchestrator-master --add emasoft-architect-agent --scope project
 ```
 
 ### List installed plugins
@@ -100,7 +100,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ecos_configure_plugins.py" $ARGUMENTS
 ║ Plugin Name                  │ Version │ Scope   │ Status      ║
 ║─────────────────────────────────────────────────────────────── ║
 ║ perfect-skill-suggester      │ 1.2.3   │ local   │ enabled     ║
-║ atlas-orchestrator           │ 2.0.0   │ project │ enabled     ║
+║ emasoft-architect-agent      │ 2.0.0   │ project │ enabled     ║
 ║ ai-maestro-messaging-hook    │ 1.0.0   │ user    │ enabled     ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ NOTE: Agent must restart Claude Code to apply plugin changes   ║

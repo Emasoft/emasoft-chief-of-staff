@@ -217,7 +217,7 @@
        "type": "config-conflict",
        "session_id": "orchestrator-master-20251231-102345",
        "conflict_type": "D",
-       "changed_files": ["design/config/toolchain.md"],  // OPTIONAL: If Atlas Orchestrator plugin is installed
+       "changed_files": ["design/config/toolchain.md"],  // OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed
        "current_task": "Implement React auth component",
        "conflict_description": "Snapshot requires React 17, current config requires Vue 3",
        "options": [

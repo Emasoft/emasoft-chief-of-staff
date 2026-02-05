@@ -31,7 +31,7 @@ This document has been split for readability. Detailed procedures are in:
 
 ### What Is Config Change Detection?
 
-Config change detection is the process of identifying when central configuration files (in `design/config/` - OPTIONAL: If Atlas Orchestrator plugin is installed) have been modified since the session config snapshot was created. This allows the agent to respond appropriately to config updates from the orchestrator.
+Config change detection is the process of identifying when central configuration files (in `design/config/` - OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed) have been modified since the session config snapshot was created. This allows the agent to respond appropriately to config updates from the orchestrator.
 
 ### Why Detection Matters
 

@@ -201,13 +201,13 @@ Session memory captures configuration state at session start to detect drift, ma
 
 **Config snapshot location:** `design/memory/config-snapshot.md`
 
-This file is separate from authoritative configs in `design/config/` (OPTIONAL: If Atlas Orchestrator plugin is installed) and serves as a point-in-time capture.
+This file is separate from authoritative configs in `design/config/` (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed) and serves as a point-in-time capture.
 
 ### PROCEDURE 7: Capture Config Snapshot at Session Start
 
 **When to use:** During session initialization, after loading core memory files, before any work begins.
 
-**Steps:** Read all config files from `design/config/` (OPTIONAL: If Atlas Orchestrator plugin is installed), create snapshot with timestamp and session ID, copy config content and metadata, save snapshot, record in activeContext.md.
+**Steps:** Read all config files from `design/config/` (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed), create snapshot with timestamp and session ID, copy config content and metadata, save snapshot, record in activeContext.md.
 
 **Related documentation:**
 

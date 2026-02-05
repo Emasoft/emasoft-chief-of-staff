@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Critical persistence mechanism enabling the Atlas orchestrator to maintain continuity across multiple interactions, survive context window compaction, and recover gracefully from interruptions.
+Critical persistence mechanism enabling the EOA orchestrator to maintain continuity across multiple interactions, survive context window compaction, and recover gracefully from interruptions.
 
 ## When to Use
 
@@ -46,5 +46,5 @@ See [SKILL.md](./SKILL.md) for complete instructions.
 
 ## Related Skills
 
-- `atlas-router` - Uses session memory for continuity
+- `eama-role-routing` - Uses session memory for continuity
 - `verification-patterns` - Task completion tracking

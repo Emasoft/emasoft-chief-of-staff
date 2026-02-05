@@ -61,7 +61,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ecos_validate_skills.py" $ARGUMENTS
 ### Validate a specific skill
 
 ```bash
-/ecos-validate-skills orchestrator-master --skill atlas-orchestrator-core
+/ecos-validate-skills orchestrator-master --skill eaa-architecture-review
 ```
 
 ### Validate with auto-fix
@@ -91,15 +91,15 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ecos_validate_skills.py" $ARGUMENTS
 ╠════════════════════════════════════════════════════════════════╣
 ║ Skill Name                   │ Plugin              │ Status    ║
 ║─────────────────────────────────────────────────────────────── ║
-║ ao-atlas-router              │ atlas-orchestrator  │ PASS      ║
-║ ao-tdd-enforcement           │ atlas-orchestrator  │ PASS      ║
-║ ao-worktree-management       │ atlas-orchestrator  │ FAIL      ║
+║ eama-role-routing            │ emasoft-assistant-m │ PASS      ║
+║ eia-tdd-workflow             │ emasoft-integrator- │ PASS      ║
+║ eoa-worktree-management      │ emasoft-orchestrato │ FAIL      ║
 ║ pss-activation-rules         │ perfect-skill-sugg  │ PASS      ║
 ║ ecos-session-memory-library  │ emasoft-chief-of-s  │ PASS      ║
 ╠════════════════════════════════════════════════════════════════╣
 ║ ERRORS (1)                                                     ║
 ╠════════════════════════════════════════════════════════════════╣
-║ ao-worktree-management:                                        ║
+║ eoa-worktree-management:                                       ║
 ║   - Missing TOC in SKILL.md                                    ║
 ║   - Reference file not found: references/worktree-setup.md     ║
 ╠════════════════════════════════════════════════════════════════╣

@@ -73,10 +73,10 @@ def initialize_session():
 **Snapshot creation output:**
 ```
 Creating config snapshot...
-Reading design/config/toolchain.md... Done    # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/standards.md... Done     # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/environment.md... Done   # (OPTIONAL: If Atlas Orchestrator plugin is installed)
-Reading design/config/decisions.md... Done     # (OPTIONAL: If Atlas Orchestrator plugin is installed)
+Reading design/config/toolchain.md... Done    # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/standards.md... Done     # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/environment.md... Done   # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
+Reading design/config/decisions.md... Done     # (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 
 Writing snapshot to design/memory/config-snapshot.md... Done
 Validating snapshot... PASSED
@@ -119,7 +119,7 @@ Snapshot updated. Session now using:
 
 **Solution:**
 ```bash
-# Check which configs exist (OPTIONAL: If Atlas Orchestrator plugin is installed)
+# Check which configs exist (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 ls -la design/config/
 
 # If config is missing, cannot create valid snapshot
@@ -153,7 +153,7 @@ ls -la design/config/
 
 **Solution:**
 ```bash
-# Check original config file (OPTIONAL: If Atlas Orchestrator plugin is installed)
+# Check original config file (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
 cat design/config/toolchain.md | wc -c
 
 # Compare with snapshot content

@@ -41,7 +41,7 @@ A config snapshot is a point-in-time capture of all central configuration files 
 design/memory/config-snapshot.md
 ```
 
-This file is SEPARATE from authoritative configs in `design/config/` (OPTIONAL: If Atlas Orchestrator plugin is installed). It's a **read-only capture** for comparison purposes.
+This file is SEPARATE from authoritative configs in `design/config/` (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed). It's a **read-only capture** for comparison purposes.
 
 ### Purpose
 
@@ -107,7 +107,7 @@ This file is SEPARATE from authoritative configs in `design/config/` (OPTIONAL: 
    fi
    ```
 
-2. **Read all central config files** (OPTIONAL: If Atlas Orchestrator plugin is installed)
+2. **Read all central config files** (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
    ```bash
    configs=(
      "design/config/toolchain.md"
@@ -168,9 +168,9 @@ This file is SEPARATE from authoritative configs in `design/config/` (OPTIONAL: 
    snapshot_content.append(f"**Session ID:** {session_id}\n")
    snapshot_content.append(f"**Snapshot Created:** {datetime.now().isoformat()}\n\n")
 
-   # Each config (OPTIONAL: If Atlas Orchestrator plugin is installed)
+   # Each config (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
    for config_name in ['toolchain', 'standards', 'environment', 'decisions']:
-       config_file = f"design/config/{config_name}.md"  # Atlas Orchestrator config path
+       config_file = f"design/config/{config_name}.md"  # EOA (Emasoft Orchestrator Agent) config path
        metadata = extract_config_metadata(config_file)
 
        snapshot_content.append(f"### {config_name}.md\n")

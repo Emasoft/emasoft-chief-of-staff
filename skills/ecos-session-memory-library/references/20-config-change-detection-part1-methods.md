@@ -23,7 +23,7 @@
 
 ### What Is Config Change Detection?
 
-Config change detection is the process of identifying when central configuration files (in `design/config/` - OPTIONAL: If Atlas Orchestrator plugin is installed) have been modified since the session config snapshot was created. This allows the agent to respond appropriately to config updates from the orchestrator.
+Config change detection is the process of identifying when central configuration files (in `design/config/` - OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed) have been modified since the session config snapshot was created. This allows the agent to respond appropriately to config updates from the orchestrator.
 
 ### Why Detection Matters
 
@@ -147,7 +147,7 @@ Orchestrator sends notification when config changes.
        configs = ['toolchain', 'standards', 'environment', 'decisions']
 
        for config in configs:
-           # OPTIONAL: If Atlas Orchestrator plugin is installed
+           # OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed
            config_file = f"design/config/{config}.md"
 
            with open(config_file) as f:
@@ -240,10 +240,10 @@ Orchestrator sends notification when config changes.
        return None
    ```
 
-2. **Read current config content** (OPTIONAL: If Atlas Orchestrator plugin is installed)
+2. **Read current config content** (OPTIONAL: If EOA (Emasoft Orchestrator Agent) plugin is installed)
    ```python
    def read_current_config(config_name):
-       # Atlas Orchestrator config path
+       # EOA (Emasoft Orchestrator Agent) config path
        config_file = f"design/config/{config_name}.md"
 
        with open(config_file) as f:
