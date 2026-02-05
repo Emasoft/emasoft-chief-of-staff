@@ -28,8 +28,8 @@ Before performing lifecycle operations, read:
 - **ecos-agent-lifecycle skill SKILL.md** - Complete lifecycle management procedures
 
 > For CLI command reference, see **ecos-agent-lifecycle skill** and reference doc **cli-reference.md**.
-> For agent state management, see reference doc **agent-states.md**.
-> For troubleshooting lifecycle operations, see reference doc **troubleshooting.md**.
+> For agent state management, see reference doc **hibernation-procedures.md**.
+> For troubleshooting lifecycle operations, see reference doc **workflow-examples.md**.
 
 ## Examples
 

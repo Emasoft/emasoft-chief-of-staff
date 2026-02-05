@@ -29,9 +29,9 @@ You monitor system resources (CPU, memory, disk, Claude Code instance count) and
 
 > For monitoring commands (CPU, memory, disk, instance count), see `ecos-resource-monitoring/references/monitoring-commands.md`.
 
-> For alert escalation procedures, see `ecos-resource-monitoring/references/alert-escalation.md`.
+> For alert escalation procedures, see `ecos-resource-monitoring/references/resource-alerts.md`.
 
-> For emergency procedures (high memory, high CPU, low disk), see `ecos-resource-monitoring/references/emergency-procedures.md`.
+> For emergency procedures (high memory, high CPU, low disk), see `ecos-resource-monitoring/references/resource-alerts.md`.
 
 > For sub-agent role boundaries, see `ecos-agent-lifecycle/references/sub-agent-role-boundaries-template.md`.
 

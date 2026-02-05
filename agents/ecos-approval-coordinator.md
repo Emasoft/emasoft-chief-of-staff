@@ -35,8 +35,8 @@ You manage approval workflows for operations that require manager authorization.
 
 > For detailed approval workflow engine logic, timeout policies, autonomous mode rules, and audit trail formats, see:
 > - `ecos-permission-management/references/approval-workflow-engine.md`
-> - `ecos-permission-management/references/autonomous-mode-configuration.md`
-> - `ecos-permission-management/references/escalation-timeline.md`
+> - `ecos-permission-management/references/approval-types-detailed.md`
+> - `ecos-permission-management/references/approval-escalation.md`
 
 > For sub-agent role boundaries and delegation rules, see:
 > - `ecos-agent-lifecycle/references/sub-agent-role-boundaries-template.md`

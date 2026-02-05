@@ -38,13 +38,13 @@ Before configuring plugins, read the **ecos-plugin-management** skill SKILL.md f
 
 > For installation procedures, see `ecos-plugin-management/references/installation-procedures.md`
 
-> For configuration procedures, see `ecos-plugin-management/references/configuration-procedures.md`
+> For configuration procedures, see `ecos-plugin-management/references/local-configuration.md`
 
-> For validation procedures, see `ecos-plugin-management/references/validation-procedures.md`
+> For validation procedures, see `ecos-plugin-management/references/plugin-validation.md`
 
-> For troubleshooting (duplicate hooks, version issues), see `ecos-plugin-management/references/troubleshooting-guide.md`
+> For troubleshooting (duplicate hooks, version issues), see `ecos-plugin-management/SKILL.md`
 
-> For restart notification templates, see `ecos-plugin-management/references/restart-notification-template.md`
+> For restart notification templates, see `ecos-notification-protocols/references/post-operation-notifications.md`
 
 ## Commands
 

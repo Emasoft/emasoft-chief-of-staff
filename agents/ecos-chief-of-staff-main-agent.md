@@ -103,7 +103,7 @@ For detailed procedures, see skills:
 - **Plugin management** → [ecos-plugin-management](../skills/ecos-plugin-management/SKILL.md)
 - **Skill validation** → [ecos-skill-management](../skills/ecos-skill-management/SKILL.md)
 - **Record-keeping and audit logs** → [ecos-agent-lifecycle](../skills/ecos-agent-lifecycle/SKILL.md), [references/record-keeping.md](../skills/ecos-agent-lifecycle/references/record-keeping.md)
-- **Sub-agent role boundaries** → [docs/sub-agent-role-boundaries-template.md](../docs/sub-agent-role-boundaries-template.md)
+- **Sub-agent role boundaries** → [ecos-agent-lifecycle/references/sub-agent-role-boundaries-template.md](../skills/ecos-agent-lifecycle/references/sub-agent-role-boundaries-template.md)
 
 ## Quick Command Reference
 
@@ -216,4 +216,4 @@ Recommended action: <what_to_do>
 Escalation ID: ESC-<timestamp>-<random>
 ```
 
-> For detailed output format specs, see [ecos-notification-protocols/references/output-format-specification.md](../skills/ecos-notification-protocols/references/output-format-specification.md).
+> Output format templates are defined inline above. For message formatting details, see [ecos-notification-protocols/references/ai-maestro-message-templates.md](../skills/ecos-notification-protocols/references/ai-maestro-message-templates.md).

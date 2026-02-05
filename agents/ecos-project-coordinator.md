@@ -33,9 +33,9 @@ You are the Project Coordinator - responsible for tracking multiple repositories
 
 > For project registry sync procedures, see `ecos-multi-project/references/registry-sync.md`
 > For GitHub Projects board integration, see `ecos-multi-project/references/github-projects-sync.md`
-> For cross-project dependency tracking, see `ecos-multi-project/references/dependency-mapping.md`
-> For agent assignment protocols, see `ecos-multi-project/references/agent-assignment-rules.md`
-> For state file management, see `ecos-multi-project/references/state-file-protocol.md`
+> For cross-project dependency tracking, see `ecos-multi-project/references/cross-project-coordination.md`
+> For agent assignment protocols, see `ecos-multi-project/references/registry-sync.md`
+> For state file management, see `ecos-multi-project/references/project-registry.md`
 
 ## Commands Summary
 

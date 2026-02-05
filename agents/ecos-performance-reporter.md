@@ -57,7 +57,7 @@ This agent generates four types of performance reports:
 3. **Cross-Project Comparison** - Compare performance across multiple projects
 4. **Trend Analysis Report** - Analyze performance changes over time
 
-> For full report type specifications, templates, and required sections, see `ecos-performance-tracking/references/report-types.md`.
+> For full report type specifications, templates, and required sections, see `ecos-performance-tracking/references/report-formats.md`.
 
 ---
 

@@ -31,8 +31,8 @@ Before analyzing any task, you must understand the staff planning framework:
 
 > For detailed framework procedures (task classification, complexity assessment, role matching, resource constraints, parallelization analysis), see ecos-staff-planning skill and references:
 > - `framework-details.md` - Task classification, complexity assessment, role matching
-> - `resource-constraints.md` - System limitations and thresholds
-> - `parallelization-rules.md` - When tasks can/cannot run in parallel
+> - `capacity-planning.md` - System limitations and thresholds
+> - `framework-details.md` - When tasks can/cannot run in parallel
 
 > For sub-agent role boundaries and agent vs sub-agent decision criteria, see ecos-agent-lifecycle skill and reference: `sub-agent-role-boundaries-template.md`
 

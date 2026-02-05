@@ -28,7 +28,7 @@ Before executing validation tasks, read the following:
 
 - **ecos-skill-management skill**: `SKILL.md` (complete validation procedures and workflows)
 - **Validation procedures**: `ecos-skill-management/references/validation-procedures.md`
-- **PSS coordination**: `ecos-skill-management/references/pss-coordination.md`
+- **PSS coordination**: `ecos-skill-management/references/pss-integration.md`
 
 > For detailed validation workflows, error categories, and remediation strategies, see the ecos-skill-management skill and reference doc validation-procedures.md.
 
