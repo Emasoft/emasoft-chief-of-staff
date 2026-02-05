@@ -13,6 +13,7 @@ skills:
   - ecos-plugin-management
   - ecos-multi-project
   - ecos-notification-protocols
+  - ai-maestro-agents-management
 ---
 
 # Chief of Staff Main Agent

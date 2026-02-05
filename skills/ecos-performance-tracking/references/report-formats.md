@@ -1060,7 +1060,7 @@ Key Findings:
 [DONE] ecos-performance-reporter: individual report generated
 
 Summary: helper-agent-generic shows 87% completion rate with fast response times
-Output: /Users/emanuelesabetta/Code/SKILL_FACTORY/docs_dev/reports/performance-agent-helper-agent-generic-2026-02-01-143022.md
+Output: ${CLAUDE_PROJECT_DIR}/docs_dev/reports/performance-agent-helper-agent-generic-2026-02-01-143022.md
 Period: 2026-01-25 to 2026-02-01
 Data Points: 23 tasks analyzed
 
@@ -1110,7 +1110,7 @@ Reason: Insufficient data points for week 1 (only 3 tasks, min 10 required)
 Missing Data: Week 1 (2026-01-01 to 2026-01-07) task history
 Attempted Period: 2026-01-01 to 2026-02-01
 Partial Report: YES
-Output: /Users/emanuelesabetta/Code/SKILL_FACTORY/docs_dev/reports/performance-trend-partial-2026-02-01-145530.md
+Output: ${CLAUDE_PROJECT_DIR}/docs_dev/reports/performance-trend-partial-2026-02-01-145530.md
 
 Note: Partial report covers weeks 2-4 only. Week 1 excluded due to insufficient data.
 ```

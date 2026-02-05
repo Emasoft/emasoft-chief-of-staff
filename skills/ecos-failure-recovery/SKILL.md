@@ -264,6 +264,70 @@ When critical work cannot wait for full replacement protocol.
 
 ---
 
+## Task Blockers vs Agent Failures
+
+ECOS handles TWO types of escalations differently:
+
+### Agent Failures (ECOS resolves directly)
+
+An agent failure occurs when an agent crashes, becomes unresponsive, or repeatedly fails. ECOS handles this by:
+1. Detecting the failure (heartbeat, message timeout, task timeout)
+2. Attempting recovery (wake, restart)
+3. If unrecoverable: replacing the agent and handing off work
+4. Notifying EAMA of the emergency handoff (notification only, no approval needed)
+
+### Task Blockers (ECOS routes to EAMA for user decision)
+
+A task blocker occurs when work cannot proceed due to missing information, access, or a decision that only the user can make. When ECOS receives a task blocker escalation from EOA:
+
+1. Determine if ECOS can resolve the blocker:
+   - Agent reassignment needed → ECOS handles directly
+   - Permission or access issue within ECOS authority → ECOS handles directly
+   - User decision or input needed → Route to EAMA
+2. If routing to EAMA, use this template:
+
+```json
+{
+  "from": "ecos-chief-of-staff",
+  "to": "eama-assistant-manager",
+  "subject": "BLOCKER: Task requires user decision",
+  "priority": "high",
+  "content": {
+    "type": "blocker-escalation",
+    "message": "A task is blocked and requires user input. EOA has escalated this after determining the blocker cannot be resolved by agents.",
+    "task_uuid": "[task-uuid]",
+    "issue_number": "[GitHub issue number]",
+    "blocker_type": "user-decision",
+    "blocker_description": "[What is blocking and why agents cannot resolve it]",
+    "impact": "[Affected agents and tasks]",
+    "options": ["[Options if available]"],
+    "escalated_from": "eoa-[project-name]",
+    "original_blocker_time": "[ISO8601 timestamp]"
+  }
+}
+```
+
+3. Track the blocker in ECOS records
+4. When EAMA responds with user's decision, route it back to EOA
+
+### Decision Tree
+
+```
+ECOS receives escalation
+  │
+  ├─ Is it an agent failure? (crash, unresponsive, repeated failure)
+  │   └─ YES → Handle via failure recovery workflow (this skill)
+  │
+  ├─ Is it a task blocker that ECOS can resolve?
+  │   ├─ Agent reassignment → Handle directly
+  │   └─ Permission within authority → Handle directly
+  │
+  └─ Is it a task blocker requiring user input?
+      └─ YES → Route to EAMA using blocker-escalation template above
+```
+
+---
+
 ## File Locations
 
 | Data | Location |
