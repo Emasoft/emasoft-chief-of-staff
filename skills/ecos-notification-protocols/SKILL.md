@@ -457,6 +457,11 @@ See [references/failure-notifications.md](references/failure-notifications.md) f
 - [Acknowledgment Protocol](references/acknowledgment-protocol.md)
 - [Failure Notifications](references/failure-notifications.md)
 - [AI Maestro Message Templates](references/ai-maestro-message-templates.md) - Standard message templates for inter-agent communication
+- [Message Response Decision Tree](references/message-response-decision-tree.md) - Decision tree for routing AI Maestro messages by priority and type
+- [Design Document Protocol](references/design-document-protocol.md) - Standards for design documents in the design/ folder
+- [Proactive Handoff Protocol](references/proactive-handoff-protocol.md) - Automatic handoff triggers and inter-agent work transfer
+- [Task Completion Checklist](references/task-completion-checklist.md) - Pre-completion verification checklist for Chief of Staff operations
+- [Edge Case Protocols](references/edge-case-protocols.md) - Protocols for failure scenarios and edge cases in ECOS operations
 
 ---
 
