@@ -8,6 +8,8 @@ metadata:
   version: 1.0.0
 context: fork
 agent: ecos-main
+workflow-instruction: "Step 4"
+procedure: "proc-create-team"
 ---
 
 # Emasoft Chief of Staff - Agent Lifecycle Skill
@@ -246,6 +248,7 @@ aimaestro-agent.sh create $SESSION_NAME \
 | Orchestrator | emasoft-orchestrator-agent | `eoa-orchestrator-main-agent` |
 | Architect | emasoft-architect-agent | `eaa-architect-main-agent` |
 | Integrator | emasoft-integrator-agent | `eia-integrator-main-agent` |
+| Programmer | emasoft-programmer-agent | `epa-programmer-main-agent` |
 
 ## Team Registry
 

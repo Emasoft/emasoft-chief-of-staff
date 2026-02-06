@@ -68,9 +68,7 @@ ROLE_CONSTRAINTS: dict[str, RoleConstraint] = {
     "orchestrator": RoleConstraint(1, 1, "emasoft-orchestrator-agent"),
     "architect": RoleConstraint(1, 1, "emasoft-architect-agent"),
     "integrator": RoleConstraint(0, 10, "emasoft-integrator-agent"),
-    "implementer": RoleConstraint(1, 20, "emasoft-implementer-agent"),
-    "tester": RoleConstraint(0, 10, "emasoft-tester-agent"),
-    "devops": RoleConstraint(0, 5, "emasoft-devops-agent"),
+    "programmer": RoleConstraint(1, 20, "emasoft-programmer-agent"),
 }
 
 # ECOS state directory

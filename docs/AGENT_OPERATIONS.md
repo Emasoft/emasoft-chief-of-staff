@@ -30,6 +30,7 @@
 | Architect | `eaa-` | `eaa-project-alpha-architect` |
 | Integrator | `eia-` | `eia-feature-reviewer` |
 | Manager | `eama-` | `eama-user-interface` |
+| Programmer | (none) | `svgbbox-programmer-001` |
 
 ---
 
@@ -99,6 +100,11 @@ ${CLAUDE_PLUGIN_ROOT}/../<plugin-name>
 │   └── .claude/
 │       └── plugins/
 │           └── emasoft-integrator-agent/
+│               └── ...
+├── svgbbox-programmer-001/
+│   └── .claude/
+│       └── plugins/
+│           └── emasoft-programmer-agent/
 │               └── ...
 └── eama-user-interface/
     └── .claude/
@@ -183,6 +189,7 @@ aimaestro-agent.sh create "$SESSION_NAME" \
 | Architect | `emasoft-architect-agent` | `eaa-architect-main-agent` | `eaa-` |
 | Integrator | `emasoft-integrator-agent` | `eia-integrator-main-agent` | `eia-` |
 | Manager | `emasoft-assistant-manager-agent` | `eama-assistant-manager-main-agent` | `eama-` |
+| Programmer | `emasoft-programmer-agent` | `epa-programmer-main-agent` | (none) |
 
 ### 4.4 Example: Spawn Orchestrator
 
@@ -209,6 +216,32 @@ aimaestro-agent.sh create "$SESSION_NAME" \
      --add-dir /tmp \
      --plugin-dir "$PLUGIN_DEST" \
      --agent eoa-orchestrator-main-agent
+```
+
+### 4.5 Example: Spawn Programmer
+
+```bash
+# Step 1: Define session name (Programmers use project-based naming)
+SESSION_NAME="svgbbox-programmer-001"
+
+# Step 2: Install plugin from marketplace cache
+PLUGIN_NAME="emasoft-programmer-agent"
+MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
+PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
+PLUGIN_SOURCE="$MARKETPLACE_CACHE/$PLUGIN_VERSION"
+PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
+mkdir -p "$(dirname "$PLUGIN_DEST")"
+cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
+
+# Step 3: Spawn agent
+aimaestro-agent.sh create "$SESSION_NAME" \
+  --dir "$HOME/agents/$SESSION_NAME" \
+  --task "Implement authentication module for svgbbox library" \
+  -- --dangerously-skip-permissions \
+     --chrome \
+     --add-dir /tmp \
+     --plugin-dir "$PLUGIN_DEST" \
+     --agent epa-programmer-main-agent
 ```
 
 ---
