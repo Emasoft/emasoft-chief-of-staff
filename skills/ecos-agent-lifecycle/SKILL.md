@@ -371,7 +371,7 @@ See [references/workflow-examples.md](references/workflow-examples.md):
 Complete CLI command examples with expected output for all lifecycle operations.
 
 See [references/cli-examples.md](references/cli-examples.md):
-- When creating a new implementer agent -> 1.1 Spawning
+- When creating a new programmer agent -> 1.1 Spawning
 - When an agent's work is complete -> 1.2 Terminating
 - When conserving resources for a single agent -> 1.3 Hibernating
 - When ending work session -> 1.4 End of Day

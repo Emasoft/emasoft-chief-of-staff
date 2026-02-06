@@ -555,6 +555,7 @@ Claude Code resolves skill names using:
 1. **Orchestrator** (`eoa-`) - Coordinates task execution
 2. **Architect** (`eaa-`) - Designs system architecture
 3. **Integrator** (`eia-`) - Reviews code, runs quality gates
+4. **Programmer** (`epa-`) - Implements code tasks
 
 **ECOS does NOT create**:
 - Manager (`eama-`) - Only user creates Manager

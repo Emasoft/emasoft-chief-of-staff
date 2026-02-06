@@ -444,8 +444,8 @@ Examples:
 
     # Add an agent
     python ecos_team_registry.py add-agent --team svgbbox-library-team \\
-        --agent-name svgbbox-impl-01 --role implementer \\
-        --plugin emasoft-implementer-agent --host macbook-dev-01
+        --agent-name svgbbox-programmer-001 --role programmer \\
+        --plugin emasoft-programmer-agent --host macbook-dev-01
 
     # Update agent status
     python ecos_team_registry.py update-status --team svgbbox-library-team \\
