@@ -56,6 +56,11 @@ DEFAULT_SHARED_AGENTS = [
     }
 ]
 
+# Role constraints for team composition validation.
+# "programmer" is the first role in the "implementer" category - agents that produce
+# concrete deliverables. Future implementer roles (documenter, 2d-artist, 3d-artist,
+# video-maker, ui-designer, etc.) will each get their own entry here when their
+# plugins are created.
 # Role constraints - typed for mypy
 class RoleConstraint:
     """Role constraint data."""

@@ -561,6 +561,8 @@ Claude Code resolves skill names using:
 - Manager (`eama-`) - Only user creates Manager
 - Other ECOS instances - Only Manager creates ECOS
 
+**Implementer Category**: "Implementer" is an umbrella term for all agents that produce concrete deliverables. The Programmer is the first implementer role. Future implementer roles (each with its own plugin) may include: Documenter, 2D Artist, 3D Artist, Video Maker, Sound FX Artist, Music Maker, UI Designer, Copywriter, Interactive Storytelling, Marketing, App Store Optimization, SEO, and Financial agents.
+
 ### 11.3 Session Naming Responsibility
 
 **ECOS chooses unique session names** for all agents it creates!
