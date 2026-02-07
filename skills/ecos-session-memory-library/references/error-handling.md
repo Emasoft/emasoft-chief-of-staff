@@ -133,13 +133,8 @@ Errors with external systems:
 ```
 
 **Example:**
-```bash
-# Check delivery status
-curl -s "http://localhost:23000/api/messages/{id}" | jq '.delivered'
-
-# If failed, check session
-curl -s "http://localhost:23000/api/sessions/{recipient}" | jq '.status'
-```
+1. Use the `agent-messaging` skill to check the delivery status of the message by its ID
+2. If delivery failed, use the `ai-maestro-agents-management` skill to check if the recipient session exists and is online
 
 ### Response Timeout
 
@@ -474,34 +469,20 @@ design/memory/errors/error-log-[YYYY-MM-DD].md
 **To Orchestrator:**
 For coordination-affecting errors, high severity.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "Error Report: [brief description]",
-    "priority": "high",
-    "content": {
-      "type": "alert",
-      "severity": "high",
-      "message": "Error in [component]: [description]. Action taken: [action]."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the orchestrator session name (e.g., `orchestrator-master`)
+- **Subject**: `Error Report: [brief description]`
+- **Priority**: `high`
+- **Content**: type `alert`, severity: "high", message: "Error in [component]: [description]. Action taken: [action]."
 
 **To User:**
 For critical errors or unresolved issues.
 
-```bash
-curl -X POST "http://localhost:23000/api/notifications/user" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "error",
-    "severity": "critical",
-    "title": "[Error Title]",
-    "message": "[Description and required action]"
-  }'
-```
+Use the `agent-messaging` skill to send to the user's agent or manager:
+- **Recipient**: `eama-assistant-manager` (or the user's agent session name)
+- **Subject**: `[CRITICAL ERROR] [Error Title]`
+- **Priority**: `urgent`
+- **Content**: type `error`, severity: "critical", message: "[Description and required action]."
 
 ---
 
@@ -522,14 +503,11 @@ curl -X POST "http://localhost:23000/api/notifications/user" \
 
 When: AI Maestro connectivity lost and restored
 
-1. Verify AI Maestro is healthy:
-   curl http://localhost:23000/health
+1. Use the `ai-maestro-agents-management` skill to verify AI Maestro is healthy
 
-2. Re-register session if needed:
-   [registration command]
+2. Re-register session if needed using the `ai-maestro-agents-management` skill
 
-3. Check for missed messages:
-   curl "http://localhost:23000/api/messages?agent=$AGENT&since=1h"
+3. Use the `agent-messaging` skill to check for missed messages (filter by time window: last 1 hour)
 
 4. Process any missed messages in order
 
@@ -577,8 +555,7 @@ When: State files corrupted or lost
 
 When: Multiple agents offline or coordination broken
 
-1. Query AI Maestro for actual sessions:
-   curl http://localhost:23000/api/sessions
+1. Use the `ai-maestro-agents-management` skill to list all registered sessions
 
 2. Rebuild roster from query results
 
