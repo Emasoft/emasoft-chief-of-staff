@@ -21,10 +21,11 @@ Agent lifecycle management is a critical responsibility of the Chief of Staff. I
 ## Prerequisites
 
 Before using this skill, ensure:
-1. AI Maestro is running locally (`http://localhost:23000`)
-2. `aimaestro-agent.sh` CLI is available in PATH
-3. tmux is installed for session management
-4. Team registry location is writable (`.emasoft/team-registry.json`)
+1. AI Maestro is running locally
+2. The `ai-maestro-agents-management` skill is available for agent lifecycle operations
+3. The `agent-messaging` skill is available for inter-agent communication
+4. tmux is installed for session management
+5. Team registry location is writable (`.emasoft/team-registry.json`)
 
 ## Instructions
 
@@ -63,10 +64,10 @@ Before performing any lifecycle operation, you MUST understand your boundaries:
 
 | Term | Definition |
 |------|------------|
-| **Agent** | A Claude Code instance running as a separate process (typically in its own tmux session). Has its own context, can be hibernated/terminated. Created via `aimaestro-agent.sh`. |
+| **Agent** | A Claude Code instance running as a separate process (typically in its own tmux session). Has its own context, can be hibernated/terminated. Created via the `ai-maestro-agents-management` skill. |
 | **Sub-agent** | An agent spawned INSIDE the same Claude Code instance via the Task tool. Shares parent's context limits, terminates when parent terminates. |
 
-**Why this matters**: When you "spawn an agent" via Task tool, you are NOT creating a new Claude Code instance. You are creating a sub-agent within your current instance. To create actual remote agents, you must use AI Maestro CLI (`aimaestro-agent.sh`).
+**Why this matters**: When you "spawn an agent" via Task tool, you are NOT creating a new Claude Code instance. You are creating a sub-agent within your current instance. To create actual remote agents, you must use the `ai-maestro-agents-management` skill.
 
 ## What Is Agent Lifecycle Management?
 
@@ -184,62 +185,32 @@ Agent lifecycle management is the systematic control of agent states from creati
 
 ## The --agent Flag for Main Agent Injection
 
-When spawning role agents, you MUST use the `--agent` flag to inject their main agent prompt:
+When spawning role agents, you MUST include the `--agent` flag in the program args to inject their main agent prompt.
 
-```bash
-# ECOS chooses SESSION_NAME - this becomes the AI Maestro registry identity
-SESSION_NAME="eoa-<project>-<descriptive>"
-
-aimaestro-agent.sh create $SESSION_NAME --dir ~/agents/$SESSION_NAME --task "description" \
-  -- --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --plugin-dir ~/agents/$SESSION_NAME/.claude/plugins/<plugin-name> \
-  --agent <prefix>-<role>-main-agent
-```
+Use the `ai-maestro-agents-management` skill to create a new agent:
+- **Name**: `<role-prefix>-<project>-<descriptive>` (the session name, also the registry identity)
+- **Directory**: `~/agents/<session-name>/` (FLAT structure)
+- **Task**: task description for the agent
+- **Program args**: include `--dangerously-skip-permissions`, `--chrome`, `--add-dir /tmp`, `--plugin-dir <path>`, and `--agent <agent-name>`
 
 **Session Naming (ECOS Responsibility):**
 - ECOS chooses unique session names for all agents it creates
-- Session name = AI Maestro registry name (how agents message each other)
+- Session name = registry identity (how agents message each other)
 - Format: `<role-prefix>-<project>-<descriptive>` (e.g., `eoa-svgbbox-orchestrator`)
 - Must be unique across all running agents to avoid collisions
 
 **Plugin Setup (Before Spawning):**
 
-ECOS installs plugins from the **emasoft-plugins marketplace** to the agent's local folder:
-
-```bash
-# Prerequisite: Install plugins from marketplace
-# claude plugin install emasoft-orchestrator-agent@emasoft-plugins
-
-# Marketplace cache location
-PLUGIN_NAME="emasoft-orchestrator-agent"
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-PLUGIN_SOURCE="$MARKETPLACE_CACHE/$PLUGIN_VERSION"
-
-# Destination in agent's local folder
-PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-
-mkdir -p "$(dirname "$PLUGIN_DEST")"
-cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
-```
+ECOS copies plugins from the **emasoft-plugins marketplace cache** to the agent's local folder:
+- **Source**: `$HOME/.claude/plugins/cache/emasoft-plugins/<plugin-name>/<latest-version>/`
+- **Destination**: `$HOME/agents/<session-name>/.claude/plugins/<plugin-name>/`
 
 **Notes:**
-- `--dir`: Use FLAT structure: `~/agents/<session-name>/`
-- `--plugin-dir`: Points to the COPIED plugin in the agent's local folder
-- Plugins come from marketplace cache at `~/.claude/plugins/cache/emasoft-plugins/`
+- Use FLAT directory structure: `~/agents/<session-name>/`
+- `--plugin-dir` points to the COPIED plugin in the agent's local folder
 - No `--continue` for NEW spawn (only for waking hibernated agents)
 
-**Example - Creating an orchestrator for svgbbox project:**
-```bash
-SESSION_NAME="eoa-svgbbox-orchestrator"
-
-aimaestro-agent.sh create $SESSION_NAME \
-  --dir ~/agents/$SESSION_NAME \
-  --task "Orchestrate tasks for svgbbox-library-team" \
-  -- --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --plugin-dir ~/agents/$SESSION_NAME/.claude/plugins/emasoft-orchestrator-agent \
-  --agent eoa-orchestrator-main-agent
-```
+**Verify**: the new agent appears in the agent list with "online" status.
 
 **Agent name to --agent flag mapping:**
 
@@ -273,22 +244,19 @@ Default resource limits (configurable):
 | API rate limit | 100 req/min | Throttle agent activity |
 | Idle timeout | 30 min | Hibernate agent |
 
-## AI Maestro Messaging
+## Inter-Agent Messaging
 
-Communicate with remote agents via AI Maestro's REST API.
+Communicate with remote agents using the `agent-messaging` skill.
 
 ### Send Message
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<target-agent-name>",
-    "subject": "<subject>",
-    "priority": "normal|high|urgent",
-    "content": {"type": "<type>", "message": "<message>"}
-  }'
-```
+
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: the target agent session name
+- **Subject**: descriptive subject line
+- **Content**: structured message with type and body
+- **Priority**: `normal`, `high`, or `urgent`
+
+**Verify**: confirm message delivery.
 
 **Message Types:**
 - `role-assignment` - Assign role to agent
@@ -302,10 +270,8 @@ curl -X POST "http://localhost:23000/api/messages" \
 - `registry-update` - Team registry has changed
 
 ### Check Messages
-```bash
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=unread-count"
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=list&status=unread"
-```
+
+Use the `agent-messaging` skill to check for unread messages and unread count.
 
 ## Quality Standards
 
@@ -379,12 +345,12 @@ See [references/cli-examples.md](references/cli-examples.md):
 
 ## Key Takeaways
 
-1. **Use aimaestro-agent.sh CLI** - The official CLI tool for agent lifecycle management
-2. **Spawn with --dir flag** - Always specify working directory (required)
-3. **Terminate with --confirm** - Safety flag required for deletion
+1. **Use the `ai-maestro-agents-management` skill** - For all agent lifecycle operations
+2. **Always specify working directory** - Required when spawning agents
+3. **Always confirm deletions** - Safety confirmation required for termination
 4. **Hibernate instead of terminate** - When agent may be needed again
 5. **Use tags for organization** - Role, project, and capability tags help management
-6. **Restart after plugin install** - Use `aimaestro-agent.sh restart` to apply plugin changes
+6. **Restart after plugin install** - Restart the agent to apply plugin changes
 
 ## CLI Quick Reference
 
