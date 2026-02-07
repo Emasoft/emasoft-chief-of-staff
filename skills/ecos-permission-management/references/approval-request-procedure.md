@@ -13,7 +13,7 @@
   - 1.3.1 Operation identification - Determining request type
   - 1.3.2 Justification preparation - Explaining why
   - 1.3.3 Message composition - Formatting the request
-  - 1.3.4 AI Maestro transmission - Sending to EAMA
+  - 1.3.4 Transmission via agent-messaging skill - Sending to EAMA
   - 1.3.5 Response awaiting - Waiting with timeout
 - 1.4 Request message format - Standard message structure
 - 1.5 Examples - Approval request scenarios
@@ -170,25 +170,11 @@ plugin_install: "Code review capability needed for PR #42.
 **Step 4:** Compose the approval request message.
 
 The message must follow this structure:
-
-```json
-{
-  "from": "ecos-chief-of-staff",
-  "to": "eama-assistant-manager",
-  "subject": "[APPROVAL REQUEST] {Operation}: {Target}",
-  "priority": "high|normal",
-  "content": {
-    "type": "approval_request",
-    "message": "Requesting approval to {operation} {target}",
-    "request_id": "{unique-identifier}",
-    "operation": "{operation_type}",
-    "details": {
-      // operation-specific details
-    },
-    "justification": "{justification_text}"
-  }
-}
-```
+- **From**: `ecos-chief-of-staff`
+- **To**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] {Operation}: {Target}`
+- **Priority**: `high` or `normal`
+- **Content**: type `approval_request`, message: "Requesting approval to {operation} {target}". Include `request_id` (unique identifier), `operation` (operation type), `details` (operation-specific details object), `justification` (justification text).
 
 **Request ID format:** `{operation}-req-{date}-{sequence}`
 
@@ -202,19 +188,13 @@ Examples:
 - `normal` - For terminate and hibernate operations (cleanup)
 - `urgent` - Only for escalation reminders (not initial request)
 
-### 1.3.4 AI Maestro Transmission
+### 1.3.4 Transmission via agent-messaging skill
 
-**Step 5:** Send the message via AI Maestro API.
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{message_json}'
-```
+**Step 5:** Use the `agent-messaging` skill to send the composed approval request message to EAMA.
 
 **Verify transmission:**
-- Check HTTP response code (200 = success)
-- Parse response for message ID
+- Check the delivery confirmation from the skill
+- Record the message ID returned
 - Record transmission timestamp
 
 **If transmission fails:**
@@ -234,11 +214,7 @@ Timeout schedule:
 
 **Check for response:**
 
-```bash
-# Poll for response to specific request
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=list&status=unread" | \
-  jq '.messages[] | select(.content.request_id == "spawn-req-2025-02-02-001")'
-```
+Use the `agent-messaging` skill to check for unread messages addressed to `ecos-chief-of-staff`. Filter for messages containing the matching `request_id` (e.g., `spawn-req-2025-02-02-001`).
 
 **Valid response decisions:**
 - `approved` - Proceed with operation
@@ -252,81 +228,56 @@ curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=li
 
 ### Complete Request Schema
 
-```json
-{
-  "from": "string (required) - must be ecos-chief-of-staff",
-  "to": "string (required) - must be eama-assistant-manager",
-  "subject": "string (required) - [APPROVAL REQUEST] {Operation}: {Target}",
-  "priority": "string (required) - high|normal|urgent",
-  "content": {
-    "type": "string (required) - must be approval_request",
-    "message": "string (required) - human-readable summary",
-    "request_id": "string (required) - unique identifier",
-    "operation": "string (required) - spawn|terminate|hibernate|wake|plugin_install",
-    "details": {
-      // operation-specific object (required)
-    },
-    "justification": "string (required) - why this operation is needed"
-  }
-}
-```
+The approval request message sent via the `agent-messaging` skill must contain:
+
+- **from**: string (required) - must be `ecos-chief-of-staff`
+- **to**: string (required) - must be `eama-assistant-manager`
+- **subject**: string (required) - `[APPROVAL REQUEST] {Operation}: {Target}`
+- **priority**: string (required) - `high`, `normal`, or `urgent`
+- **content**:
+  - **type**: string (required) - must be `approval_request`
+  - **message**: string (required) - human-readable summary
+  - **request_id**: string (required) - unique identifier
+  - **operation**: string (required) - `spawn`, `terminate`, `hibernate`, `wake`, or `plugin_install`
+  - **details**: object (required) - operation-specific details
+  - **justification**: string (required) - why this operation is needed
 
 ### Operation-Specific Details
 
 **Spawn details:**
-```json
-{
-  "agent_name": "string - unique agent identifier",
-  "agent_role": "string - role/type of agent",
-  "task": "string - assigned task description",
-  "working_directory": "string - absolute path",
-  "expected_duration": "string - estimated time",
-  "resource_requirements": "string - standard|high|low",
-  "tags": "array of strings - optional metadata tags"
-}
-```
+- `agent_name`: unique agent identifier
+- `agent_role`: role/type of agent
+- `task`: assigned task description
+- `working_directory`: absolute path
+- `expected_duration`: estimated time
+- `resource_requirements`: standard, high, or low
+- `tags`: optional metadata tags list
 
 **Terminate details:**
-```json
-{
-  "agent_name": "string - agent to terminate",
-  "current_status": "string - running|idle|error",
-  "reason": "string - task_complete|failed|redundant|user_request",
-  "final_report": "string - summary of work done",
-  "pending_work": "string - none or description of incomplete work"
-}
-```
+- `agent_name`: agent to terminate
+- `current_status`: running, idle, or error
+- `reason`: task_complete, failed, redundant, or user_request
+- `final_report`: summary of work done
+- `pending_work`: none or description of incomplete work
 
 **Hibernate details:**
-```json
-{
-  "agent_name": "string - agent to hibernate",
-  "idle_duration": "string - how long agent has been idle",
-  "last_activity": "string - ISO-8601 timestamp",
-  "expected_wake_trigger": "string - what will wake this agent"
-}
-```
+- `agent_name`: agent to hibernate
+- `idle_duration`: how long agent has been idle
+- `last_activity`: ISO-8601 timestamp
+- `expected_wake_trigger`: what will wake this agent
 
 **Wake details:**
-```json
-{
-  "agent_name": "string - agent to wake",
-  "reason": "string - why waking is needed",
-  "task_to_resume": "string - task description",
-  "priority_level": "string - normal|high|urgent"
-}
-```
+- `agent_name`: agent to wake
+- `reason`: why waking is needed
+- `task_to_resume`: task description
+- `priority_level`: normal, high, or urgent
 
 **Plugin install details:**
-```json
-{
-  "plugin_name": "string - plugin identifier",
-  "version": "string - specific version or latest",
-  "source": "string - marketplace name or local path",
-  "capability": "string - what capability this adds",
-  "security_implications": "string - any security notes"
-}
-```
+- `plugin_name`: plugin identifier
+- `version`: specific version or "latest"
+- `source`: marketplace name or local path
+- `capability`: what capability this adds
+- `security_implications`: any security notes
 
 ---
 
@@ -334,85 +285,27 @@ curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=li
 
 ### Example: Spawn Request
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Spawn: frontend-dev-02",
-    "priority": "high",
-    "content": {
-      "type": "approval_request",
-      "message": "Requesting approval to spawn frontend development agent",
-      "request_id": "spawn-req-2025-02-02-004",
-      "operation": "spawn",
-      "details": {
-        "agent_name": "frontend-dev-02",
-        "agent_role": "frontend-developer",
-        "task": "Implement React components for dashboard",
-        "working_directory": "/Users/dev/project/frontend",
-        "expected_duration": "4 hours",
-        "resource_requirements": "standard",
-        "tags": ["react", "dashboard", "frontend"]
-      },
-      "justification": "Dashboard implementation requires dedicated frontend agent. Design doc EAA-DASH-003 specifies React component implementation."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Spawn: frontend-dev-02`
+- **Priority**: `high`
+- **Content**: type `approval_request`, message: "Requesting approval to spawn frontend development agent". Include `request_id`: "spawn-req-2025-02-02-004", `operation`: "spawn", `details`: { `agent_name`: "frontend-dev-02", `agent_role`: "frontend-developer", `task`: "Implement React components for dashboard", `working_directory`: "/Users/dev/project/frontend", `expected_duration`: "4 hours", `resource_requirements`: "standard", `tags`: ["react", "dashboard", "frontend"] }, `justification`: "Dashboard implementation requires dedicated frontend agent. Design doc EAA-DASH-003 specifies React component implementation."
 
 ### Example: Hibernate Request
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Hibernate: api-tester-01",
-    "priority": "normal",
-    "content": {
-      "type": "approval_request",
-      "message": "Requesting approval to hibernate idle testing agent",
-      "request_id": "hibernate-req-2025-02-02-001",
-      "operation": "hibernate",
-      "details": {
-        "agent_name": "api-tester-01",
-        "idle_duration": "47 minutes",
-        "last_activity": "2025-02-02T09:13:00Z",
-        "expected_wake_trigger": "New API endpoints ready for testing"
-      },
-      "justification": "Agent has been idle for 47 minutes with no pending tests. API development still in progress. Hibernating to conserve resources."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Hibernate: api-tester-01`
+- **Priority**: `normal`
+- **Content**: type `approval_request`, message: "Requesting approval to hibernate idle testing agent". Include `request_id`: "hibernate-req-2025-02-02-001", `operation`: "hibernate", `details`: { `agent_name`: "api-tester-01", `idle_duration`: "47 minutes", `last_activity`: "2025-02-02T09:13:00Z", `expected_wake_trigger`: "New API endpoints ready for testing" }, `justification`: "Agent has been idle for 47 minutes with no pending tests. API development still in progress. Hibernating to conserve resources."
 
 ### Example: Plugin Install Request
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Plugin Install: perfect-skill-suggester",
-    "priority": "high",
-    "content": {
-      "type": "approval_request",
-      "message": "Requesting approval to install skill suggestion plugin",
-      "request_id": "plugin_install-req-2025-02-02-001",
-      "operation": "plugin_install",
-      "details": {
-        "plugin_name": "perfect-skill-suggester",
-        "version": "1.2.2",
-        "source": "emasoft-plugins",
-        "capability": "AI-analyzed skill activation based on task context",
-        "security_implications": "Runs hooks on prompt submission. No network access required."
-      },
-      "justification": "Skill activation currently manual. PSS automates skill matching to improve agent efficiency."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Plugin Install: perfect-skill-suggester`
+- **Priority**: `high`
+- **Content**: type `approval_request`, message: "Requesting approval to install skill suggestion plugin". Include `request_id`: "plugin_install-req-2025-02-02-001", `operation`: "plugin_install", `details`: { `plugin_name`: "perfect-skill-suggester", `version`: "1.2.2", `source`: "emasoft-plugins", `capability`: "AI-analyzed skill activation based on task context", `security_implications`: "Runs hooks on prompt submission. No network access required." }, `justification`: "Skill activation currently manual. PSS automates skill matching to improve agent efficiency."
 
 ---
 
@@ -421,31 +314,29 @@ curl -X POST "http://localhost:23000/api/messages" \
 ### Issue: Message send fails with connection error
 
 **Symptoms:**
-- `curl: (7) Failed to connect to localhost port 23000`
-- No response from API
+- Messaging skill reports delivery failure
+- No confirmation returned
 
-**Cause:** AI Maestro server is not running.
+**Cause:** AI Maestro server may not be running.
 
 **Resolution:**
-1. Check if AI Maestro is running: `curl http://localhost:23000/health`
-2. If not running, start AI Maestro server
+1. Use the `ai-maestro-agents-management` skill to check system health
+2. If AI Maestro is not running, start it
 3. Retry the request
 4. If still failing, notify user directly about the infrastructure issue
 
 ### Issue: EAMA returns "invalid request format" error
 
 **Symptoms:**
-- HTTP 400 response
-- Error message about missing fields
+- Error response about missing fields
 
 **Cause:** Request message is missing required fields or has wrong format.
 
 **Resolution:**
-1. Verify all required fields are present
-2. Check JSON syntax (use `jq` to validate)
-3. Ensure `content.type` is exactly `approval_request`
-4. Verify `request_id` follows the required format
-5. Resubmit with corrected format
+1. Verify all required fields are present (see Section 1.4)
+2. Ensure content type is exactly `approval_request`
+3. Verify `request_id` follows the required format
+4. Resubmit with corrected format
 
 ### Issue: No response received within timeout
 
@@ -456,7 +347,7 @@ curl -X POST "http://localhost:23000/api/messages" \
 **Cause:** EAMA may be offline, busy, or user is unavailable.
 
 **Resolution:**
-1. Verify EAMA is online: check AI Maestro registry
+1. Use the `ai-maestro-agents-management` skill to verify EAMA is online
 2. If EAMA offline, wait for it to come online or notify user
 3. If EAMA online but no response, follow escalation procedure
 4. See [approval-escalation.md](approval-escalation.md) for timeout handling

@@ -113,12 +113,7 @@ When assigning an agent to a role, evaluate the following criteria:
 
 ### Capability Assessment
 
-Check if the agent has access to required tools:
-
-```bash
-# Example: Check if agent can access git
-curl -s "http://localhost:23000/api/sessions/helper-agent-generic/capabilities" | jq '.tools'
-```
+Use the `ai-maestro-agents-management` skill to query the agent's session details, including available tools and capabilities.
 
 ### Experience Matching
 
@@ -162,21 +157,13 @@ Create a message containing:
 - Any immediate tasks
 - Acknowledgment request
 
-**Step 4: Send the assignment via AI Maestro**
+**Step 4: Send the assignment via agent-messaging skill**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "TARGET_AGENT_SESSION_NAME",
-    "subject": "Role Assignment: ROLE_NAME",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "You are assigned the ROLE_NAME role. Responsibilities: [LIST]. Report to: [AGENTS]. Please acknowledge receipt."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `Role Assignment: [ROLE_NAME]`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "You are assigned the [ROLE_NAME] role. Responsibilities: [LIST]. Report to: [AGENTS]. Please acknowledge receipt."
 
 **Step 5: Wait for acknowledgment**
 
@@ -209,14 +196,7 @@ The assigned agent should respond with:
 
 ### Example Acknowledgment
 
-```json
-{
-  "type": "role-acknowledgment",
-  "role": "Code Reviewer",
-  "status": "accepted",
-  "message": "Role accepted. I understand my responsibilities: review PRs, enforce standards, provide feedback. Ready to begin."
-}
-```
+The agent replies via the `agent-messaging` skill with type `role-acknowledgment`, role: "Code Reviewer", status: "accepted", message: "Role accepted. I understand my responsibilities: review PRs, enforce standards, provide feedback. Ready to begin."
 
 ### Handling Non-Acknowledgment
 
@@ -265,49 +245,25 @@ For urgent transitions (agent failure, critical issue):
 
 ### Example: Assigning Developer Role
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "libs-svg-svgbbox",
-    "subject": "Role Assignment: Developer",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "You are assigned the Developer role for the SVG library project. Responsibilities: implement features from backlog, write unit tests, update documentation. Report to: orchestrator-master for task assignments, libs-svg-reviewer for code reviews. Please acknowledge receipt and confirm you are ready to begin."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `libs-svg-svgbbox`
+- **Subject**: `Role Assignment: Developer`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "You are assigned the Developer role for the SVG library project. Responsibilities: implement features from backlog, write unit tests, update documentation. Report to: orchestrator-master for task assignments, libs-svg-reviewer for code reviews. Please acknowledge receipt and confirm you are ready to begin."
 
 ### Example: Reassigning Role Due to Workload
 
-```bash
-# Step 1: Notify original agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "Role Transition: Code Reviewer",
-    "priority": "normal",
-    "content": {
-      "type": "role-transition",
-      "message": "Due to high workload, the Code Reviewer role will be transferred to helper-agent-backup. Please complete any in-progress reviews within 1 hour and hand off remaining items."
-    }
-  }'
+**Step 1:** Notify original agent using the `agent-messaging` skill:
+- **Recipient**: `helper-agent-generic`
+- **Subject**: `Role Transition: Code Reviewer`
+- **Priority**: `normal`
+- **Content**: type `role-transition`, message: "Due to high workload, the Code Reviewer role will be transferred to helper-agent-backup. Please complete any in-progress reviews within 1 hour and hand off remaining items."
 
-# Step 2: Assign to new agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-backup",
-    "subject": "Role Assignment: Code Reviewer",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "You are assigned the Code Reviewer role. helper-agent-generic is handing off. Check for pending reviews in the queue."
-    }
-  }'
-```
+**Step 2:** Assign to new agent using the `agent-messaging` skill:
+- **Recipient**: `helper-agent-backup`
+- **Subject**: `Role Assignment: Code Reviewer`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "You are assigned the Code Reviewer role. helper-agent-generic is handing off. Check for pending reviews in the queue."
 
 ---
 
@@ -338,7 +294,7 @@ curl -X POST "http://localhost:23000/api/messages" \
 - Agent is overloaded and not processing inbox
 
 **Resolution:**
-1. Check agent status via AI Maestro
+1. Use the `ai-maestro-agents-management` skill to check agent status
 2. If inactive, assign role to backup agent
 3. If active, send reminder with URGENT priority
 4. If still no response, escalate to user

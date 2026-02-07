@@ -338,35 +338,27 @@ Check that PSS is running and reachable:
 ```bash
 # Check for /pss-reindex-skills command (local PSS)
 claude --help | grep pss-reindex-skills
-
-# Or check AI Maestro for PSS agent (remote PSS)
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.name | contains("perfect-skill-suggester"))'
 ```
+
+Alternatively, use the `ai-maestro-agents-management` skill to check if a PSS agent is registered and running remotely.
 
 ### 3.2 Remote PSS reindex via AI Maestro
 
 When PSS runs in a separate Claude Code session (recommended for development):
 
 **Step 1: Send reindex request**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "perfect-skill-suggester",
-    "subject": "Reindex Skills Request",
-    "priority": "normal",
-    "content": {"type": "command", "message": "/pss-reindex-skills"}
-  }'
-```
+
+Use the `agent-messaging` skill to send:
+- **Recipient**: `perfect-skill-suggester`
+- **Subject**: `Reindex Skills Request`
+- **Priority**: `normal`
+- **Content**: type `command`, message: "/pss-reindex-skills"
 
 **Step 2: Wait for acknowledgment**
 
-PSS will respond via AI Maestro message when reindex completes:
+PSS will respond via AI Maestro message when reindex completes.
 
-```bash
-# Poll for unread messages
-curl -s "http://localhost:23000/api/messages?agent=$SESSION_NAME&action=list&status=unread"
-```
+Use the `agent-messaging` skill to check for unread messages. Look for a response from `perfect-skill-suggester` containing reindex results.
 
 **Step 3: Parse reindex results**
 
@@ -911,16 +903,9 @@ AI Maestro connection refused
 
 **Remediation:**
 
-Step 1: Check AI Maestro status:
-```bash
-curl -s "http://localhost:23000/api/health"
-# Should return: {"status": "ok"}
-```
+Step 1: Use the `ai-maestro-agents-management` skill to check AI Maestro health status. It should report healthy.
 
-Step 2: Check if PSS agent is registered:
-```bash
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.name | contains("perfect-skill-suggester"))'
-```
+Step 2: Use the `ai-maestro-agents-management` skill to check if a PSS agent (containing "perfect-skill-suggester" in its name) is registered.
 
 Step 3: If PSS is not running:
 - Start a Claude Code session with PSS plugin loaded

@@ -21,7 +21,7 @@ Handle situations where approval requests do not receive timely responses, inclu
 ## Prerequisites
 
 - Pending approval request with known request ID
-- AI Maestro messaging system
+- The `agent-messaging` skill is available
 - Tracking file at `docs_dev/pending-approvals.json`
 - Audit log at `docs_dev/audit/`
 
@@ -29,184 +29,71 @@ Handle situations where approval requests do not receive timely responses, inclu
 
 ### Step 1: Check Request Age
 
-```bash
-REQUEST_ID="$1"
-PENDING_FILE="docs_dev/pending-approvals.json"
-
-REQUESTED_AT=$(jq -r '.pending["'"$REQUEST_ID"'"].requested_at' $PENDING_FILE)
-AGE_SECONDS=$(( $(date +%s) - $(date -d "$REQUESTED_AT" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$REQUESTED_AT" +%s) ))
-
-echo "Request age: $AGE_SECONDS seconds"
-```
+Read the pending approvals tracking file (`docs_dev/pending-approvals.json`). Look up the request by its `REQUEST_ID`. Calculate the elapsed time since `requested_at` timestamp.
 
 ### Step 2: Send Reminder at 60 Seconds
 
-```bash
-if [ $AGE_SECONDS -ge 60 ] && [ $AGE_SECONDS -lt 90 ]; then
-  REMINDER_SENT=$(jq -r '.pending["'"$REQUEST_ID"'"].reminder_sent' $PENDING_FILE)
+If the request age is between 60 and 90 seconds, and no reminder has been sent yet:
 
-  if [ "$REMINDER_SENT" != "true" ]; then
-    # Send reminder
-    curl -X POST "http://localhost:23000/api/messages" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "to": "eama-main",
-        "subject": "[REMINDER] Approval pending: '"$REQUEST_ID"'",
-        "priority": "high",
-        "content": {
-          "type": "approval-reminder",
-          "message": "Approval request pending for 60+ seconds. Please respond.",
-          "request_id": "'"$REQUEST_ID"'",
-          "original_operation": "'"$(jq -r '.pending["'"$REQUEST_ID"'"].operation' $PENDING_FILE)"'",
-          "target": "'"$(jq -r '.pending["'"$REQUEST_ID"'"].target' $PENDING_FILE)"'"
-        }
-      }'
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[REMINDER] Approval pending: [REQUEST_ID]`
+- **Priority**: `high`
+- **Content**: type `approval-reminder`, message: "Approval request pending for 60+ seconds. Please respond." Include `request_id`, `original_operation` (from the pending record), `target` (from the pending record).
 
-    # Mark reminder sent
-    jq '.pending["'"$REQUEST_ID"'"].reminder_sent = true' $PENDING_FILE > temp.json && mv temp.json $PENDING_FILE
-
-    echo "Reminder sent for $REQUEST_ID"
-  fi
-fi
-```
+Then update the tracking file to mark `reminder_sent` as true for this request.
 
 ### Step 3: Send Urgent Notification at 90 Seconds
 
-```bash
-if [ $AGE_SECONDS -ge 90 ] && [ $AGE_SECONDS -lt 120 ]; then
-  URGENT_SENT=$(jq -r '.pending["'"$REQUEST_ID"'"].urgent_sent' $PENDING_FILE)
+If the request age is between 90 and 120 seconds, and no urgent notification has been sent yet:
 
-  if [ "$URGENT_SENT" != "true" ]; then
-    # Send urgent notification
-    curl -X POST "http://localhost:23000/api/messages" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "to": "eama-main",
-        "subject": "[URGENT] Approval timeout imminent: '"$REQUEST_ID"'",
-        "priority": "urgent",
-        "content": {
-          "type": "approval-urgent",
-          "message": "URGENT: Approval will timeout in 30 seconds. Respond immediately or operation will be aborted.",
-          "request_id": "'"$REQUEST_ID"'",
-          "timeout_at": "'"$(date -u -d '+30 seconds' +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -v+30S +%Y-%m-%dT%H:%M:%SZ)"'"
-        }
-      }'
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[URGENT] Approval timeout imminent: [REQUEST_ID]`
+- **Priority**: `urgent`
+- **Content**: type `approval-urgent`, message: "URGENT: Approval will timeout in 30 seconds. Respond immediately or operation will be aborted." Include `request_id`, `timeout_at` (the calculated timeout timestamp).
 
-    # Mark urgent sent
-    jq '.pending["'"$REQUEST_ID"'"].urgent_sent = true' $PENDING_FILE > temp.json && mv temp.json $PENDING_FILE
-
-    echo "Urgent notification sent for $REQUEST_ID"
-  fi
-fi
-```
+Then update the tracking file to mark `urgent_sent` as true for this request.
 
 ### Step 4: Handle Timeout at 120 Seconds
 
-```bash
-if [ $AGE_SECONDS -ge 120 ]; then
-  OPERATION=$(jq -r '.pending["'"$REQUEST_ID"'"].operation' $PENDING_FILE)
-  TARGET=$(jq -r '.pending["'"$REQUEST_ID"'"].target' $PENDING_FILE)
+If the request age reaches 120 seconds or more:
 
-  # Determine default action based on operation type
-  case "$OPERATION" in
-    "spawn"|"wake")
-      # Safe to proceed - creates resources
-      ACTION="proceed"
-      ;;
-    "terminate"|"hibernate"|"plugin_install")
-      # Destructive - abort by default
-      ACTION="abort"
-      ;;
-  esac
+**Determine default action based on operation type:**
 
-  echo "Timeout reached. Default action: $ACTION"
+| Operation | Default Action | Rationale |
+|-----------|----------------|-----------|
+| spawn | proceed | Creates resource, easily terminated if wrong |
+| wake | proceed | Resumes existing resource |
+| terminate | abort | Destructive, prefer manual approval |
+| hibernate | abort | Affects running agent |
+| plugin_install | abort | Could introduce security risks |
 
-  # Update tracking
-  jq '.pending["'"$REQUEST_ID"'"].status = "timeout_'"$ACTION"'"' $PENDING_FILE > temp.json && mv temp.json $PENDING_FILE
+**Execute the timeout action:**
 
-  # Log to audit
-  AUDIT_FILE="docs_dev/audit/ecos-approvals-$(date +%Y-%m-%d).yaml"
-  cat >> $AUDIT_FILE <<EOF
-- timestamp: "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  operation: "$OPERATION"
-  target: "$TARGET"
-  request_id: "$REQUEST_ID"
-  decision: "timeout_$ACTION"
-  decided_by: "timeout"
-  escalation_count: 2
-EOF
-
-  # Notify about timeout
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "to": "eama-main",
-      "subject": "[TIMEOUT] Approval auto-'"$ACTION"': '"$REQUEST_ID"'",
-      "priority": "high",
-      "content": {
-        "type": "approval-timeout",
-        "message": "Approval request timed out after 120 seconds. Action: '"$ACTION"'.",
-        "request_id": "'"$REQUEST_ID"'",
-        "operation": "'"$OPERATION"'",
-        "target": "'"$TARGET"'",
-        "action_taken": "'"$ACTION"'"
-      }
-    }'
-
-  # Execute or abort based on decision
-  if [ "$ACTION" = "proceed" ]; then
-    echo "Executing $OPERATION on $TARGET (timeout proceed)"
-    # Execute the operation
-  else
-    echo "Aborting $OPERATION on $TARGET (timeout abort)"
-    # Clean up any partial state
-  fi
-fi
-```
+1. Update the tracking file status to `timeout_proceed` or `timeout_abort`
+2. Write an audit log entry to `docs_dev/audit/ecos-approvals-[DATE].yaml` with: timestamp, operation, target, request_id, decision, decided_by: "timeout", escalation_count: 2
+3. Use the `agent-messaging` skill to notify EAMA:
+   - **Recipient**: `eama-assistant-manager`
+   - **Subject**: `[TIMEOUT] Approval auto-[proceed/abort]: [REQUEST_ID]`
+   - **Priority**: `high`
+   - **Content**: type `approval-timeout`, message: "Approval request timed out after 120 seconds. Action: [proceed/abort]." Include `request_id`, `operation`, `target`, `action_taken`.
+4. If action is "proceed", execute the operation. If action is "abort", clean up any partial state.
 
 ## Example
 
 **Scenario:** Approval request for spawning `implementer-2` times out.
 
-```bash
-REQUEST_ID="abc-123"
-PENDING_FILE="docs_dev/pending-approvals.json"
+- Request ID: `abc-123`
+- Operation: `spawn`
+- Target: `implementer-2`
+- Default action for spawn: `proceed`
 
-# Current state: request submitted 100 seconds ago
-# Reminder sent at 60s, urgent sent at 90s
+At 60 seconds: Use the `agent-messaging` skill to send a reminder to `eama-assistant-manager` with subject "[REMINDER] Approval pending: abc-123", priority `high`.
 
-# At 120 seconds:
-OPERATION="spawn"
-TARGET="implementer-2"
-ACTION="proceed"  # spawn is safe to proceed
+At 90 seconds: Use the `agent-messaging` skill to send an urgent notice to `eama-assistant-manager` with subject "[URGENT] Approval timeout imminent: abc-123", priority `urgent`.
 
-# Log timeout
-echo "- timestamp: \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
-  operation: \"$OPERATION\"
-  target: \"$TARGET\"
-  request_id: \"$REQUEST_ID\"
-  decision: \"timeout_proceed\"
-  decided_by: \"timeout\"
-  escalation_count: 2" >> docs_dev/audit/ecos-approvals-$(date +%Y-%m-%d).yaml
-
-# Notify EAMA
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eama-main",
-    "subject": "[TIMEOUT] Approval auto-proceed: abc-123",
-    "priority": "high",
-    "content": {
-      "type": "approval-timeout",
-      "message": "Spawn request for implementer-2 timed out. Proceeding with spawn.",
-      "request_id": "abc-123",
-      "action_taken": "proceed"
-    }
-  }'
-
-# Execute spawn
-echo "Spawning implementer-2..."
-```
+At 120 seconds: Log timeout to audit trail, then use the `agent-messaging` skill to send timeout notification to `eama-assistant-manager` with subject "[TIMEOUT] Approval auto-proceed: abc-123". Then proceed with spawning `implementer-2`.
 
 ## Escalation Timeline
 
@@ -229,25 +116,11 @@ echo "Spawning implementer-2..."
 
 ## Autonomous Mode
 
-When operating under autonomous directive:
-
-```bash
-# Skip approval entirely, but notify after
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eama-main",
-    "subject": "[AUTONOMOUS] Executed: spawn implementer-2",
-    "priority": "normal",
-    "content": {
-      "type": "autonomous-notification",
-      "message": "Operating in autonomous mode. Spawned implementer-2 for issue #42.",
-      "operation": "spawn",
-      "target": "implementer-2",
-      "executed_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"
-    }
-  }'
-```
+When operating under autonomous directive, skip the approval wait entirely. After executing the operation, use the `agent-messaging` skill to notify EAMA:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[AUTONOMOUS] Executed: [operation] [target]`
+- **Priority**: `normal`
+- **Content**: type `autonomous-notification`, message: "Operating in autonomous mode. [Operation] [target] for [reason]." Include `operation`, `target`, `executed_at` (ISO timestamp).
 
 ## Error Handling
 
@@ -255,7 +128,7 @@ curl -X POST "http://localhost:23000/api/messages" \
 |-------|-------|----------|
 | Time calculation fails | Date format issues | Use consistent ISO-8601 format |
 | Audit write fails | Permission or path | Ensure docs_dev/audit/ exists |
-| AI Maestro down | Service unavailable | Log locally, retry later |
+| Messaging unavailable | Service unavailable | Log locally, retry later |
 | Multiple timeouts racing | Concurrent requests | Process sequentially |
 
 ## Notes

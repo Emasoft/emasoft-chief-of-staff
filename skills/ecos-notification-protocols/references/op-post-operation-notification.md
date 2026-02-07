@@ -23,19 +23,19 @@ Trigger this operation AFTER:
 - Operation completed successfully
 - Agent is back online (for restart/hibernation operations)
 - Verification criteria are defined
-- AI Maestro messaging is available
+- The `agent-messaging` skill is available
+- The `ai-maestro-agents-management` skill is available
 
 ## Procedure
 
 ### Step 1: Confirm Operation Completed
 
-Verify the operation succeeded before notifying:
+Verify the operation succeeded before notifying.
 
-```bash
-# For skill installation - verify skill is registered
-# For agent restart - verify agent session is active
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | select(.name == "<agent>") | .status'
-```
+Use the `ai-maestro-agents-management` skill to check the target agent's status:
+- For skill installation: verify the skill is registered on the agent
+- For agent restart: verify the agent session is active and status shows "running"
+- For configuration changes: verify the change took effect
 
 ### Step 2: Compose Success Message
 
@@ -45,33 +45,17 @@ Include these elements:
 - Request for agent to verify
 - Any next steps or actions needed
 
-### Step 3: Send Confirmation via AI Maestro
+### Step 3: Send Confirmation
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<target-agent>",
-    "subject": "<Operation Type> Complete",
-    "priority": "normal",
-    "content": {
-      "type": "post-operation",
-      "message": "The <operation> has been completed. <details>. Please verify <what to verify> and reply with confirmation.",
-      "operation": "<operation-type>",
-      "status": "success",
-      "verification_requested": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `[Operation Type] Complete`
+- **Priority**: `normal`
+- **Content**: type `post-operation`, message: "The [operation] has been completed. [details]. Please verify [what to verify] and reply with confirmation." Include `operation` (the operation type), `status`: "success", `verification_requested`: true.
 
 ### Step 4: Request Verification
 
-Ask the agent to confirm the operation had the intended effect:
-
-```bash
-# Wait for verification response (up to 30 seconds per health check timeout)
-curl -s "http://localhost:23000/api/messages?agent=chief-of-staff&action=list&status=unread" | jq '.messages[] | select(.from == "<target-agent>")'
-```
+Use the `agent-messaging` skill to check for unread messages from the target agent. Wait up to 30 seconds (per health check timeout). Look for a response containing a verification confirmation from the target agent.
 
 ### Step 5: Log Outcome
 
@@ -87,7 +71,7 @@ Copy this checklist and track your progress:
 
 - [ ] Verified operation completed successfully
 - [ ] Composed confirmation message with verification request
-- [ ] Sent post-operation notification
+- [ ] Sent post-operation notification via `agent-messaging` skill
 - [ ] Received verification from agent (or noted pending)
 - [ ] Logged operation outcome
 - [ ] Documented any issues encountered
@@ -98,82 +82,35 @@ Copy this checklist and track your progress:
 
 **Scenario:** security-audit skill was installed on code-impl-auth.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Complete",
-    "priority": "normal",
-    "content": {
-      "type": "post-operation",
-      "message": "The security-audit skill has been installed. Please verify the skill is active by checking your available skills list. Reply with confirmation that you can see and use the new skill.",
-      "operation": "skill-install",
-      "skill_name": "security-audit",
-      "status": "success",
-      "verification_requested": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Complete`
+- **Priority**: `normal`
+- **Content**: type `post-operation`, message: "The security-audit skill has been installed. Please verify the skill is active by checking your available skills list. Reply with confirmation that you can see and use the new skill." Include `operation`: "skill-install", `skill_name`: "security-audit", `status`: "success", `verification_requested`: true.
 
 **Expected Verification Response:**
-```json
-{
-  "from": "code-impl-auth",
-  "subject": "RE: Skill Installation Complete",
-  "content": {
-    "type": "verification",
-    "message": "Confirmed. security-audit skill is active and functional.",
-    "verified": true
-  }
-}
-```
+
+The agent should reply with a message of type `verification`, confirming "security-audit skill is active and functional", with `verified`: true.
 
 ### Example 2: Agent Restart Complete
 
 **Scenario:** test-engineer-01 was restarted for plugin update.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "test-engineer-01",
-    "subject": "Restart Complete",
-    "priority": "normal",
-    "content": {
-      "type": "post-operation",
-      "message": "Your agent has been restarted with the updated plugin configuration. Please verify you can access the new testing tools and reply with confirmation.",
-      "operation": "agent-restart",
-      "status": "success",
-      "verification_requested": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `test-engineer-01`
+- **Subject**: `Restart Complete`
+- **Priority**: `normal`
+- **Content**: type `post-operation`, message: "Your agent has been restarted with the updated plugin configuration. Please verify you can access the new testing tools and reply with confirmation." Include `operation`: "agent-restart", `status`: "success", `verification_requested`: true.
 
 ### Example 3: System Maintenance Complete Broadcast
 
 **Scenario:** System maintenance finished, all agents back online.
 
-```bash
-AGENTS=("code-impl-auth" "test-engineer-01" "docs-writer")
-
-for agent in "${AGENTS[@]}"; do
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"System Maintenance Complete\",
-      \"priority\": \"normal\",
-      \"content\": {
-        \"type\": \"post-operation\",
-        \"message\": \"System maintenance is complete. All systems are operational. You may resume normal work. Please report any issues you encounter.\",
-        \"operation\": \"system-maintenance\",
-        \"status\": \"success\",
-        \"verification_requested\": false
-      }
-    }"
-done
-```
+For each agent in the team (`code-impl-auth`, `test-engineer-01`, `docs-writer`), use the `agent-messaging` skill to send:
+- **Recipient**: the agent session name
+- **Subject**: `System Maintenance Complete`
+- **Priority**: `normal`
+- **Content**: type `post-operation`, message: "System maintenance is complete. All systems are operational. You may resume normal work. Please report any issues you encounter." Include `operation`: "system-maintenance", `status`: "success", `verification_requested`: false.
 
 ## Error Handling
 
