@@ -118,7 +118,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/ecos_configure_plugins.py" $ARGUMENTS
 
 ## Prerequisites
 
-- AI Maestro API must be running (`http://localhost:23000`)
+- AI Maestro must be running (use `ai-maestro-agents-management` skill to verify)
 - Target agent must be registered in AI Maestro
 - For marketplace plugins: marketplace must be added first
 

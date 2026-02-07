@@ -134,7 +134,7 @@ The validator performs these checks:
 
 ## Prerequisites
 
-- AI Maestro API must be running (`http://localhost:23000`)
+- AI Maestro must be running (use `ai-maestro-agents-management` skill to verify)
 - Target agent must be registered in AI Maestro
 - `skills-ref` must be installed (`pip install skills-ref`)
 

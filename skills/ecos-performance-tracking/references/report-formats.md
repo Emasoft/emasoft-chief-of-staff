@@ -221,7 +221,7 @@
 
 ### 3.1 AI Maestro API Queries
 
-**Primary Endpoint**: `http://localhost:23000/api/messages`
+**Primary Method**: Use the `agent-messaging` skill for all message queries
 
 **Query Examples**:
 

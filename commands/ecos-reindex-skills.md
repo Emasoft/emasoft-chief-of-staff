@@ -135,7 +135,7 @@ The Perfect Skill Suggester uses a two-pass indexing process:
 
 ## Prerequisites
 
-- AI Maestro API must be running (`http://localhost:23000`)
+- AI Maestro must be running (use `ai-maestro-agents-management` skill to verify)
 - Target agent must be registered in AI Maestro
 - Target agent must have Perfect Skill Suggester plugin installed
 - Target agent session must be active

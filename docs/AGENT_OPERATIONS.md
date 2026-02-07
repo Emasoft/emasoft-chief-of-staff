@@ -39,7 +39,7 @@
 **Environment Variables**:
 - `${CLAUDE_PLUGIN_ROOT}` - Set by Claude Code when plugin loaded via `--plugin-dir`
 - `${CLAUDE_PROJECT_DIR}` - Working directory of the Claude Code session
-- `${AIMAESTRO_API}` - AI Maestro API endpoint (default: `http://localhost:23000`)
+- `${AIMAESTRO_API}` - AI Maestro API endpoint (configured automatically by AI Maestro)
 
 **Path Resolution**:
 ```bash

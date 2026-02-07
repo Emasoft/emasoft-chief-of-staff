@@ -174,7 +174,7 @@ Performance data is collected from:
 
 ## Prerequisites
 
-- AI Maestro API must be running (`http://localhost:23000`)
+- AI Maestro must be running (use `ai-maestro-agents-management` skill to verify)
 - Agents must have activity logs available
 - For project filtering: GitHub API access required
 

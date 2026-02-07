@@ -741,7 +741,7 @@ uv run python scripts/ecos_trigger_pss_reindex.py --force
 uv run python scripts/ecos_trigger_pss_reindex.py --wait
 
 # Specify AI Maestro endpoint
-uv run python scripts/ecos_trigger_pss_reindex.py --api-url http://localhost:23000
+uv run python scripts/ecos_trigger_pss_reindex.py  # Uses default AI Maestro endpoint
 ```
 
 **What it does:**
