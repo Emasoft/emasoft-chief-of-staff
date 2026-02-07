@@ -58,7 +58,7 @@ Update the roster when:
 
 ### Roster Update Procedure
 
-**Step 1:** Query AI Maestro for current session states
+**Step 1:** Use the `ai-maestro-agents-management` skill to list all sessions and their current states
 **Step 2:** Compare with existing roster
 **Step 3:** Update changed entries with timestamp
 **Step 4:** Move inactive agents to inactive section
@@ -83,9 +83,7 @@ Regular status polling ensures the Chief of Staff has accurate information about
 
 **Step 1: Query all sessions**
 
-```bash
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions'
-```
+Use the `ai-maestro-agents-management` skill to list all registered sessions.
 
 **Step 2: Extract relevant information**
 
@@ -108,25 +106,11 @@ Flag any agents that:
 
 ### Individual Agent Status Query
 
-```bash
-# Get specific agent status
-curl -s "http://localhost:23000/api/sessions/helper-agent-generic" | jq '.'
-```
+Use the `ai-maestro-agents-management` skill to get specific agent details by session name.
 
-### Batch Status Query Script
+### Batch Status Query
 
-```bash
-#!/bin/bash
-# poll-team-status.sh
-
-SESSIONS=$(curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[].name')
-
-for session in $SESSIONS; do
-  STATUS=$(curl -s "http://localhost:23000/api/sessions/$session" | jq -r '.status')
-  LAST_SEEN=$(curl -s "http://localhost:23000/api/sessions/$session" | jq -r '.lastSeen')
-  echo "$session: $STATUS (last seen: $LAST_SEEN)"
-done
-```
+Use the `ai-maestro-agents-management` skill to list all sessions, then iterate through each to capture name, status, and last seen timestamp.
 
 ---
 
@@ -156,31 +140,19 @@ Activity detection helps distinguish between agents that are working and those t
 
 **Step 1: Check message activity**
 
-```bash
-# Messages sent by agent in last hour
-curl -s "http://localhost:23000/api/messages?from=helper-agent-generic&since=1h" | jq '.count'
-```
+Use the `agent-messaging` skill to list messages from a specific agent within the last hour.
 
 **Step 2: Check session heartbeat**
 
-```bash
-# Session last activity
-curl -s "http://localhost:23000/api/sessions/helper-agent-generic" | jq '.lastActivity'
-```
+Use the `ai-maestro-agents-management` skill to get the session's last activity timestamp.
 
 **Step 3: Send ping if uncertain**
 
-```bash
-# Send a low-priority ping
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "Heartbeat Check",
-    "priority": "normal",
-    "content": {"type": "request", "message": "Please acknowledge you are active."}
-  }'
-```
+Use the `agent-messaging` skill to send a low-priority ping:
+- **Recipient**: the target agent session name
+- **Subject**: `Heartbeat Check`
+- **Priority**: `normal`
+- **Content**: type `request`, message: "Please acknowledge you are active."
 
 **Step 4: Evaluate response**
 
@@ -307,76 +279,32 @@ Reporting Period: Last 24 hours
 
 ### Example: Updating Roster After Status Poll
 
-```bash
-# Poll all sessions
-SESSIONS=$(curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[] | "\(.name)|\(.status)|\(.lastSeen)"')
-
-# Update roster file
-cat > design/memory/team-roster-update.md << 'EOF'
-# Team Roster Update
-
-Last Polled: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-
-| Session | Status | Last Seen |
-|---------|--------|-----------|
-EOF
-
-for session in $SESSIONS; do
-  echo "| $session |" >> design/memory/team-roster-update.md
-done
-```
+1. Use the `ai-maestro-agents-management` skill to list all sessions with status and last seen timestamp
+2. Compare results with existing roster
+3. Write updated roster to `design/memory/team-roster-update.md`
 
 ### Example: Sending Team-Wide Status Request
 
-```bash
-# Request status from all active agents
-curl -X POST "http://localhost:23000/api/messages/broadcast" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "subject": "Status Check - Please Respond",
-    "priority": "normal",
-    "content": {
-      "type": "request",
-      "message": "Please respond with your current status: (1) Current task, (2) Percent complete, (3) Any blockers. Respond within 15 minutes."
-    }
-  }'
-```
+Use the `agent-messaging` skill to broadcast a status check:
+- **Subject**: `Status Check - Please Respond`
+- **Priority**: `normal`
+- **Content**: type `request`, message: "Please respond with your current status: (1) Current task, (2) Percent complete, (3) Any blockers. Respond within 15 minutes."
 
 ### Example: Handling Agent Going Offline
 
-```bash
-# Agent helper-agent-backup stopped responding
+For agent `helper-agent-backup` that stopped responding:
 
-# Step 1: Confirm
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-backup",
-    "subject": "URGENT: Status Check",
-    "priority": "urgent",
-    "content": {"type": "request", "message": "Please respond immediately if you are active."}
-  }'
-
-# Step 2: Wait 5 minutes, then check for response
-sleep 300
-RESPONSE=$(curl -s "http://localhost:23000/api/messages?from=helper-agent-backup&since=5m" | jq '.count')
-
-if [ "$RESPONSE" -eq 0 ]; then
-  # Step 3: Mark as inactive and notify team
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "to": "orchestrator-master",
-      "subject": "Agent Offline: helper-agent-backup",
-      "priority": "high",
-      "content": {
-        "type": "alert",
-        "severity": "medium",
-        "message": "helper-agent-backup is unresponsive. Any assigned tasks should be reassigned."
-      }
-    }'
-fi
-```
+1. Use the `agent-messaging` skill to send an urgent ping:
+   - **Recipient**: `helper-agent-backup`
+   - **Subject**: `URGENT: Status Check`
+   - **Priority**: `urgent`
+   - **Content**: type `request`, message: "Please respond immediately if you are active."
+2. Wait 5 minutes, then use the `agent-messaging` skill to check for messages from `helper-agent-backup` in the last 5 minutes
+3. If no response, use the `agent-messaging` skill to notify the orchestrator:
+   - **Recipient**: `orchestrator-master`
+   - **Subject**: `Agent Offline: helper-agent-backup`
+   - **Priority**: `high`
+   - **Content**: type `alert`, severity `medium`, message: "helper-agent-backup is unresponsive. Any assigned tasks should be reassigned."
 
 ---
 
@@ -384,7 +312,7 @@ fi
 
 ### Issue: Cannot query session status
 
-**Symptoms:** API calls return errors or empty results.
+**Symptoms:** Queries return errors or empty results.
 
 **Possible causes:**
 - AI Maestro service down
@@ -392,7 +320,7 @@ fi
 - Network issue
 
 **Resolution:**
-1. Check AI Maestro health: `curl http://localhost:23000/health`
+1. Use the `ai-maestro-agents-management` skill to check AI Maestro health
 2. Restart AI Maestro if needed
 3. Verify network connectivity
 4. Check AI Maestro logs for errors
@@ -410,11 +338,11 @@ fi
 1. Increase polling frequency
 2. Verify roster writes are successful
 3. Ensure single process owns roster updates
-4. Force full refresh from API
+4. Force full refresh from the `ai-maestro-agents-management` skill
 
 ### Issue: Agent shows active but is not responding
 
-**Symptoms:** Session appears active in API but agent does not respond to messages.
+**Symptoms:** Session appears active but agent does not respond to messages.
 
 **Possible causes:**
 - Agent in infinite loop
@@ -430,7 +358,7 @@ fi
 
 ### Issue: Too many status queries causing overhead
 
-**Symptoms:** High API traffic, slow responses, coordination delays.
+**Symptoms:** High traffic, slow responses, coordination delays.
 
 **Possible causes:**
 - Polling too frequently

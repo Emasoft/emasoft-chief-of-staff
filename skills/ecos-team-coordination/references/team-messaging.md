@@ -126,16 +126,12 @@ AI Maestro supports three priority levels that affect delivery and processing:
 - Recipient should stop current work to read
 
 **Example:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "URGENT: Production deployment failed",
-    "priority": "urgent",
-    "content": {"type": "alert", "severity": "critical", "message": "Deployment rollback required immediately"}
-  }'
-```
+
+Use the `agent-messaging` skill to send an urgent alert:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `URGENT: Production deployment failed`
+- **Priority**: `urgent`
+- **Content**: type `alert`, severity `critical`, message: "Deployment rollback required immediately"
 
 ### HIGH Priority
 
@@ -151,16 +147,12 @@ curl -X POST "http://localhost:23000/api/messages" \
 - Recipient should read within current work cycle
 
 **Example:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "High Priority Task Assignment",
-    "priority": "high",
-    "content": {"type": "request", "message": "Review PR #123 before end of day"}
-  }'
-```
+
+Use the `agent-messaging` skill to send a high-priority task:
+- **Recipient**: `helper-agent-generic`
+- **Subject**: `High Priority Task Assignment`
+- **Priority**: `high`
+- **Content**: type `request`, message: "Review PR #123 before end of day"
 
 ### NORMAL Priority
 
@@ -176,16 +168,12 @@ curl -X POST "http://localhost:23000/api/messages" \
 - No interruption expected
 
 **Example:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "team",
-    "subject": "Weekly Status Meeting Notes",
-    "priority": "normal",
-    "content": {"type": "announcement", "message": "Meeting notes attached. No action required."}
-  }'
-```
+
+Use the `agent-messaging` skill to send a normal-priority announcement:
+- **Recipient**: broadcast to all active agents
+- **Subject**: `Weekly Status Meeting Notes`
+- **Priority**: `normal`
+- **Content**: type `announcement`, message: "Meeting notes attached. No action required."
 
 ---
 
@@ -203,20 +191,12 @@ Ensure the message is relevant to all recipients. Avoid broadcasting messages th
 
 Most broadcasts should be NORMAL priority. Use HIGH only for time-sensitive team-wide updates. URGENT broadcasts should be rare.
 
-**Step 3: Send via broadcast endpoint**
+**Step 3: Send via broadcast**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages/broadcast" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "subject": "Message subject",
-    "priority": "normal",
-    "content": {
-      "type": "announcement",
-      "message": "Message content"
-    }
-  }'
-```
+Use the `agent-messaging` skill to broadcast:
+- **Subject**: the message subject
+- **Priority**: `normal` (or as appropriate)
+- **Content**: structured object with `type` and `message` fields
 
 **Step 4: Log the broadcast**
 
@@ -237,49 +217,19 @@ Targeted messages are sent to specific agents.
 
 ### Single Recipient
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "Message subject",
-    "priority": "normal",
-    "content": {
-      "type": "request",
-      "message": "Message content"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a targeted message:
+- **Recipient**: the target agent session name
+- **Subject**: descriptive subject line
+- **Priority**: as appropriate
+- **Content**: structured object with `type` and `message` fields
 
 ### Multiple Specific Recipients
 
-Send separate messages to each recipient (AI Maestro does not support multi-recipient in single call):
-
-```bash
-# First recipient
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"to": "agent-one", "subject": "Subject", "priority": "normal", "content": {"type": "request", "message": "Content"}}'
-
-# Second recipient
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"to": "agent-two", "subject": "Subject", "priority": "normal", "content": {"type": "request", "message": "Content"}}'
-```
+Send separate messages to each recipient (AI Maestro does not support multi-recipient in a single call). Use the `agent-messaging` skill to send individually to each target agent.
 
 ### Role-Based Targeting
 
-To send to all agents with a specific role, query the team roster first, then send to each matching agent:
-
-```bash
-# Query roster for Code Reviewers (pseudo-code)
-reviewers=$(get_agents_with_role "Code Reviewer")
-
-# Send to each reviewer
-for reviewer in $reviewers; do
-  send_message "$reviewer" "subject" "content"
-done
-```
+To send to all agents with a specific role, query the team roster first, then use the `agent-messaging` skill to send to each matching agent.
 
 ---
 
@@ -321,27 +271,17 @@ The Chief of Staff follows these routing rules to determine message recipients:
 
 ### Checking Delivery Status
 
-After sending a message, verify delivery:
-
-```bash
-# Get sent message status
-curl -s "http://localhost:23000/api/messages?status=sent" | jq '.messages[] | {id: .id, to: .to, delivered: .delivered}'
-```
+After sending a message, use the `agent-messaging` skill to check the delivery status of sent messages.
 
 ### Read Receipts
 
-Check if recipient has read the message:
-
-```bash
-# Check read status
-curl -s "http://localhost:23000/api/messages/MESSAGE_ID/status" | jq '.read'
-```
+Use the `agent-messaging` skill to check if the recipient has read the message (by message ID).
 
 ### Handling Undelivered Messages
 
 If a message is not delivered within expected timeframe:
 
-1. Check recipient session status
+1. Check recipient session status using the `ai-maestro-agents-management` skill
 2. If session inactive, queue message for when agent returns
 3. If critical, attempt alternative routing or escalate
 4. Log delivery failure in coordination state
@@ -352,70 +292,34 @@ If a message is not delivered within expected timeframe:
 
 ### Example: Broadcasting Sprint Start
 
-```bash
-curl -X POST "http://localhost:23000/api/messages/broadcast" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "subject": "Sprint 5 Kickoff",
-    "priority": "normal",
-    "content": {
-      "type": "announcement",
-      "message": "Sprint 5 has started. Duration: 2 weeks. Goal: Complete user authentication module. Check your individual task assignments in your inbox."
-    }
-  }'
-```
+Use the `agent-messaging` skill to broadcast:
+- **Subject**: `Sprint 5 Kickoff`
+- **Priority**: `normal`
+- **Content**: type `announcement`, message: "Sprint 5 has started. Duration: 2 weeks. Goal: Complete user authentication module. Check your individual task assignments in your inbox."
 
 ### Example: Requesting Status Update
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "libs-svg-svgbbox",
-    "subject": "Status Request: SVG Parser Implementation",
-    "priority": "high",
-    "content": {
-      "type": "request",
-      "message": "Please provide current status on SVG parser implementation. Include: percent complete, blockers if any, estimated completion.",
-      "deadline": "2025-02-01T18:00:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to request status:
+- **Recipient**: `libs-svg-svgbbox`
+- **Subject**: `Status Request: SVG Parser Implementation`
+- **Priority**: `high`
+- **Content**: type `request`, message: "Please provide current status on SVG parser implementation. Include: percent complete, blockers if any, estimated completion.", deadline: "2025-02-01T18:00:00Z"
 
 ### Example: Sending Alert
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "ALERT: Test Suite Failing",
-    "priority": "urgent",
-    "content": {
-      "type": "alert",
-      "severity": "high",
-      "message": "Integration tests failing after latest merge. 15 tests affected. Blocking deployment pipeline."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send an alert:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `ALERT: Test Suite Failing`
+- **Priority**: `urgent`
+- **Content**: type `alert`, severity `high`, message: "Integration tests failing after latest merge. 15 tests affected. Blocking deployment pipeline."
 
 ### Example: Sending Task Completion Update
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "Task Complete: API Documentation",
-    "priority": "normal",
-    "content": {
-      "type": "status-update",
-      "task": "TASK-042",
-      "status": "completed",
-      "message": "API documentation updated. Added 12 new endpoints. PR #156 ready for review."
-    }
-  }'
-```
+Use the `agent-messaging` skill to report completion:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `Task Complete: API Documentation`
+- **Priority**: `normal`
+- **Content**: type `status-update`, task `TASK-042`, status `completed`, message: "API documentation updated. Added 12 new endpoints. PR #156 ready for review."
 
 ---
 
@@ -431,8 +335,8 @@ curl -X POST "http://localhost:23000/api/messages" \
 - Network connectivity issue
 
 **Resolution:**
-1. Verify AI Maestro is running: `curl http://localhost:23000/health`
-2. Check recipient exists: `curl http://localhost:23000/api/sessions`
+1. Use the `ai-maestro-agents-management` skill to check AI Maestro health
+2. Use the `ai-maestro-agents-management` skill to list sessions and verify recipient exists
 3. Verify session name spelling (case-sensitive)
 4. Check AI Maestro logs for errors
 

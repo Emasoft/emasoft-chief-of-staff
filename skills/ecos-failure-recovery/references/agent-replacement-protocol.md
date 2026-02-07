@@ -53,10 +53,10 @@ Use this document when:
 The replacement protocol consists of six phases executed in sequence:
 
 ```
-Phase 1: Failure Confirmation ──► Phase 2: Manager Approval ──► Phase 3: Create Agent
-                                                                        │
-                                                                        ▼
-Phase 6: Cleanup ◄── Phase 5: Work Handoff ◄── Phase 4: Orchestrator Notification
+Phase 1: Failure Confirmation --> Phase 2: Manager Approval --> Phase 3: Create Agent
+                                                                        |
+                                                                        v
+Phase 6: Cleanup <-- Phase 5: Work Handoff <-- Phase 4: Orchestrator Notification
 ```
 
 | Phase | Owner | Duration | Key Output |
@@ -64,8 +64,8 @@ Phase 6: Cleanup ◄── Phase 5: Work Handoff ◄── Phase 4: Orchestrator
 | 1. Failure Confirmation | ECOS | 5-10 min | Artifact inventory |
 | 2. Manager Approval | EAMA | 5-30 min | Approval decision |
 | 3. Create Agent | ECOS + User | 10-30 min | New agent online |
-| 4. Orchestrator Notification | ECOS → EOA | 5-10 min | Handoff docs, kanban update |
-| 5. Work Handoff | ECOS → New Agent | 10-20 min | Agent acknowledgment |
+| 4. Orchestrator Notification | ECOS -> EOA | 5-10 min | Handoff docs, kanban update |
+| 5. Work Handoff | ECOS -> New Agent | 10-20 min | Agent acknowledgment |
 | 6. Cleanup | ECOS | 5 min | Incident closed |
 
 **Total estimated time**: 40-110 minutes depending on complexity and response times.
@@ -136,32 +136,7 @@ ssh USER@HOST "cd /path/to/agent/project && git log -1 --oneline" 2>/dev/null
 
 **Step 2: Document the last known state**
 
-```bash
-# Create artifact inventory
-cat > $CLAUDE_PROJECT_DIR/.ecos/agent-health/artifacts-AGENT_NAME.md << 'EOF'
-# Artifact Inventory for Failed Agent
-
-Agent: AGENT_SESSION_NAME
-Failure timestamp: ISO_TIMESTAMP
-Host: HOSTNAME
-
-## Git State
-- Last known commit: abc123 "Commit message"
-- Branch: feature/my-feature
-- Remote: origin/feature/my-feature (pushed: yes/no)
-- Uncommitted changes: unknown/none/description
-
-## Logs Preserved
-- /var/log/agent-AGENT_NAME.log - copied to /archive/
-- $PROJECT/.ecos/task-tracking.json - copied to /archive/
-
-## Lost Artifacts
-- In-progress file edits (not committed)
-- Current task context
-- Conversation history
-
-EOF
-```
+Create an artifact inventory at `$CLAUDE_PROJECT_DIR/.ecos/agent-health/artifacts-AGENT_NAME.md` documenting the git state, preserved logs, and lost artifacts.
 
 ---
 
@@ -169,51 +144,21 @@ EOF
 
 ### 4.4.1 Composing the Replacement Request
 
-ECOS must request approval from the manager (EAMA) before creating a replacement agent:
+ECOS must request approval from the manager (EAMA) before creating a replacement agent.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUIRED] Agent replacement request",
-    "priority": "urgent",
-    "content": {
-      "type": "replacement-approval-request",
-      "message": "Agent libs-svg-svgbbox has experienced a terminal failure and requires replacement. All recovery attempts have failed. Requesting approval to proceed with replacement protocol.",
-      "agent": "libs-svg-svgbbox",
-      "failure_summary": {
-        "failure_type": "terminal",
-        "failure_cause": "host_machine_crash",
-        "detected_at": "2025-01-15T10:00:00Z",
-        "recovery_attempts": 3,
-        "last_recovery_attempt": "2025-01-15T10:45:00Z"
-      },
-      "impact_assessment": {
-        "tasks_affected": ["task-001", "task-002"],
-        "estimated_work_lost": "2 hours of uncommitted changes",
-        "downstream_dependencies": ["Integration depends on task-001 completion"]
-      },
-      "replacement_plan": {
-        "new_agent_name": "libs-svg-svgbbox-v2",
-        "target_host": "workstation-1",
-        "estimated_time_to_operational": "30 minutes",
-        "handoff_required_from": "eoa-orchestrator"
-      },
-      "artifacts_preserved": [
-        "Git commits up to abc123",
-        "Task tracking logs"
-      ],
-      "artifacts_lost": [
-        "Uncommitted file changes",
-        "Current session context"
-      ],
-      "awaiting_approval": true,
-      "response_requested_by": "2025-01-15T11:30:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send the replacement approval request:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUIRED] Agent replacement request`
+- **Priority**: `urgent`
+- **Content**: type `replacement-approval-request`, including:
+  - Message explaining the terminal failure and need for replacement
+  - Agent name
+  - Failure summary (failure type, cause, detected timestamp, recovery attempts count, last recovery attempt timestamp)
+  - Impact assessment (tasks affected, estimated work lost, downstream dependencies)
+  - Replacement plan (new agent name, target host, estimated time to operational, handoff required from EOA)
+  - Artifacts preserved and lost
+  - Awaiting approval flag
+  - Response requested by timestamp
 
 ### 4.4.2 Required Information for Approval
 
@@ -250,10 +195,6 @@ When manager approves, the response will include any additional instructions:
 **Upon approval:**
 1. Log the approval
 2. Proceed to Phase 3
-
-```bash
-echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAME\", \"action\": \"replacement_approved\", \"approved_by\": \"eama-assistant-manager\"}" >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl
-```
 
 ### 4.4.4 Handling Rejection Response
 
@@ -295,98 +236,35 @@ The replacement agent should run on a stable host. Considerations:
 
 The replacement agent needs a fresh working directory. **The new agent will NOT inherit the old agent's local files.**
 
-**Request user to create the folder:**
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "USER_OR_ADMIN",
-    "subject": "[USER ACTION REQUIRED] Create folder for replacement agent",
-    "priority": "high",
-    "content": {
-      "type": "user-action-required",
-      "message": "Please create a new working directory for the replacement agent.",
-      "instructions": [
-        "1. SSH to the target host: ssh USER@workstation-1",
-        "2. Create new directory: mkdir -p ~/agents/libs-svg-svgbbox-v2",
-        "3. Navigate to it: cd ~/agents/libs-svg-svgbbox-v2",
-        "4. Confirm the directory is empty and writable"
-      ],
-      "expected_result": "Empty directory at ~/agents/libs-svg-svgbbox-v2",
-      "notify_when_complete": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to request the user to create the folder:
+- **Recipient**: the user or admin
+- **Subject**: `[USER ACTION REQUIRED] Create folder for replacement agent`
+- **Priority**: `high`
+- **Content**: type `user-action-required`, with instructions to create the new directory at the target path
 
 ### 4.5.3 Cloning the Git Repository
 
-The new agent must clone the project repository to access code and history:
+The new agent must clone the project repository to access code and history.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "USER_OR_ADMIN",
-    "subject": "[USER ACTION REQUIRED] Clone repository for replacement agent",
-    "priority": "high",
-    "content": {
-      "type": "user-action-required",
-      "message": "Please clone the project repository into the new agent folder.",
-      "instructions": [
-        "1. Navigate to the agent directory: cd ~/agents/libs-svg-svgbbox-v2",
-        "2. Clone the repository: git clone https://github.com/ORG/REPO.git .",
-        "3. Checkout the appropriate branch: git checkout feature/my-feature",
-        "4. Verify clone: git log -3 --oneline"
-      ],
-      "repository": "https://github.com/ORG/REPO.git",
-      "branch": "feature/my-feature",
-      "expected_result": "Repository cloned with full history"
-    }
-  }'
-```
+Use the `agent-messaging` skill to request the user to clone the repository:
+- **Recipient**: the user or admin
+- **Subject**: `[USER ACTION REQUIRED] Clone repository for replacement agent`
+- **Priority**: `high`
+- **Content**: type `user-action-required`, with instructions to clone the repo and checkout the appropriate branch
 
 ### 4.5.4 Starting the New Claude Code Session
 
-Launch a new Claude Code session for the replacement agent:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "USER_OR_ADMIN",
-    "subject": "[USER ACTION REQUIRED] Start Claude Code session for replacement agent",
-    "priority": "high",
-    "content": {
-      "type": "user-action-required",
-      "message": "Please start a new Claude Code session for the replacement agent.",
-      "instructions": [
-        "1. Open a new terminal (or tmux session): tmux new -s libs-svg-svgbbox",
-        "2. Navigate to the agent directory: cd ~/agents/libs-svg-svgbbox-v2",
-        "3. Start Claude Code: claude",
-        "4. The new agent should register with AI Maestro automatically",
-        "5. Verify registration by checking: curl http://localhost:23000/api/agents/libs-svg-svgbbox/status"
-      ],
-      "session_name": "libs-svg-svgbbox",
-      "working_directory": "~/agents/libs-svg-svgbbox-v2"
-    }
-  }'
-```
+Use the `agent-messaging` skill to request the user to start a new Claude Code session:
+- **Recipient**: the user or admin
+- **Subject**: `[USER ACTION REQUIRED] Start Claude Code session for replacement agent`
+- **Priority**: `high`
+- **Content**: type `user-action-required`, with instructions to create a tmux session, navigate to the working directory, and start Claude Code
 
 ### 4.5.5 Registering with AI Maestro
 
-The new agent should automatically register when it starts (via AI Maestro hooks). Verify registration:
+The new agent should automatically register when it starts (via AI Maestro hooks).
 
-```bash
-# Check agent registration
-RESPONSE=$(curl -s "http://localhost:23000/api/agents/libs-svg-svgbbox/status")
-
-# Verify status is "online"
-echo "$RESPONSE" | jq -e '.status == "online"' && echo "Agent registered successfully"
-```
+Use the `ai-maestro-agents-management` skill to verify the agent is registered with status "online".
 
 If registration fails, troubleshoot:
 1. Check agent has AI Maestro hooks enabled
@@ -403,36 +281,15 @@ ECOS must notify the orchestrator (EOA) that an agent has been replaced so that:
 1. The orchestrator can generate a handoff document for the new agent
 2. The GitHub Project kanban can be updated to reassign tasks
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eoa-orchestrator",
-    "subject": "[AGENT REPLACED] Handoff required for new agent",
-    "priority": "high",
-    "content": {
-      "type": "agent-replacement-notification",
-      "message": "Agent libs-svg-svgbbox has been replaced due to terminal failure. The new agent is online but has no memory of previous work. Please generate handoff documentation and update task assignments.",
-      "old_agent": {
-        "name": "libs-svg-svgbbox",
-        "status": "terminated",
-        "last_commit": "abc123",
-        "tasks_in_progress": ["task-001", "task-002"]
-      },
-      "new_agent": {
-        "name": "libs-svg-svgbbox",
-        "status": "online",
-        "working_directory": "~/agents/libs-svg-svgbbox-v2",
-        "git_branch": "feature/my-feature"
-      },
-      "actions_required": [
-        "generate_handoff_document",
-        "update_github_project_kanban"
-      ]
-    }
-  }'
-```
+Use the `agent-messaging` skill to notify the orchestrator:
+- **Recipient**: `eoa-orchestrator`
+- **Subject**: `[AGENT REPLACED] Handoff required for new agent`
+- **Priority**: `high`
+- **Content**: type `agent-replacement-notification`, including:
+  - Message explaining the replacement and requesting handoff documentation and task reassignment
+  - Old agent details (name, status "terminated", last commit, tasks in progress)
+  - New agent details (name, status "online", working directory, git branch)
+  - Actions required: generate handoff document, update GitHub Project kanban
 
 ### 4.6.2 Requesting Handoff Document Generation
 
@@ -462,85 +319,36 @@ The orchestrator must update the GitHub Project kanban to:
 2. **Update task status** if any were marked "in progress" by old agent
 3. **Add note** about agent replacement to affected tasks
 
-```bash
-# EOA will execute commands like:
-gh project item-edit --id ITEM_ID --field-id ASSIGNEE_FIELD --value NEW_AGENT_NAME
-```
-
 ---
 
 ## 4.7 Phase 5: Work Handoff to New Agent
 
 ### 4.7.1 Sending Handoff Documentation
 
-Once EOA has generated the handoff document, ECOS sends it to the new agent:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "libs-svg-svgbbox",
-    "subject": "[ONBOARDING] Welcome - please read handoff documentation",
-    "priority": "urgent",
-    "content": {
-      "type": "agent-onboarding",
-      "message": "Welcome! You are a replacement agent taking over from a previous instance that experienced a terminal failure. You have NO MEMORY of previous work. Please read the handoff documentation immediately to understand your tasks and context.",
-      "handoff_document": "thoughts/shared/handoffs/libs-svg-svgbbox/handoff-20250115T110000Z.md",
-      "instructions": [
-        "1. Read the handoff document completely before doing anything else",
-        "2. Review the git history to understand recent changes: git log -10 --oneline",
-        "3. Check your assigned tasks in the GitHub Project",
-        "4. Reply to this message acknowledging you understand your assignments",
-        "5. Ask any clarifying questions before starting work"
-      ],
-      "git_branch": "feature/my-feature",
-      "last_known_commit": "abc123",
-      "github_project_url": "https://github.com/orgs/ORG/projects/PROJECT_NUMBER"
-    }
-  }'
-```
+Once EOA has generated the handoff document, use the `agent-messaging` skill to send it to the new agent:
+- **Recipient**: the new agent session name
+- **Subject**: `[ONBOARDING] Welcome - please read handoff documentation`
+- **Priority**: `urgent`
+- **Content**: type `agent-onboarding`, including:
+  - Message explaining this is a replacement agent with no memory of previous work
+  - Handoff document path
+  - Step-by-step instructions (read handoff completely, review git history, check assigned tasks, reply acknowledging assignments, ask clarifying questions)
+  - Git branch and last known commit
+  - GitHub Project URL
 
 ### 4.7.2 Sending Task Assignments
 
-After the handoff document, send specific task assignments:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "libs-svg-svgbbox",
-    "subject": "[TASK ASSIGNMENTS] Your assigned tasks",
-    "priority": "high",
-    "content": {
-      "type": "task-assignment",
-      "message": "These are your assigned tasks. They were previously assigned to your predecessor. Please review and begin work after reading the handoff documentation.",
-      "tasks": [
-        {
-          "task_id": "task-001",
-          "title": "Implement bounding box calculation",
-          "priority": "high",
-          "status": "in_progress",
-          "github_issue": "https://github.com/ORG/REPO/issues/123",
-          "notes": "Predecessor was ~60% complete. Check recent commits for progress."
-        },
-        {
-          "task_id": "task-002",
-          "title": "Add unit tests for SVG parsing",
-          "priority": "normal",
-          "status": "not_started",
-          "github_issue": "https://github.com/ORG/REPO/issues/124",
-          "notes": "Not yet started by predecessor."
-        }
-      ]
-    }
-  }'
-```
+After the handoff document, use the `agent-messaging` skill to send specific task assignments:
+- **Recipient**: the new agent session name
+- **Subject**: `[TASK ASSIGNMENTS] Your assigned tasks`
+- **Priority**: `high`
+- **Content**: type `task-assignment`, including:
+  - Message explaining these were previously assigned to the predecessor
+  - Tasks list (each with task ID, title, priority, status, GitHub issue URL, and notes about predecessor progress)
 
 ### 4.7.3 Awaiting Acknowledgment
 
-The new agent MUST acknowledge the handoff before ECOS considers the replacement complete:
+The new agent MUST acknowledge the handoff before ECOS considers the replacement complete.
 
 **Expected acknowledgment:**
 
@@ -557,48 +365,19 @@ The new agent MUST acknowledge the handoff before ECOS considers the replacement
 
 **If no acknowledgment within 15 minutes:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "libs-svg-svgbbox",
-    "subject": "[REMINDER] Handoff acknowledgment required",
-    "priority": "urgent",
-    "content": {
-      "type": "acknowledgment-reminder",
-      "message": "Please acknowledge receipt of the handoff documentation. Reply with your understanding of your assignments and any questions.",
-      "original_message_timestamp": "2025-01-15T11:00:00Z",
-      "response_required_by": "2025-01-15T11:30:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a reminder:
+- **Recipient**: the new agent session name
+- **Subject**: `[REMINDER] Handoff acknowledgment required`
+- **Priority**: `urgent`
+- **Content**: type `acknowledgment-reminder`, requesting receipt acknowledgment and response deadline
 
 ### 4.7.4 Verifying New Agent Understanding
 
-After acknowledgment, verify the agent correctly understands the tasks:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "libs-svg-svgbbox",
-    "subject": "[VERIFICATION] Confirm task understanding",
-    "priority": "normal",
-    "content": {
-      "type": "understanding-verification",
-      "message": "Before you begin, please summarize task-001 in your own words, including the acceptance criteria and your planned approach.",
-      "task_to_summarize": "task-001",
-      "response_format": {
-        "task_summary": "Your understanding of what needs to be done",
-        "acceptance_criteria": "Your understanding of when it is complete",
-        "planned_approach": "How you intend to accomplish it",
-        "estimated_time": "Your estimate for completion"
-      }
-    }
-  }'
-```
+After acknowledgment, use the `agent-messaging` skill to verify understanding:
+- **Recipient**: the new agent session name
+- **Subject**: `[VERIFICATION] Confirm task understanding`
+- **Priority**: `normal`
+- **Content**: type `understanding-verification`, asking the agent to summarize the primary task in their own words, including acceptance criteria and planned approach
 
 ---
 
@@ -606,50 +385,20 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 ### 4.8.1 Updating Incident Log
 
-Record the complete incident with resolution:
-
-```bash
-# Update the incident record with resolution
-jq --arg agent "libs-svg-svgbbox" --arg resolution "replaced" '
-  .incidents[] |
-  select(.agent == $agent and .resolution == null) |
-  .resolution = $resolution |
-  .resolved_at = (now | strftime("%Y-%m-%dT%H:%M:%SZ")) |
-  .replacement_agent = "libs-svg-svgbbox (new instance)" |
-  .total_downtime = "75 minutes"
-' $CLAUDE_PROJECT_DIR/.ecos/agent-health/incident-log.jsonl > temp.jsonl && mv temp.jsonl $CLAUDE_PROJECT_DIR/.ecos/agent-health/incident-log.jsonl
-```
+Record the complete incident with resolution in the incident log at `$CLAUDE_PROJECT_DIR/.ecos/agent-health/incident-log.jsonl`.
 
 ### 4.8.2 Notifying Manager of Completion
 
-Inform the manager that replacement is complete:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[RESOLVED] Agent replacement complete",
-    "priority": "normal",
-    "content": {
-      "type": "replacement-complete",
-      "message": "Agent libs-svg-svgbbox has been successfully replaced. The new agent has acknowledged the handoff and is ready to begin work.",
-      "incident_summary": {
-        "original_failure": "host_machine_crash",
-        "detected_at": "2025-01-15T10:00:00Z",
-        "replacement_approved_at": "2025-01-15T11:00:00Z",
-        "new_agent_online_at": "2025-01-15T11:15:00Z",
-        "handoff_acknowledged_at": "2025-01-15T11:25:00Z",
-        "total_downtime": "75 minutes"
-      },
-      "new_agent_status": "operational",
-      "work_lost": "2 hours of uncommitted changes",
-      "work_recovered": "All committed code via git clone",
-      "incident_id": "inc-20250115-001"
-    }
-  }'
-```
+Use the `agent-messaging` skill to inform the manager that replacement is complete:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[RESOLVED] Agent replacement complete`
+- **Priority**: `normal`
+- **Content**: type `replacement-complete`, including:
+  - Message confirming successful replacement
+  - Incident summary (original failure, detected timestamp, approval timestamp, new agent online timestamp, handoff acknowledged timestamp, total downtime)
+  - New agent status: "operational"
+  - Work lost and work recovered
+  - Incident ID
 
 ### 4.8.3 Archiving Old Agent Records
 
@@ -683,7 +432,7 @@ Replacement started: _______________
 - [ ] Logs preserved (if accessible)
 
 ### Phase 2: Manager Approval
-- [ ] Replacement request sent to EAMA
+- [ ] Replacement request sent to EAMA via `agent-messaging` skill
 - [ ] Impact assessment included
 - [ ] Replacement plan included
 - [ ] Approval received
@@ -695,24 +444,24 @@ Replacement started: _______________
 - [ ] Git repository cloned
 - [ ] Branch checked out
 - [ ] Claude Code session started
-- [ ] AI Maestro registration verified
+- [ ] AI Maestro registration verified via `ai-maestro-agents-management` skill
 
 ### Phase 4: Orchestrator Notification
-- [ ] Replacement notification sent to EOA
+- [ ] Replacement notification sent to EOA via `agent-messaging` skill
 - [ ] Handoff document request sent
 - [ ] GitHub Project update requested
 - [ ] Handoff document received
 - [ ] Kanban updated confirmed
 
 ### Phase 5: Work Handoff
-- [ ] Handoff documentation sent to new agent
+- [ ] Handoff documentation sent to new agent via `agent-messaging` skill
 - [ ] Task assignments sent
 - [ ] Acknowledgment received
 - [ ] Understanding verified
 
 ### Phase 6: Cleanup
 - [ ] Incident log updated with resolution
-- [ ] Manager notified of completion
+- [ ] Manager notified of completion via `agent-messaging` skill
 - [ ] Old agent records archived
 
 Replacement completed: _______________

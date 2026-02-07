@@ -6,7 +6,7 @@
 - [Example 2: Terminal Failure with Replacement](#example-2-terminal-failure-with-replacement)
 - [Example 3: Transient Network Failure](#example-3-transient-network-failure)
 - [Example 4: Emergency Handoff with Deadline](#example-4-emergency-handoff-with-deadline)
-- [Quick Command Reference](#quick-command-reference)
+- [Quick Reference](#quick-reference)
 
 ## Use-Case TOC
 
@@ -14,7 +14,7 @@
 - When agent fails repeatedly and needs replacement -> [Example 2: Terminal Failure with Replacement](#example-2-terminal-failure-with-replacement)
 - When network hiccup causes temporary unresponsiveness -> [Example 3: Transient Network Failure](#example-3-transient-network-failure)
 - When critical deadline is at risk -> [Example 4: Emergency Handoff with Deadline](#example-4-emergency-handoff-with-deadline)
-- When you need common curl commands -> [Quick Command Reference](#quick-command-reference)
+- When you need common message patterns -> [Quick Reference](#quick-reference)
 
 ---
 
@@ -25,52 +25,24 @@
 **Classification**: Recoverable (no explicit crash signal, process may still exist)
 
 **Recovery steps**:
-```
-1. Heartbeat monitor detects svgbbox-impl-01 unresponsive (5 min timeout)
+1. Heartbeat monitor detects `svgbbox-impl-01` unresponsive (5 min timeout)
 2. Classify as recoverable (no explicit crash signal)
 3. Send restart command via tmux
 4. Wait for agent to re-register in AI Maestro
 5. Verify agent received pending messages
 6. Report recovery to EAMA
-```
 
-**Commands used**:
-```bash
-# Step 1: Verify agent status
-curl -s "http://localhost:23000/api/agents/svgbbox-impl-01/status" | jq '.status'
-# Expected: "offline" or "unknown"
+**Detailed procedure**:
 
-# Step 3: Send restart command (if tmux session exists)
-tmux send-keys -t svgbbox-impl-01 "exit" Enter
-# Wait 5 seconds
-tmux send-keys -t svgbbox-impl-01 "claude" Enter
-
-# Step 4: Wait and verify re-registration
-sleep 60
-curl -s "http://localhost:23000/api/agents/svgbbox-impl-01/status" | jq '.status'
-# Expected: "online"
-
-# Step 5: Verify pending messages delivered
-curl -s "http://localhost:23000/api/messages?agent=svgbbox-impl-01&status=pending" | jq '.count'
-# Expected: 0
-
-# Step 6: Report to EAMA
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[RESOLVED] Agent svgbbox-impl-01 recovered",
-    "priority": "normal",
-    "content": {
-      "type": "recovery-report",
-      "message": "Agent svgbbox-impl-01 recovered via restart. No data loss.",
-      "agent": "svgbbox-impl-01",
-      "recovery_method": "restart",
-      "downtime_minutes": 7
-    }
-  }'
-```
+- **Step 1**: Use the `ai-maestro-agents-management` skill to check agent `svgbbox-impl-01` status. Expected: "offline" or "unknown"
+- **Step 3**: Send restart command via tmux session (exit and relaunch Claude Code)
+- **Step 4**: Wait 60 seconds, then use the `ai-maestro-agents-management` skill to verify agent status is "online"
+- **Step 5**: Use the `agent-messaging` skill to check for pending messages for agent `svgbbox-impl-01`. Expected: 0 pending
+- **Step 6**: Use the `agent-messaging` skill to report recovery to EAMA:
+  - **Recipient**: `eama-assistant-manager`
+  - **Subject**: `[RESOLVED] Agent svgbbox-impl-01 recovered`
+  - **Priority**: `normal`
+  - **Content**: type `recovery-report`, message: "Agent svgbbox-impl-01 recovered via restart. No data loss.", including agent name, recovery method "restart", and downtime in minutes
 
 ---
 
@@ -81,7 +53,6 @@ curl -X POST "http://localhost:23000/api/messages" \
 **Classification**: Terminal (repeated crashes indicate unrecoverable state)
 
 **Replacement protocol**:
-```
 1. Agent crashes 3 times in 10 minutes
 2. Classify as terminal failure
 3. Request replacement from EAMA with urgency
@@ -90,53 +61,21 @@ curl -X POST "http://localhost:23000/api/messages" \
 6. Handoff work context from failed agent's state backup
 7. Verify new agent is operational
 8. Archive failed agent records
-```
 
-**Commands used**:
-```bash
-# Step 2: Log terminal classification
-echo '{"timestamp":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","agent":"feature-impl-03","classification":"terminal","reason":"3 crashes in 10 minutes"}' >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/incident-log.jsonl
+**Detailed procedure**:
 
-# Step 3: Request replacement approval
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUIRED] Agent replacement: feature-impl-03",
-    "priority": "urgent",
-    "content": {
-      "type": "replacement-approval-request",
-      "message": "Agent feature-impl-03 crashed 3 times in 10 minutes. Terminal failure. Requesting replacement approval.",
-      "agent": "feature-impl-03",
-      "failure_type": "terminal",
-      "crash_count": 3,
-      "time_window_minutes": 10,
-      "awaiting_approval": true
-    }
-  }'
-
-# Step 5: After approval, notify orchestrator for handoff
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eoa-orchestrator",
-    "subject": "[HANDOFF] Replacement agent created: feature-impl-04",
-    "priority": "high",
-    "content": {
-      "type": "replacement-notification",
-      "message": "New agent feature-impl-04 created to replace failed feature-impl-03. Please generate handoff documentation and reassign tasks.",
-      "old_agent": "feature-impl-03",
-      "new_agent": "feature-impl-04",
-      "action_requested": "generate_handoff_and_reassign"
-    }
-  }'
-
-# Step 7: Verify new agent operational
-curl -s "http://localhost:23000/api/agents/feature-impl-04/status" | jq '.status'
-# Expected: "online"
-```
+- **Step 2**: Log terminal classification to incident log
+- **Step 3**: Use the `agent-messaging` skill to request replacement approval:
+  - **Recipient**: `eama-assistant-manager`
+  - **Subject**: `[APPROVAL REQUIRED] Agent replacement: feature-impl-03`
+  - **Priority**: `urgent`
+  - **Content**: type `replacement-approval-request`, message explaining the agent crashed 3 times in 10 minutes, including agent name, failure type "terminal", crash count, time window, and awaiting approval flag
+- **Step 5**: After approval, use the `agent-messaging` skill to notify the orchestrator:
+  - **Recipient**: `eoa-orchestrator`
+  - **Subject**: `[HANDOFF] Replacement agent created: feature-impl-04`
+  - **Priority**: `high`
+  - **Content**: type `replacement-notification`, message requesting handoff documentation and task reassignment, including old and new agent names
+- **Step 7**: Use the `ai-maestro-agents-management` skill to verify new agent `feature-impl-04` status is "online"
 
 ---
 
@@ -147,28 +86,18 @@ curl -s "http://localhost:23000/api/agents/feature-impl-04/status" | jq '.status
 **Classification**: Transient (single missed heartbeat, likely auto-recovers)
 
 **Response**:
-```
 1. Single heartbeat missed
 2. Classify as transient (< 5 minute threshold)
 3. Wait for auto-recovery
 4. Next heartbeat succeeds
 5. Resume normal monitoring
-```
 
-**Commands used**:
-```bash
-# Step 1: Note missed heartbeat (internal monitoring)
-# Heartbeat system logs: "api-impl-02 heartbeat missed at HH:MM:SS"
+**Detailed procedure**:
 
-# Step 3: Wait (no action required for transient)
-sleep 60
-
-# Step 4: Verify recovery
-curl -s "http://localhost:23000/api/agents/api-impl-02/status" | jq '.status'
-# Expected: "online"
-
-# No escalation needed for transient failures
-```
+- **Step 1**: Heartbeat system logs: "api-impl-02 heartbeat missed at HH:MM:SS"
+- **Step 3**: Wait 60 seconds (no action required for transient failures)
+- **Step 4**: Use the `ai-maestro-agents-management` skill to verify agent `api-impl-02` status is "online"
+- No escalation needed for transient failures
 
 ---
 
@@ -179,7 +108,6 @@ curl -s "http://localhost:23000/api/agents/api-impl-02/status" | jq '.status'
 **Classification**: Terminal (cannot risk recovery attempts with tight deadline)
 
 **Emergency handoff**:
-```
 1. Failure detected 90 minutes before deadline
 2. Classify as terminal (no time for recovery attempts)
 3. Initiate emergency handoff
@@ -187,122 +115,56 @@ curl -s "http://localhost:23000/api/agents/api-impl-02/status" | jq '.status'
 5. Transfer critical tasks to available agent
 6. Monitor new agent progress
 7. Deadline met
-```
 
-**Commands used**:
-```bash
-# Step 3: Initiate emergency handoff
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eoa-orchestrator",
-    "subject": "[EMERGENCY] Critical handoff - 90 minutes to deadline",
-    "priority": "urgent",
-    "content": {
-      "type": "emergency-handoff-request",
-      "message": "Agent release-prep-01 failed. Release deadline in 90 minutes. Need IMMEDIATE task reassignment.",
-      "failed_agent": "release-prep-01",
-      "deadline": "2025-01-15T14:00:00Z",
-      "critical_tasks": [
-        {"task_id": "release-notes", "estimated_minutes": 30},
-        {"task_id": "version-bump", "estimated_minutes": 15},
-        {"task_id": "tag-release", "estimated_minutes": 10}
-      ],
-      "action_requested": "immediate_reassignment"
-    }
-  }'
+**Detailed procedure**:
 
-# Step 4: Notify manager
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[EMERGENCY] Agent failure - critical deadline at risk",
-    "priority": "urgent",
-    "content": {
-      "type": "emergency-notification",
-      "message": "Agent release-prep-01 failed. Release deadline in 90 minutes. Emergency handoff initiated.",
-      "failed_agent": "release-prep-01",
-      "deadline_at_risk": true
-    }
-  }'
-```
+- **Step 3**: Use the `agent-messaging` skill to initiate emergency handoff:
+  - **Recipient**: `eoa-orchestrator`
+  - **Subject**: `[EMERGENCY] Critical handoff - 90 minutes to deadline`
+  - **Priority**: `urgent`
+  - **Content**: type `emergency-handoff-request`, message explaining the failure and deadline urgency, including the failed agent name, deadline timestamp, list of critical tasks with IDs and estimated minutes, and action requested "immediate_reassignment"
+- **Step 4**: Use the `agent-messaging` skill to notify the manager:
+  - **Recipient**: `eama-assistant-manager`
+  - **Subject**: `[EMERGENCY] Agent failure - critical deadline at risk`
+  - **Priority**: `urgent`
+  - **Content**: type `emergency-notification`, message explaining the failure and initiated handoff, including failed agent name and deadline-at-risk flag
 
 ---
 
-## Quick Command Reference
+## Quick Reference
 
 ### Heartbeat Ping
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "TARGET_AGENT",
-    "subject": "[HEARTBEAT] Health check",
-    "priority": "low",
-    "content": {"type": "heartbeat", "message": "ping"}
-  }'
-```
+
+Use the `agent-messaging` skill to send a heartbeat:
+- **Recipient**: the target agent session name
+- **Subject**: `[HEARTBEAT] Health check`
+- **Priority**: `low`
+- **Content**: type `heartbeat`, message: "ping"
 
 ### Check Agent Status
-```bash
-curl -s "http://localhost:23000/api/agents/TARGET_AGENT/status" | jq '.status'
-```
+
+Use the `ai-maestro-agents-management` skill to check the target agent's status.
 
 ### Soft Restart Request
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_NAME",
-    "subject": "[SYSTEM] Graceful restart requested",
-    "priority": "urgent",
-    "content": {
-      "type": "system-command",
-      "message": "Please save state and restart within 2 minutes.",
-      "command": "graceful_restart"
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to request a graceful restart:
+- **Recipient**: the target agent session name
+- **Subject**: `[SYSTEM] Graceful restart requested`
+- **Priority**: `urgent`
+- **Content**: type `system-command`, message: "Please save state and restart within 2 minutes.", command: "graceful_restart"
 
 ### Replacement Approval Request
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUIRED] Agent replacement request",
-    "priority": "urgent",
-    "content": {
-      "type": "replacement-approval-request",
-      "message": "Agent AGENT_NAME requires replacement. Terminal failure confirmed.",
-      "agent": "AGENT_NAME",
-      "failure_type": "terminal",
-      "awaiting_approval": true
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to request replacement approval:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUIRED] Agent replacement request`
+- **Priority**: `urgent`
+- **Content**: type `replacement-approval-request`, message explaining the terminal failure, including agent name, failure type, and awaiting approval flag
 
 ### Emergency Handoff Request
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eoa-orchestrator",
-    "subject": "[EMERGENCY] Work handoff required",
-    "priority": "urgent",
-    "content": {
-      "type": "emergency-handoff-request",
-      "message": "Agent failed, critical deadline approaching. Need immediate reassignment.",
-      "failed_agent": "AGENT_NAME",
-      "critical_tasks": [{"task_id": "task-001", "deadline": "YYYY-MM-DDTHH:MM:SSZ"}],
-      "action_requested": "reassign_critical_tasks"
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to request emergency handoff:
+- **Recipient**: `eoa-orchestrator`
+- **Subject**: `[EMERGENCY] Work handoff required`
+- **Priority**: `urgent`
+- **Content**: type `emergency-handoff-request`, message explaining the failure and deadline urgency, including failed agent name, critical tasks list, and action requested "reassign_critical_tasks"
