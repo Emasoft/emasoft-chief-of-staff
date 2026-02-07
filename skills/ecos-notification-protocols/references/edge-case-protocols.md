@@ -825,7 +825,7 @@ If multiple edge cases compound:
 
 ## Related Documents
 
-- [01-initialize-session-memory.md](./01-initialize-session-memory.md) - Memory initialization
-- [10-recovery-procedures.md](./10-recovery-procedures.md) - Detailed recovery
-- [14-context-sync.md](./14-context-sync.md) - Context synchronization
-- [SKILL.md](../SKILL.md) - Core Chief of Staff skill
+- Memory initialization: see `ecos-session-memory-library` skill, reference `01-initialize-session-memory.md`
+- Detailed recovery: see `ecos-session-memory-library` skill, reference `10-recovery-procedures.md`
+- Context synchronization: see `ecos-session-memory-library` skill, reference `14-context-sync.md`
+- [SKILL.md](../SKILL.md) - Core notification protocols skill

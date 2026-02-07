@@ -11,7 +11,7 @@
 - 4.3 Failure notification procedure - Step-by-step process
   - 4.3.1 Capture error details - What went wrong
   - 4.3.2 Compose failure message - What to tell agents
-  - 4.3.3 Send notification - Using the agent-messaging skill
+  - 4.3.3 Send notification - Using the `agent-messaging` skill
   - 4.3.4 Provide recovery guidance - How to proceed
   - 4.3.5 Log failure - Record for analysis
 - 4.4 Failure message format - Standard error structure
@@ -237,6 +237,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `[Operation] Failed`
 - **Priority**: `high`
 - **Content**: type `failure`, message: "The [operation] has failed. Error: [error_message]. [recovery_guidance]." Include `operation`, `status`: "failed", `error_code`, `error_details`, `recovery_action`.
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### 4.3.4 Provide recovery guidance
 

@@ -70,6 +70,8 @@ Then use the `agent-messaging` skill to send a wake notification:
 - **Priority**: `high`
 - **Content**: type `wake-notification`, informing the agent it has been woken from hibernation and asking it to confirm it is operational
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 Wait for confirmation response.
 
 ### Step 5: Restore State (If Needed)
@@ -79,6 +81,8 @@ If the agent needs context restoration, use the `agent-messaging` skill to send 
 - **Subject**: `State Restoration`
 - **Priority**: `high`
 - **Content**: type `request`, asking the agent to restore its state from `~/.emasoft/agent-states/<session-name>-hibernation.json`
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### Step 6: Update Team Registry
 

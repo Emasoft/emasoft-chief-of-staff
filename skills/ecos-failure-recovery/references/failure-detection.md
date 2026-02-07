@@ -60,6 +60,8 @@ ECOS sends periodic "ping" messages to agents and expects "pong" responses. The 
 - **Priority**: `low`
 - **Content**: type `heartbeat`, message: "ping". Include `timestamp` (current ISO timestamp) and `sequence` (incrementing number).
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **Expected response from healthy agent**: The agent uses the `agent-messaging` skill to reply with:
 - **Recipient**: `ecos-chief-of-staff`
 - **Subject**: `[HEARTBEAT] Response`

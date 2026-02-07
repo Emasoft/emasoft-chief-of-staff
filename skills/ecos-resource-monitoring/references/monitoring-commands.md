@@ -344,8 +344,8 @@ done
 - `false → true`: When **all** resources return to normal
 
 **Notifications**:
-- Send alert to Chief of Staff when transitioning to `false`
-- Send recovery notification when transitioning to `true`
+- Send alert to Chief of Staff using the `agent-messaging` skill when transitioning to `false`
+- Send recovery notification using the `agent-messaging` skill when transitioning to `true`
 
 ---
 

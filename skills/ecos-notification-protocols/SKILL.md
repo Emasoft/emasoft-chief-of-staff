@@ -29,7 +29,7 @@ Before using this skill, ensure:
 
 1. Identify the notification type needed
 2. Select appropriate notification template
-3. Send notification via AI Maestro
+3. Send notification using the `agent-messaging` skill
 4. Verify delivery and acknowledgment
 
 ## Output

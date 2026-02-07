@@ -205,6 +205,8 @@ Use the `agent-messaging` skill to send messages to other agents. Each message r
 - **Priority**: `normal`, `high`, or `urgent`
 - **Content**: an object with `type` (the message type), `message` (the message text), and optionally `operation_id`
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 #### Target Agents
 
 | Target | Session Name | Purpose |
@@ -321,7 +323,7 @@ All sub-agents should follow this error handling pattern:
 **Standard Error Response:**
 1. Log error to audit trail with full context
 2. Execute rollback if operation was partially complete
-3. Send escalation message to Chief of Staff
+3. Send escalation message to Chief of Staff using the `agent-messaging` skill
 4. Update operation status to `failed`
 5. Wait for instructions
 
@@ -450,6 +452,6 @@ Before deploying a new sub-agent, verify:
 ## References
 
 - Main skill: [ecos-agent-lifecycle/SKILL.md](../SKILL.md)
-- Agent hierarchy: [agent-hierarchy.md](./agent-hierarchy.md)
-- Communication protocols: [ecos-inter-agent-messaging.md](./ecos-inter-agent-messaging.md)
-- Approval workflows: [approval-workflow-procedures.md](../../ecos-permission-management/references/approval-workflow-procedures.md)
+- Agent hierarchy: described in the `ecos-agent-lifecycle` skill (see SKILL.md section on agent roles and hierarchy)
+- Communication protocols: use the `agent-messaging` skill for all inter-agent messaging (see Communication Rules section above)
+- Approval workflows: use the `ecos-permission-management` skill for approval request procedures

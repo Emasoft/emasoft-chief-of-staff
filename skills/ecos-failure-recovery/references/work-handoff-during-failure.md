@@ -93,6 +93,8 @@ Use the `agent-messaging` skill to send the handoff request:
   - Action requested: "reassign_critical_tasks"
   - Suggested recipient agent (if known)
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### 5.3.3 Notification to Manager
 
 Notify EAMA about the emergency handoff.
@@ -108,6 +110,8 @@ Use the `agent-messaging` skill to send notification:
   - Tasks being held for replacement (list of task IDs)
   - Reason for the decision
   - This is a notification only (not awaiting approval)
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ---
 
@@ -291,6 +295,8 @@ Use the `agent-messaging` skill to send detailed instructions:
   - Completion criteria (acceptance criteria met, tests pass, code committed and pushed, PR created or merged)
   - Reporting structure (progress to ECOS, blockers to EOA, completion to both)
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ---
 
 ## 5.7 Post-Failure Work Reconciliation
@@ -431,3 +437,5 @@ Use the `agent-messaging` skill to send the complete emergency handoff message:
 | `deadline_impact` | string | Business impact of missing deadline |
 | `acknowledgment_required` | boolean | Must be `true` for emergency handoffs |
 | `acknowledge_by` | string | ISO-8601 timestamp for ACK deadline |
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.

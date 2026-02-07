@@ -217,7 +217,7 @@ EOA ◄────────────────────────�
 #### Step 14: Agent Clarification
 **Actor**: EOA (Orchestrator) + IMPLEMENTER AGENTS
 **Action**:
-- Send to each agent a notification that their first task has been assigned
+- Send to each agent a notification using the `agent-messaging` skill that their first task has been assigned
 - Ask each agent if they need clarifications
 - The Orchestrator is the team lead with full project understanding (along with Architect)
 
@@ -293,7 +293,7 @@ EOA ◄────────────────────────�
 #### Step 20: PR Review Request
 **Actor**: EOA (Orchestrator)
 **Action**:
-- Send message to Integrator agent (EIA) to evaluate all PRs of completed tasks
+- Send message using the `agent-messaging` skill to Integrator agent (EIA) to evaluate all PRs of completed tasks
 - Request merge if they pass all checks
 
 **Communication**:

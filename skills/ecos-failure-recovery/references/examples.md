@@ -141,6 +141,8 @@ Use the `agent-messaging` skill to send a heartbeat:
 - **Priority**: `low`
 - **Content**: type `heartbeat`, message: "ping"
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### Check Agent Status
 
 Use the `ai-maestro-agents-management` skill to check the target agent's status.

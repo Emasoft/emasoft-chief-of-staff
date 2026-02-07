@@ -89,6 +89,8 @@ Use the `agent-messaging` skill to send a health check ping:
 - **Priority**: `high`
 - **Content**: type `health-check`, message: "PING"
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 Wait 60 seconds, then use the `agent-messaging` skill to check for unread messages. Look for a response with subject "Health Check Pong".
 
 **What to look for:**
@@ -415,6 +417,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `urgent`
 - **Content**: type `recovery-warning`, message: "You have been unresponsive for 3 minutes. Recovery will be attempted in 60 seconds." Include `recovery_type`: "soft_restart", `countdown_seconds`: 60.
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **When to send:**
 - Before all RECOVERABLE actions
 - At least 60 seconds before forced restart
@@ -430,6 +434,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `urgent`
 - **Content**: type `failure-report`, message: "Agent [agent-name] has experienced TERMINAL failure." Include `failed_agent`, `failure_classification`: "TERMINAL", `failure_reason`, `orphaned_tasks` (list of task descriptions), `recommended_action`: "reassign_tasks".
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **When to send:**
 - ALL TERMINAL failures
 - RECOVERABLE failures where agent has assigned tasks
@@ -443,6 +449,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `CRITICAL: Agent Terminal Failure`
 - **Priority**: `urgent`
 - **Content**: type `critical-failure`, message: "Agent [agent-name] has experienced TERMINAL failure requiring approval." Include `failed_agent`, `failure_classification`: "TERMINAL", `failure_reason`, `recovery_attempts` count, `orphaned_tasks` list, `recovery_options` array listing "replace", "reassign_only", and "investigate" options with descriptions, `awaiting`: "approval".
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 **When to send:**
 - TERMINAL failures when `auto_replace_on_terminal: false`

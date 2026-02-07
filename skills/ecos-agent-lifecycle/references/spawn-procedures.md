@@ -133,6 +133,8 @@ Use the `agent-messaging` skill to send a spawn request:
 - **Priority**: `high`
 - **Content**: type `spawn-request`, message: "Spawn code-implementer". Include `config` with `agent_type`, `task`, and `project` fields.
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### 1.3.4 Initialization verification
 
 **Purpose:** Confirm the agent started successfully.
@@ -220,6 +222,8 @@ Use the `agent-messaging` skill to send:
 - **Recipient**: the spawned agent session name (e.g., `code-impl-01`)
 - **Subject**: `Task Update`
 - **Content**: type `instruction`, message: "Priority changed to critical"
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ---
 

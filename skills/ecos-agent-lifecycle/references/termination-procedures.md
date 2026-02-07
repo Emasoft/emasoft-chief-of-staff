@@ -112,6 +112,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `high`
 - **Content**: type `terminate-request`, message: "Please save state and terminate gracefully". Include `reason` (e.g., "Task completed"), `graceful`: true, `timeout`: 60.
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **Forced Termination:**
 
 Use the `agent-messaging` skill to send:
@@ -119,6 +121,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `Forced Termination`
 - **Priority**: `urgent`
 - **Content**: type `terminate-request`, message: "Immediate termination required". Include `reason` (e.g., "Error condition"), `graceful`: false.
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### 2.3.4 Confirmation await
 

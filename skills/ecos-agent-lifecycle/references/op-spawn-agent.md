@@ -90,6 +90,8 @@ Use the `agent-messaging` skill to send a welcome message:
 - **Priority**: `high`
 - **Content**: type `team-notification`, informing the agent it has been created and registered, and is awaiting role assignment from the orchestrator
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ## Checklist
 
 Copy this checklist and track your progress:

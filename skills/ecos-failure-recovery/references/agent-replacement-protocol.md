@@ -160,6 +160,8 @@ Use the `agent-messaging` skill to send the replacement approval request:
   - Awaiting approval flag
   - Response requested by timestamp
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### 4.4.2 Required Information for Approval
 
 The manager needs the following to make an informed decision:
@@ -371,6 +373,8 @@ Use the `agent-messaging` skill to send a reminder:
 - **Priority**: `urgent`
 - **Content**: type `acknowledgment-reminder`, requesting receipt acknowledgment and response deadline
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### 4.7.4 Verifying New Agent Understanding
 
 After acknowledgment, use the `agent-messaging` skill to verify understanding:
@@ -490,7 +494,7 @@ Total time: _______________
 **Cause**: EOA may be busy or also experiencing issues.
 
 **Solution**:
-1. Send a reminder message to EOA
+1. Send a reminder message to EOA using the `agent-messaging` skill
 2. If no response, escalate to manager (EAMA)
 3. As fallback, ECOS can generate a basic handoff from known information
 

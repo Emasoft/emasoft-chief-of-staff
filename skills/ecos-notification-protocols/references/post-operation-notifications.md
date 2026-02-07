@@ -11,7 +11,7 @@
 - 2.3 Post-operation notification procedure - Step-by-step process
   - 2.3.1 Confirm operation success - Verify completion
   - 2.3.2 Compose confirmation - What to tell agents
-  - 2.3.3 Send notification - Using the agent-messaging skill
+  - 2.3.3 Send notification - Using the `agent-messaging` skill
   - 2.3.4 Request verification - Ask agent to confirm
   - 2.3.5 Log outcome - Record the result
 - 2.4 Verification request format - Asking agents to confirm
@@ -116,6 +116,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `[Operation Type] Complete`
 - **Priority**: `normal`
 - **Content**: type `post-operation`, message: "The [operation] has been completed successfully. [Summary of changes]. Please [verification request]." Include fields: `operation` (the operation type), `status`: "success", `operation_details` (with completed_at timestamp and changes list), `verification_requested` (true or false).
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### 2.3.4 Request verification
 

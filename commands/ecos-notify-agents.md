@@ -26,6 +26,8 @@ For each target agent, send a notification message using the `agent-messaging` s
 - **Priority**: `normal`
 - If `--require-ack` is set, include acknowledgment request in the message
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ## Arguments
 
 | Argument | Required | Description |

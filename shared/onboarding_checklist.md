@@ -55,7 +55,6 @@ Use the `ai-maestro-agents-management` skill to register the agent with the foll
 - **Project**: the project name
 - **Status**: "starting"
 - **Handoff**: path to the handoff document (if applicable)
-```
 
 ### Step 4: Spawn Agent Process
 
@@ -184,7 +183,7 @@ If onboarding fails at any step:
 
 If agent does not acknowledge within ONBOARDING_TIMEOUT_SECONDS (60):
 
-1. Send warning message to agent
+1. Send warning message to agent using the `agent-messaging` skill
 2. Wait additional 30 seconds
 3. If still no response:
    - Mark agent as unresponsive

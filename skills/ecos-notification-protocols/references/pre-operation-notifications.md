@@ -11,7 +11,7 @@
 - 1.3 Pre-operation notification procedure - Step-by-step process
   - 1.3.1 Identify affected agents - Who needs to know
   - 1.3.2 Compose notification - What to tell them
-  - 1.3.3 Send notification - Using the agent-messaging skill
+  - 1.3.3 Send notification - Using the `agent-messaging` skill
   - 1.3.4 Track acknowledgments - Monitor responses
   - 1.3.5 Handle timeouts - When agents don't respond
 - 1.4 Notification message format - Standard message structure
@@ -146,6 +146,8 @@ Use the `agent-messaging` skill to send the pre-operation notification:
 - **Priority**: `high`
 - **Content**: type `pre-operation`, message: "I will [operation description]. This requires [impact description]. Please [action required] and reply with 'ok' when ready. I will wait up to 2 minutes." Include fields: `operation`, `expected_downtime`, `requires_acknowledgment` (true).
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 Capture the message ID from the response for tracking.
 
 ### 1.3.4 Track acknowledgments
@@ -174,6 +176,8 @@ Use the `agent-messaging` skill to send a timeout notice:
 - **Subject**: `Proceeding Without Acknowledgment`
 - **Priority**: `high`
 - **Content**: type `timeout-notice`, message: "No response received after 2 minutes. Proceeding with [operation] now." Include fields: `operation`, `timeout_occurred` (true).
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ---
 

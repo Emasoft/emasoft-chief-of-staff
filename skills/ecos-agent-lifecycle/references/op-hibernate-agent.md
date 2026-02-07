@@ -38,6 +38,8 @@ Use the `agent-messaging` skill to send an idle check:
 - **Priority**: `normal`
 - **Content**: type `status-request`, asking the agent if it is currently working on any active tasks (reply with IDLE if no active work)
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 Wait for IDLE confirmation.
 
 ### Step 2: Send Hibernation Warning
@@ -48,6 +50,8 @@ Use the `agent-messaging` skill to send a hibernation notice:
 - **Priority**: `high`
 - **Content**: type `hibernation-warning`, informing the agent it will be hibernated in 30 seconds and should save any transient state
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### Step 3: Request State Capture
 
 Use the `agent-messaging` skill to request state capture:
@@ -55,6 +59,8 @@ Use the `agent-messaging` skill to request state capture:
 - **Subject**: `State Capture Request`
 - **Priority**: `high`
 - **Content**: type `request`, asking the agent to save its current state to `~/.emasoft/agent-states/<session-name>-hibernation.json`
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### Step 4: Execute Hibernation
 

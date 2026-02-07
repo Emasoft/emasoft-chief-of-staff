@@ -130,6 +130,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `urgent`
 - **Content**: type `system-command`, message: "ECOS has detected you are unresponsive. Please save your state and restart. If you receive this message, acknowledge and restart within 2 minutes." Include `command`: "graceful_restart", `timeout_seconds`: 120.
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **Step 2: Wait 2 minutes for acknowledgment**
 
 **Step 3: If no acknowledgment, proceed to hard restart**
@@ -148,6 +150,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `high`
 - **Content**: type `action-notification`, message: "Soft restart failed for agent [agent-name]. Initiating hard restart. The agent may lose unsaved work." Include `agent`, `action`: "hard_restart", `risk`: "Unsaved work may be lost", `proceeding_in`: "30 seconds".
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **Step 2: Request user to execute restart**
 
 Use the `agent-messaging` skill to send:
@@ -155,6 +159,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `[USER ACTION REQUIRED] Restart agent process`
 - **Priority**: `urgent`
 - **Content**: type `user-action-required`, message: "Please restart the Claude Code session for agent [agent-name]. The session is unresponsive and cannot be recovered remotely." Include `instructions` listing the steps: find the terminal, press Ctrl+C, run claude --resume, verify responsiveness. Include `agent` and `urgency`: "Please complete within 10 minutes".
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 **Step 3: Wait for restart confirmation**
 
@@ -171,6 +177,8 @@ Use the `agent-messaging` skill to send:
 - **Subject**: `[VERIFICATION] Post-restart health check`
 - **Priority**: `high`
 - **Content**: type `verification`, message: "Please confirm you are operational after restart. Respond with your current status and any issues." Include `expected_response`: "status_report", `timeout_seconds`: 120.
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 **Step 3: Verify response and log result** to the recovery log.
 
@@ -218,6 +226,8 @@ Use the `agent-messaging` skill to send to the user or admin agent:
 - **Priority**: `high`
 - **Content**: type `user-action-required`, message: "Agent [agent-name] is hibernated in a tmux session. Please wake it." Include `instructions` listing: SSH to the host, attach to tmux session, the Claude session should resume automatically, press Enter if not responsive. Include `agent`.
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 **For idle Claude sessions:**
 
 Sometimes a Claude Code session goes idle due to inactivity. Sending a message may wake it. Use the `agent-messaging` skill to send:
@@ -225,6 +235,8 @@ Sometimes a Claude Code session goes idle due to inactivity. Sending a message m
 - **Subject**: `[WAKE] Activity ping`
 - **Priority**: `high`
 - **Content**: type `wake-ping`, message: "This is a wake-up ping. Please acknowledge if you are active." Include `timestamp`.
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### 3.5.4 Post-Wake Verification
 
@@ -265,6 +277,8 @@ Use the `agent-messaging` skill to send:
 - **Priority**: `high`
 - **Content**: type `resource-request`, message: "Agent [agent-name] crashed due to insufficient memory. Requesting memory increase to allow recovery." Include fields: `agent`, `resource_issue` (e.g., "out_of_memory"), `current_allocation`, `requested_allocation`, `justification`, `alternative` (a workaround if resource increase is denied).
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ---
 
 ## 3.7 Strategy: Replace Agent
@@ -299,6 +313,8 @@ Use the `agent-messaging` skill to send a replacement request:
 - **Subject**: `[REPLACEMENT] Recovery failed, replacement required`
 - **Priority**: `urgent`
 - **Content**: type `replacement-request`, message: "All recovery strategies have failed for agent [agent-name]. Requesting approval to proceed with replacement." Include fields: `agent`, `recovery_attempts` (array of strategies tried with results), `recommendation`: "replace", `awaiting_approval`: true.
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ---
 

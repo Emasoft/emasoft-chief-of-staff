@@ -13,7 +13,7 @@
   - 1.3.1 Operation identification - Determining request type
   - 1.3.2 Justification preparation - Explaining why
   - 1.3.3 Message composition - Formatting the request
-  - 1.3.4 Transmission via agent-messaging skill - Sending to EAMA
+  - 1.3.4 Transmission via `agent-messaging` skill - Sending to EAMA
   - 1.3.5 Response awaiting - Waiting with timeout
 - 1.4 Request message format - Standard message structure
 - 1.5 Examples - Approval request scenarios
@@ -188,7 +188,7 @@ Examples:
 - `normal` - For terminate and hibernate operations (cleanup)
 - `urgent` - Only for escalation reminders (not initial request)
 
-### 1.3.4 Transmission via agent-messaging skill
+### 1.3.4 Transmission via `agent-messaging` skill
 
 **Step 5:** Use the `agent-messaging` skill to send the composed approval request message to EAMA.
 

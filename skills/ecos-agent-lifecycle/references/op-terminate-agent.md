@@ -37,6 +37,8 @@ Use the `agent-messaging` skill to send a status request:
 - **Priority**: `high`
 - **Content**: type `status-request`, asking the agent to confirm all tasks are complete before termination
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 Wait for confirmation response.
 
 ### Step 2: Save Final State (Optional but Recommended)
@@ -49,6 +51,8 @@ Use the `agent-messaging` skill to request a state dump:
 - **Priority**: `high`
 - **Content**: type `request`, asking the agent to save its current state to `~/.emasoft/agent-states/<session-name>-final.json` before termination
 
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
+
 ### Step 3: Send Termination Warning
 
 Use the `agent-messaging` skill to send a termination notice:
@@ -56,6 +60,8 @@ Use the `agent-messaging` skill to send a termination notice:
 - **Subject**: `Termination Notice`
 - **Priority**: `urgent`
 - **Content**: type `hibernation-warning`, informing the agent it will be terminated in 60 seconds and should complete any final cleanup
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 ### Step 4: Execute Termination
 

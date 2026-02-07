@@ -157,13 +157,15 @@ Create a message containing:
 - Any immediate tasks
 - Acknowledgment request
 
-**Step 4: Send the assignment via agent-messaging skill**
+**Step 4: Send the assignment via `agent-messaging` skill**
 
 Use the `agent-messaging` skill to send:
 - **Recipient**: the target agent session name
 - **Subject**: `Role Assignment: [ROLE_NAME]`
 - **Priority**: `high`
 - **Content**: type `role-assignment`, message: "You are assigned the [ROLE_NAME] role. Responsibilities: [LIST]. Report to: [AGENTS]. Please acknowledge receipt."
+
+**Verify**: confirm message delivery via the `agent-messaging` skill's sent messages feature.
 
 **Step 5: Wait for acknowledgment**
 
