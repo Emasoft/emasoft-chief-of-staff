@@ -21,6 +21,7 @@ Trigger this operation when:
 ## Prerequisites
 
 - AI Maestro messaging system is running
+- The `agent-messaging` skill is available
 - Target agent is active and reachable
 - Timeout values are understood (see Standardized ACK Timeout Policy)
 - Fallback behavior is defined for timeout scenarios
@@ -40,111 +41,50 @@ Trigger this operation when:
 
 ### Step 1: Send Acknowledgment Request
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<target-agent>",
-    "subject": "<Request Subject>",
-    "priority": "high",
-    "content": {
-      "type": "ack-request",
-      "message": "<What needs acknowledgment>. Please reply with \"ok\" when ready.",
-      "timeout_seconds": 60,
-      "requires_acknowledgment": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: the request subject
+- **Priority**: `high`
+- **Content**: type `ack-request`, message: "[What needs acknowledgment]. Please reply with 'ok' when ready." Include `timeout_seconds`: 60, `requires_acknowledgment`: true.
 
 ### Step 2: Start Timeout Timer
 
-Track elapsed time from request sent:
-
-```bash
-START_TIME=$(date +%s)
-TIMEOUT=60  # seconds
-REMINDER_INTERVALS=(15 30 45)
-```
+Track elapsed time from request sent. Default timeout: 60 seconds. Reminder intervals: 15s, 30s, 45s.
 
 ### Step 3: Send Reminders
 
-At each reminder interval, if no response:
-
-```bash
-# At 15 seconds
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<target-agent>",
-    "subject": "Reminder: <Original Subject>",
-    "priority": "high",
-    "content": {
-      "type": "reminder",
-      "message": "Reminder: Please reply \"ok\" when ready. 45 seconds remaining.",
-      "original_subject": "<Original Subject>",
-      "time_remaining": "45 seconds"
-    }
-  }'
-
-# At 30 seconds
-# ... (time_remaining: 30 seconds)
-
-# At 45 seconds
-# ... (time_remaining: 15 seconds)
-```
+At each reminder interval, if no response, use the `agent-messaging` skill to send a reminder:
+- **Recipient**: the target agent session name
+- **Subject**: `Reminder: [Original Subject]`
+- **Priority**: `high`
+- **Content**: type `reminder`, message: "Reminder: Please reply 'ok' when ready. [X] seconds remaining." Include `original_subject`, `time_remaining`.
 
 ### Step 4: Process Response
 
-Valid acknowledgment responses:
+Use the `agent-messaging` skill to check for unread messages from the target agent. Look for responses containing:
 - `"ok"` - Agent is ready, proceed
 - `"not ready"` - Agent needs more time, negotiate
 - `"busy"` - Agent cannot respond now, may need escalation
 - No response - Timeout behavior applies
-
-```bash
-# Check for response
-RESPONSE=$(curl -s "http://localhost:23000/api/messages?agent=chief-of-staff&action=list&status=unread" | jq '.messages[] | select(.from == "<target-agent>")')
-
-if echo "$RESPONSE" | grep -q '"ok"'; then
-  echo "Acknowledgment received - proceeding"
-elif echo "$RESPONSE" | grep -q '"not ready"'; then
-  echo "Agent not ready - negotiating delay"
-else
-  echo "Unexpected response - evaluating"
-fi
-```
 
 ### Step 5: Proceed or Handle Timeout
 
 **If acknowledgment received:** Proceed with operation.
 
 **If timeout occurs:**
-1. Send final notice
+1. Use the `agent-messaging` skill to send a final timeout notice:
+   - **Recipient**: the target agent session name
+   - **Subject**: `Proceeding Without Acknowledgment`
+   - **Priority**: `high`
+   - **Content**: type `timeout-notice`, message: "No response received within timeout. Proceeding with operation." Include `timeout_occurred`: true.
 2. Log timeout event
-3. Proceed with operation (for pre-operation ACK)
-4. Or abort (for approval requests without autonomous mode)
-
-```bash
-# Final notice on timeout
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<target-agent>",
-    "subject": "Proceeding Without Acknowledgment",
-    "priority": "high",
-    "content": {
-      "type": "timeout-notice",
-      "message": "No response received within timeout. Proceeding with operation.",
-      "timeout_occurred": true
-    }
-  }'
-```
+3. Proceed with operation (for pre-operation ACK) or abort (for approval requests without autonomous mode)
 
 ## Checklist
 
 Copy this checklist and track your progress:
 
-- [ ] Sent acknowledgment request with clear instructions
+- [ ] Sent acknowledgment request with clear instructions via `agent-messaging` skill
 - [ ] Started timeout timer
 - [ ] Sent reminder at 15 seconds (if no response)
 - [ ] Sent reminder at 30 seconds (if no response)
@@ -159,73 +99,37 @@ Copy this checklist and track your progress:
 
 **Scenario:** Getting acknowledgment before skill installation.
 
-```bash
-# Send ACK request
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Ready for Skill Installation?",
-    "priority": "high",
-    "content": {
-      "type": "ack-request",
-      "message": "I am about to install the security-audit skill. This will hibernate and wake you. Please save your work and reply \"ok\" when ready.",
-      "timeout_seconds": 60,
-      "requires_acknowledgment": true
-    }
-  }'
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Ready for Skill Installation?`
+- **Priority**: `high`
+- **Content**: type `ack-request`, message: "I am about to install the security-audit skill. This will hibernate and wake you. Please save your work and reply 'ok' when ready." Include `timeout_seconds`: 60, `requires_acknowledgment`: true.
 
-# Wait for response with reminders...
+Wait for response with reminders at 15s, 30s, 45s.
 
-# On "ok" response:
-echo "Proceeding with skill installation"
-```
+On "ok" response: Proceed with skill installation.
 
 ### Example 2: Approval Request ACK
 
 **Scenario:** Requesting EAMA approval for expensive operation.
 
-```bash
-# Send approval request (2 minute timeout)
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "emasoft-assistant-manager-agent",
-    "subject": "Approval Request: Full Project Rescan",
-    "priority": "high",
-    "content": {
-      "type": "approval-request",
-      "message": "Requesting approval for full project skill rescan. Estimated time: 15 minutes. Estimated cost: significant token usage. Reply \"approved\" to proceed or \"denied\" with reason.",
-      "timeout_seconds": 120,
-      "operation": "full-rescan",
-      "requires_acknowledgment": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send (2 minute timeout):
+- **Recipient**: `emasoft-assistant-manager-agent`
+- **Subject**: `Approval Request: Full Project Rescan`
+- **Priority**: `high`
+- **Content**: type `approval-request`, message: "Requesting approval for full project skill rescan. Estimated time: 15 minutes. Estimated cost: significant token usage. Reply 'approved' to proceed or 'denied' with reason." Include `timeout_seconds`: 120, `operation`: "full-rescan", `requires_acknowledgment`: true.
 
 ### Example 3: Emergency Handoff ACK
 
 **Scenario:** Emergency handoff with tight timeout.
 
-```bash
-# Send emergency ACK request (30 second timeout)
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "backup-coordinator",
-    "subject": "URGENT: Emergency Handoff",
-    "priority": "urgent",
-    "content": {
-      "type": "emergency-ack",
-      "message": "Chief of Staff is running out of context. Emergency handoff required. Reply \"ok\" immediately to accept handoff.",
-      "timeout_seconds": 30,
-      "requires_acknowledgment": true
-    }
-  }'
+Use the `agent-messaging` skill to send (30 second timeout):
+- **Recipient**: `backup-coordinator`
+- **Subject**: `URGENT: Emergency Handoff`
+- **Priority**: `urgent`
+- **Content**: type `emergency-ack`, message: "Chief of Staff is running out of context. Emergency handoff required. Reply 'ok' immediately to accept handoff." Include `timeout_seconds`: 30, `requires_acknowledgment`: true.
 
-# Reminders at 10s and 20s
-# Proceed immediately after 30s regardless
-```
+Send reminders at 10s and 20s. Proceed immediately after 30s regardless.
 
 ## Error Handling
 
@@ -234,7 +138,7 @@ curl -X POST "http://localhost:23000/api/messages" \
 | No response within timeout | Agent busy/offline/crashed | Proceed per timeout policy; log occurrence |
 | Agent responds "not ready" | Work in progress | Ask when ready; reschedule if possible |
 | Agent responds "busy" | Cannot handle request | Escalate to user or find alternative agent |
-| Reminder delivery fails | Messaging issue | Check AI Maestro health; proceed with timeout |
+| Reminder delivery fails | Messaging issue | Use the `ai-maestro-agents-management` skill to check AI Maestro health; proceed with timeout |
 | Agent acknowledges late | Response after timeout | Log late ACK; operation may already be in progress |
 | Invalid response format | Agent misunderstood request | Clarify expectations; retry request |
 
