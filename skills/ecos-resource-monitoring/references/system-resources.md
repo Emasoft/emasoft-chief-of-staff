@@ -248,7 +248,7 @@ df -i / | tail -1
 ping -c 3 8.8.8.8 > /dev/null 2>&1 && echo "Internet: OK" || echo "Internet: FAILED"
 
 # Check AI Maestro connectivity
-curl -s http://localhost:23000/health > /dev/null && echo "AI Maestro: OK" || echo "AI Maestro: FAILED"
+# Use the ai-maestro-agents-management skill to verify AI Maestro health status
 
 # Check DNS resolution
 nslookup api.anthropic.com > /dev/null 2>&1 && echo "DNS: OK" || echo "DNS: FAILED"
@@ -261,8 +261,7 @@ nslookup api.anthropic.com > /dev/null 2>&1 && echo "DNS: OK" || echo "DNS: FAIL
 ping -c 5 api.anthropic.com | tail -1 | awk -F'/' '{print "API latency: " $5 "ms"}'
 
 # AI Maestro latency
-time_ms=$(curl -s -w "%{time_total}" -o /dev/null http://localhost:23000/health)
-echo "AI Maestro latency: ${time_ms}s"
+# Use the ai-maestro-agents-management skill to check AI Maestro response time
 ```
 
 ### Port Availability
@@ -378,7 +377,7 @@ echo "Disk usage: $disk_percent (Free: $disk_free)"
 
 # Network
 echo "--- Network ---"
-curl -s http://localhost:23000/health > /dev/null && echo "AI Maestro: OK" || echo "AI Maestro: FAILED"
+# Use the ai-maestro-agents-management skill to check AI Maestro health
 
 echo ""
 echo "=== Check Complete ==="
@@ -488,7 +487,7 @@ EOF
 **Resolution:**
 1. Test specific port: `nc -zv host port`
 2. Check DNS: `nslookup domain`
-3. Test with curl verbose: `curl -v url`
+3. Test the connection using the `ai-maestro-agents-management` skill to verify health
 4. Check proxy settings
 
 ---

@@ -41,7 +41,7 @@ The `description` field in SKILL.md frontmatter is the PRIMARY source for keywor
 
 **Best practices:**
 - Use action verbs: "Use when spawning", "Trigger with agent creation"
-- Include tool names: "aimaestro-agent.sh", "AI Maestro"
+- Include tool names: "AI Maestro", "agent-messaging skill"
 - Include concepts: "lifecycle management", "team coordination"
 - Use natural language that matches user queries
 
@@ -161,9 +161,9 @@ description: Manages agent states
 ```yaml
 ---
 name: ecos-agent-lifecycle
-description: Use when spawning, terminating, hibernating, or waking agents. Trigger with agent spawn, termination, hibernation, or wake requests. Covers agent creation with aimaestro-agent.sh, team registry updates, and AI Maestro messaging for lifecycle events.
+description: Use when spawning, terminating, hibernating, or waking agents. Trigger with agent spawn, termination, hibernation, or wake requests. Covers agent creation via the ai-maestro-agents-management skill, team registry updates, and AI Maestro messaging for lifecycle events.
 license: Apache-2.0
-compatibility: Requires AI Maestro, aimaestro-agent.sh CLI, tmux
+compatibility: Requires AI Maestro, ai-maestro-agents-management skill, tmux
 metadata:
   categories:
     - lifecycle

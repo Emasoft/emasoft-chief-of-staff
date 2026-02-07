@@ -225,18 +225,10 @@
 
 **Query Examples**:
 
-```bash
-# Get all messages for a specific agent
-curl -s "http://localhost:23000/api/messages?agent={agent_name}&action=list" | jq '.'
-
-# Get messages in a time range
-curl -s "http://localhost:23000/api/messages?from_date={ISO_date}&to_date={ISO_date}" | jq '.'
-
-# Example: Get last 7 days of messages for helper-agent-generic
-from_date=$(date -u -v-7d +"%Y-%m-%dT%H:%M:%SZ")
-to_date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-curl -s "http://localhost:23000/api/messages?agent=helper-agent-generic&from_date=${from_date}&to_date=${to_date}" | jq '.messages'
-```
+Use the `agent-messaging` skill to query message history:
+- **List all messages for a specific agent**: Query by agent name with `action=list`
+- **Get messages in a time range**: Filter by `from_date` and `to_date` (ISO-8601 format)
+- **Example**: Get last 7 days of messages for `helper-agent-generic` by specifying the date range
 
 **Expected Response Structure**:
 ```json
@@ -1095,7 +1087,7 @@ Partial Report: {YES/NO}
 ```
 [FAILED] ecos-performance-reporter: team report generation failed
 
-Reason: AI Maestro API unreachable at http://localhost:23000/api/messages
+Reason: AI Maestro API unreachable (agent-messaging skill failed to connect)
 Missing Data: Message history, task assignments
 Attempted Period: 2026-01-25 to 2026-02-01
 Partial Report: NO

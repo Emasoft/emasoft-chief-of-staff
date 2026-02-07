@@ -55,13 +55,9 @@ grep -r "<UUID>" $CLAUDE_PROJECT_DIR/thoughts/shared/handoffs/
 
 ### Step 3: Verify Target Agent Exists
 
-```bash
-# Check agent exists in AI Maestro
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[].name' | grep "<target-agent>"
-
-# Check agent is alive (running or hibernated)
-aimaestro-agent.sh status <target-agent>
-```
+Use the `ai-maestro-agents-management` skill to:
+1. List all agents and verify the target agent name exists
+2. Check the target agent's status (running or hibernated)
 
 ### Step 4: Verify Referenced Files Exist
 
@@ -173,7 +169,7 @@ fi
 # Step 3: Target agent exists
 TARGET=$(grep "^to:" "$HANDOFF" | cut -d: -f2 | tr -d ' ')
 echo "Checking target agent: $TARGET"
-if aimaestro-agent.sh status $TARGET 2>/dev/null; then
+if check_agent_status "$TARGET"; then  # Use ai-maestro-agents-management skill
   echo "OK: Agent exists and is accessible"
 else
   echo "ERROR: Agent not found"

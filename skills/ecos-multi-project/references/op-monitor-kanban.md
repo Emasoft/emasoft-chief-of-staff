@@ -81,43 +81,19 @@ done <<< "$(jq -c '.items[]' /tmp/current_state.json)"
 
 #### Card Moved to Different Column
 
-```bash
-# Notify affected agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "'"$ASSIGNED_AGENT"'",
-    "subject": "[EXTERNAL CHANGE] Card moved",
-    "priority": "high",
-    "content": {
-      "type": "external-change-notification",
-      "message": "Card \"'"$TITLE"'\" was moved from '"$PREV_STATUS"' to '"$STATUS"' by external user.",
-      "change_type": "card_moved",
-      "task_id": "'"$ITEM_ID"'",
-      "old_status": "'"$PREV_STATUS"'",
-      "new_status": "'"$STATUS"'"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the assigned agent session name
+- **Subject**: `[EXTERNAL CHANGE] Card moved`
+- **Priority**: `high`
+- **Content**: type `external-change-notification`, message: "Card [title] was moved from [old_status] to [new_status] by external user." Include `change_type`: "card_moved", `task_id`, `old_status`, `new_status`.
 
 #### New Card Added
 
-```bash
-# Alert EOA for task assignment
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eoa-main",
-    "subject": "[NEW CARD] External addition",
-    "priority": "normal",
-    "content": {
-      "type": "new-task-notification",
-      "message": "New card added to Kanban: \"'"$TITLE"'\". Please review and assign.",
-      "task_title": "'"$TITLE"'",
-      "task_id": "'"$ITEM_ID"'"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eoa-main`
+- **Subject**: `[NEW CARD] External addition`
+- **Priority**: `normal`
+- **Content**: type `new-task-notification`, message: "New card added to Kanban: [title]. Please review and assign." Include `task_title` and `task_id`.
 
 ### Step 5: Update Local Registry
 
@@ -147,32 +123,14 @@ echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] Kanban poll for $PROJECT_ID: $CHANGE_COUN
 
 **Scenario:** Detect that a card was moved from "In Progress" to "Review" by external user.
 
-```bash
-# Polling detected change
-PREV_STATUS="In Progress"
-NEW_STATUS="Review"
-TITLE="Implement user login"
-ASSIGNED_AGENT="implementer-1"
+**Detected change:** Card "Implement user login" moved from "In Progress" to "Review" by external user.
 
-# Log the change
-echo "[$(date)] External change: '$TITLE' moved $PREV_STATUS -> $NEW_STATUS"
-
-# Notify agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "implementer-1",
-    "subject": "[EXTERNAL CHANGE] Your card moved to Review",
-    "priority": "high",
-    "content": {
-      "type": "external-change-notification",
-      "message": "Card \"Implement user login\" was moved from In Progress to Review by external user. Please ensure work is ready for review.",
-      "change_type": "card_moved",
-      "old_status": "In Progress",
-      "new_status": "Review"
-    }
-  }'
-```
+1. Log the change with timestamp
+2. Use the `agent-messaging` skill to send:
+   - **Recipient**: `implementer-1`
+   - **Subject**: `[EXTERNAL CHANGE] Your card moved to Review`
+   - **Priority**: `high`
+   - **Content**: type `external-change-notification`, message: "Card 'Implement user login' was moved from In Progress to Review by external user. Please ensure work is ready for review." Include `change_type`: "card_moved", `old_status`: "In Progress", `new_status`: "Review".
 
 ## Polling Schedule
 

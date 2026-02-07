@@ -126,24 +126,12 @@ result = Task(
 ```
 
 **Using AI Maestro:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "agent-spawner",
-    "subject": "Spawn Request",
-    "priority": "high",
-    "content": {
-      "type": "spawn-request",
-      "message": "Spawn code-implementer",
-      "config": {
-        "agent_type": "code-implementer",
-        "task": "Implement user login",
-        "project": "/path/to/project"
-      }
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to send a spawn request:
+- **Recipient**: `agent-spawner`
+- **Subject**: `Spawn Request`
+- **Priority**: `high`
+- **Content**: type `spawn-request`, message: "Spawn code-implementer". Include `config` with `agent_type`, `task`, and `project` fields.
 
 ### 1.3.4 Initialization verification
 
@@ -206,19 +194,11 @@ reporting:
 ## 1.5 AI Maestro integration
 
 **Sending spawn request:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "agent-spawner",
-    "subject": "Spawn Request",
-    "content": {
-      "type": "spawn-request",
-      "message": "Spawn agent for task",
-      "config": {...}
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to send:
+- **Recipient**: `agent-spawner`
+- **Subject**: `Spawn Request`
+- **Content**: type `spawn-request`, message: "Spawn agent for task". Include `config` with the spawn configuration object.
 
 **Receiving spawn confirmation:**
 ```json
@@ -235,18 +215,11 @@ curl -X POST "http://localhost:23000/api/messages" \
 ```
 
 **Messaging spawned agent:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-01",
-    "subject": "Task Update",
-    "content": {
-      "type": "instruction",
-      "message": "Priority changed to critical"
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to send:
+- **Recipient**: the spawned agent session name (e.g., `code-impl-01`)
+- **Subject**: `Task Update`
+- **Content**: type `instruction`, message: "Priority changed to critical"
 
 ---
 

@@ -23,15 +23,9 @@ Track active agent sessions, API rate limits, and concurrency constraints to ens
 
 ### Step 1: Count Active Sessions
 
-```bash
-# Query AI Maestro for active sessions
-active_count=$(curl -s "http://localhost:23000/api/sessions" | jq '.sessions | length')
+Use the `ai-maestro-agents-management` skill to list all active sessions and count them.
 
-echo "Active agent sessions: $active_count"
-
-# List all active sessions
-curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[].name'
-```
+The skill will return the active session count and session names.
 
 **Recommended Limits:**
 - Conservative: 10 concurrent agents
@@ -40,15 +34,9 @@ curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[].name'
 
 ### Step 2: Check API Rate Limits
 
-```bash
-# Check Anthropic API rate limit status (if available)
-# Rate limits vary by plan
+Use the `ai-maestro-agents-management` skill to query API statistics, including message send rates.
 
-# Example: Check message send rate
-messages_last_minute=$(curl -s "http://localhost:23000/api/stats" | jq '.messages_last_minute')
-
-echo "Messages in last minute: $messages_last_minute"
-```
+The skill will return message counts and rate limit status.
 
 **Rate Limit Awareness:**
 - Track messages per minute

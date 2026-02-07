@@ -73,11 +73,7 @@ EOF
 
 ### Step 4: Send Request via AI Maestro
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d "$REQUEST_BODY"
-```
+Use the `agent-messaging` skill to send the approval request message to EAMA with the composed request body.
 
 ### Step 5: Register Pending Approval
 
@@ -94,28 +90,7 @@ jq '.pending["'"$REQUEST_ID"'"] = {
 
 ### Step 6: Await Response
 
-Poll for response or wait for AI Maestro callback:
-
-```bash
-# Check for response (poll every 10 seconds)
-TIMEOUT=120  # 2 minutes
-ELAPSED=0
-
-while [ $ELAPSED -lt $TIMEOUT ]; do
-  # Check inbox for approval response
-  RESPONSE=$(curl -s "http://localhost:23000/api/messages?agent=ecos-main&action=list&status=unread" | \
-    jq -r '.messages[] | select(.content.request_id == "'"$REQUEST_ID"'")')
-
-  if [ -n "$RESPONSE" ]; then
-    DECISION=$(echo $RESPONSE | jq -r '.content.decision')
-    echo "Decision received: $DECISION"
-    break
-  fi
-
-  sleep 10
-  ELAPSED=$((ELAPSED + 10))
-done
-```
+Poll for response using the `agent-messaging` skill to check for unread messages matching the request ID. Check every 10 seconds for up to 120 seconds (2 minutes). When a message with the matching `request_id` is found, extract the `decision` field from the response content.
 
 ### Step 7: Handle Decision
 
@@ -144,33 +119,13 @@ esac
 
 **Scenario:** Request approval to spawn agent `implementer-2` for issue #42.
 
-```bash
-# Generate request ID
-REQUEST_ID=$(uuidgen | tr '[:upper:]' '[:lower:]')
+Generate a request ID, then use the `agent-messaging` skill to send:
+- **Recipient**: `eama-main`
+- **Subject**: `[APPROVAL REQUIRED] spawn: implementer-2`
+- **Priority**: `high`
+- **Content**: type `approval-request`, message: "ECOS requests approval to spawn new agent". Include `request_id`, `operation`: "spawn", `target`: "implementer-2", `justification`: "High priority issue #42 requires dedicated agent for parallel work on API component.", `requested_at` (ISO-8601 timestamp), `task_assignment`: "Issue #42 - API endpoints for user authentication", `options`: ["approve", "reject", "modify"].
 
-# Send request
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eama-main",
-    "subject": "[APPROVAL REQUIRED] spawn: implementer-2",
-    "priority": "high",
-    "content": {
-      "type": "approval-request",
-      "message": "ECOS requests approval to spawn new agent",
-      "request_id": "'"$REQUEST_ID"'",
-      "operation": "spawn",
-      "target": "implementer-2",
-      "justification": "High priority issue #42 requires dedicated agent for parallel work on API component.",
-      "requested_at": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
-      "task_assignment": "Issue #42 - API endpoints for user authentication",
-      "options": ["approve", "reject", "modify"]
-    }
-  }'
-
-# Wait for response
-echo "Waiting for EAMA approval..."
-```
+Then wait for the EAMA approval response.
 
 ## Request Message Format
 
