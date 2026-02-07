@@ -199,21 +199,11 @@ Sub-agents communicate with other ECOS components via AI Maestro messaging.
 
 #### Sending Messages
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "<target-agent>",
-    "subject": "<subject>",
-    "priority": "<normal|high|urgent>",
-    "content": {
-      "type": "<message_type>",
-      "message": "<message_text>",
-      "operation_id": "<optional_operation_id>"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send messages to other agents. Each message requires:
+- **Recipient**: the target agent session name
+- **Subject**: a descriptive subject line
+- **Priority**: `normal`, `high`, or `urgent`
+- **Content**: an object with `type` (the message type), `message` (the message text), and optionally `operation_id`
 
 #### Target Agents
 
@@ -276,7 +266,7 @@ ECOS Sub-Agents (Workers)
 - Keep helper prompts focused (single responsibility)
 
 **Bash Tool:**
-- Execute CLI commands only (aimaestro-agent.sh, curl, jq)
+- Execute operations via the `ai-maestro-agents-management` and `agent-messaging` skills
 - Always set `timeout: 1200000` (20 minutes)
 - Always include `description` parameter
 - Never use for file operations (use Read/Write instead)
@@ -299,8 +289,8 @@ Sub-agents may use these CLI tools via Bash:
 
 | Tool | Purpose | Example |
 |------|---------|---------|
-| `aimaestro-agent.sh` | Agent lifecycle management | `aimaestro-agent.sh create worker-001` |
-| `curl` | AI Maestro messaging, API calls | `curl -X POST http://localhost:23000/api/messages` |
+| `ai-maestro-agents-management` skill | Agent lifecycle management | Use the skill to create, terminate, hibernate, or wake agents |
+| `agent-messaging` skill | Inter-agent messaging | Use the skill to send, read, and reply to messages |
 | `jq` | JSON parsing | `jq -r '.status' state.json` |
 | `date` | Timestamp generation | `date -u +"%Y-%m-%dT%H:%M:%SZ"` |
 | `openssl` | Random ID generation | `openssl rand -hex 3` |

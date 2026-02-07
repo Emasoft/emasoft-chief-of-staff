@@ -46,11 +46,11 @@ This document defines standardized protocols for handling edge cases and failure
 
 The Chief of Staff is the primary communication hub. AI Maestro unavailability severely impacts operations.
 
-| Check | Command | Failure Indicator |
-|-------|---------|-------------------|
-| API Health | `curl -s "$AIMAESTRO_API/health"` | HTTP 503/504 or timeout |
-| Connection Test | `curl -m 10 "$AIMAESTRO_API/api/messages?agent=$SESSION_NAME&action=unread-count"` | Connection timeout after 10 seconds |
-| Agent Registry | `curl -s "$AIMAESTRO_API/api/agents"` | Registry unreachable |
+| Check | Method | Failure Indicator |
+|-------|--------|-------------------|
+| API Health | Use the `ai-maestro-agents-management` skill to check AI Maestro health | HTTP 503/504 or timeout |
+| Connection Test | Use the `agent-messaging` skill to check unread message count | Connection timeout after 10 seconds |
+| Agent Registry | Use the `ai-maestro-agents-management` skill to list agents | Registry unreachable |
 
 ### 1.2 Response Workflow
 
@@ -508,9 +508,7 @@ For complex requests, gather requirements progressively:
 **Response Workflow**:
 
 1. **Check agent status**:
-   ```bash
-   curl -s "$AIMAESTRO_API/api/agents?name=${ROLE}" | jq '.status'
-   ```
+   Use the `ai-maestro-agents-management` skill to query the status of the target agent by name.
 
 2. **If offline**:
    ```

@@ -25,7 +25,7 @@
 ## Checklist: Spawning New Agent
 
 **Before submitting approval request:**
-- [ ] Verify agent name not already in use: `curl -s "http://localhost:23000/api/agents" | jq -r '.agents[].name' | grep -x "<name>"`
+- [ ] Verify agent name not already in use: Use the `ai-maestro-agents-management` skill to list all agents and check the name is not taken
 - [ ] Select appropriate role from available main-agents (e.g., `eoa-orchestrator-main-agent`, `eia-integrator-main-agent`)
 - [ ] Identify required plugins/skills for role
 - [ ] Determine working directory (project-specific or shared)
@@ -38,7 +38,7 @@
 - [ ] If approved, continue
 
 **Execute spawn operation:**
-- [ ] Run `aimaestro-agent.sh create <name> --dir <path> --task "<description>" -- continue --dangerously-skip-permissions --chrome --add-dir /tmp --agent <main-agent-name>`
+- [ ] Use the `ai-maestro-agents-management` skill to create the agent with the specified name, working directory, task description, and main agent configuration
 - [ ] Verify tmux session created
 - [ ] Verify agent registered in AI Maestro
 - [ ] Send health check message to new agent
@@ -57,7 +57,7 @@
 ## Checklist: Terminating Agent
 
 **Before submitting approval request:**
-- [ ] Verify agent exists and status: `curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<name>")'`
+- [ ] Verify agent exists and status: Use the `ai-maestro-agents-management` skill to list agents and check the target agent's current status
 - [ ] Check for in-progress tasks: Send message to agent asking for current task status
 - [ ] Wait for agent response (30s timeout)
 - [ ] If agent has critical work in progress, coordinate handoff first
@@ -74,7 +74,7 @@
 - [ ] Wait 30 seconds for agent to save state
 
 **Execute termination:**
-- [ ] Run `aimaestro-agent.sh terminate <name>`
+- [ ] Use the `ai-maestro-agents-management` skill to terminate the agent by name
 - [ ] Verify tmux session removed
 - [ ] Verify agent deregistered from AI Maestro
 - [ ] Check for orphaned processes: `ps aux | grep <name>`

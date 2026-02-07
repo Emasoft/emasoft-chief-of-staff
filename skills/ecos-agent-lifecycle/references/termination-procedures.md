@@ -78,10 +78,8 @@ Terminate when:
 4. Confirm no pending commits
 
 **Work Status Check:**
-```bash
-curl -s "http://localhost:23000/api/messages?agent=code-impl-01&action=status"
-# Response: {"status": "IDLE", "pending_tasks": 0, "last_activity": "2025-02-01T10:30:00Z"}
-```
+
+Use the `agent-messaging` skill to query the target agent's current task status. Expect a response including status (e.g., IDLE), pending task count, and last activity timestamp.
 
 ### 2.3.2 State preservation
 
@@ -107,39 +105,20 @@ design/memory/agents/
 **Purpose:** Send shutdown command to agent.
 
 **Graceful Termination:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-01",
-    "subject": "Termination Request",
-    "priority": "high",
-    "content": {
-      "type": "terminate-request",
-      "message": "Please save state and terminate gracefully",
-      "reason": "Task completed",
-      "graceful": true,
-      "timeout": 60
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name (e.g., `code-impl-01`)
+- **Subject**: `Termination Request`
+- **Priority**: `high`
+- **Content**: type `terminate-request`, message: "Please save state and terminate gracefully". Include `reason` (e.g., "Task completed"), `graceful`: true, `timeout`: 60.
 
 **Forced Termination:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-01",
-    "subject": "Forced Termination",
-    "priority": "urgent",
-    "content": {
-      "type": "terminate-request",
-      "message": "Immediate termination required",
-      "reason": "Error condition",
-      "graceful": false
-    }
-  }'
-```
+
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name (e.g., `code-impl-01`)
+- **Subject**: `Forced Termination`
+- **Priority**: `urgent`
+- **Content**: type `terminate-request`, message: "Immediate termination required". Include `reason` (e.g., "Error condition"), `graceful`: false.
 
 ### 2.3.4 Confirmation await
 
@@ -226,16 +205,10 @@ After recording termination, remove from active agents list.
 - [ ] No orphaned processes
 - [ ] Logs archived
 
-**Validation Command:**
-```bash
-# Check agent no longer in registry
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.agent_id == "code-impl-01")'
-# Should return empty
+**Validation Steps:**
 
-# Check state saved
-ls -la design/memory/agents/code-impl-01/
-# Should show final-state.md if graceful
-```
+1. Use the `ai-maestro-agents-management` skill to list all agents and verify the terminated agent no longer appears in the active registry.
+2. Check state saved by verifying that `design/memory/agents/code-impl-01/final-state.md` exists (for graceful terminations).
 
 ---
 

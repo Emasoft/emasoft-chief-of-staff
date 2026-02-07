@@ -122,21 +122,12 @@
 | **API rate limits** | Provider-dependent | Stagger agent starts |
 | **Disk I/O** | Check with `df -h` | Avoid parallel writes to same files |
 
-**Commands to check constraints**:
+**How to check constraints**:
 
-```bash
-# Check tmux sessions
-tmux list-sessions 2>/dev/null || echo "No tmux sessions"
-
-# Check disk space (use project directory)
-df -h "${CLAUDE_PROJECT_DIR:-$HOME}"
-
-# Check running agents via AI Maestro
-curl -s "http://localhost:23000/api/agents" | jq '.[] | {name, status}'
-
-# Check agent workload
-curl -s "http://localhost:23000/api/messages?status=pending" | jq 'length'
-```
+- **Check tmux sessions**: Run `tmux list-sessions` in the terminal
+- **Check disk space**: Run `df -h "${CLAUDE_PROJECT_DIR:-$HOME}"` in the terminal
+- **Check running agents**: Use the `ai-maestro-agents-management` skill to list all agents and their status
+- **Check agent workload**: Use the `agent-messaging` skill to check pending messages count
 
 **Interpretation**:
 - If max concurrent agents reached, recommend queuing or sequential phasing
@@ -346,10 +337,10 @@ Is the task long-running (>30 min)?
 
 | Constraint | Check Command | Threshold | Action |
 |------------|---------------|-----------|--------|
-| Concurrent agents | `curl -s "http://localhost:23000/api/agents" \| jq 'length'` | 4-6 agents | Queue additional work |
+| Concurrent agents | Use `ai-maestro-agents-management` skill to list agents | 4-6 agents | Queue additional work |
 | Context memory | Check task size | ~100K tokens per agent | Split large tasks |
 | Disk space | `df -h "${CLAUDE_PROJECT_DIR}"` | <10% free | Cleanup or use different volume |
-| Pending messages | `curl -s "http://localhost:23000/api/messages?status=pending" \| jq 'length'` | >20 messages | Wait for agents to catch up |
+| Pending messages | Use `agent-messaging` skill to check pending count | >20 messages | Wait for agents to catch up |
 
 **Action plan when constrained**:
 
