@@ -42,34 +42,16 @@ ECOS is **organization-wide** - there is ONE Chief of Staff managing agents acro
 | Owns | Agent registry | GitHub Project kanban |
 | Question answered | "Who exists?" | "Who does what?" |
 
-## AI Maestro CLI Integration
+## Agent Management Integration
 
-This plugin uses **aimaestro-agent.sh** CLI for agent lifecycle management:
+This plugin uses two skills for agent and messaging operations:
 
-```bash
-# List all agents
-aimaestro-agent.sh list
-
-# Create new agent (with required Claude Code arguments)
-aimaestro-agent.sh create <name> --dir <path> --task "description" --tags "a,b,c" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-
-# Terminate agent
-aimaestro-agent.sh delete <name> --confirm
-
-# Hibernate agent
-aimaestro-agent.sh hibernate <name>
-
-# Wake agent
-aimaestro-agent.sh wake <name>
-
-# Install plugin on remote agent
-aimaestro-agent.sh plugin install <agent> <plugin>
-```
+- **`ai-maestro-agents-management` skill** - For all agent lifecycle operations (create, terminate, hibernate, wake, install plugins, list agents, check health)
+- **`agent-messaging` skill** - For all inter-agent communication (send messages, check inbox, broadcast notifications, approval requests)
 
 ### Required Claude Code Arguments
 
-**IMPORTANT**: Always pass these arguments after `--` when spawning agents:
+**IMPORTANT**: When spawning agents, always include the standard Claude Code flags as program arguments:
 
 | Argument | Purpose |
 |----------|---------|
@@ -236,7 +218,7 @@ aimaestro-agent.sh plugin install <agent> <plugin>
 1. ECOS notifies agent about upcoming skill install (will hibernate/wake)
 2. ECOS asks agent to finish current work and send "ok"
 3. ECOS waits up to 2 minutes for acknowledgment
-4. ECOS executes: `aimaestro-agent.sh plugin install <agent> <skill>`
+4. ECOS uses the `ai-maestro-agents-management` skill to install the plugin on the agent
 5. After wake, ECOS asks agent to verify skill is active
 
 ### Agent Replacement Protocol

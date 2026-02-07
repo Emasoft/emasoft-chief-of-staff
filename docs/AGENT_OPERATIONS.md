@@ -18,7 +18,7 @@
 **Critical Rules**:
 - Session name = AI Maestro registry identity (how agents message each other)
 - Must be unique across all running agents
-- Session name is passed to `aimaestro-agent.sh create` command
+- Session name is used when creating an agent via the `ai-maestro-agents-management` skill
 - Session name determines the tmux session name
 - Session name must be valid for both tmux and AI Maestro (alphanumeric, hyphens, underscores only)
 
@@ -127,58 +127,33 @@ ${CLAUDE_PLUGIN_ROOT}/../<plugin-name>
 
 **CRITICAL**: Always copy plugin to agent's local directory before spawning!
 
-```bash
-# Define paths - Use marketplace cache as source
-PLUGIN_NAME="<target-plugin>"
-# Marketplace plugins installed via: claude plugin install <name>@emasoft-plugins
-PLUGIN_SOURCE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-# Use latest version from marketplace cache
-PLUGIN_VERSION=$(ls -1 "$PLUGIN_SOURCE" | sort -V | tail -1)
-PLUGIN_SOURCE="$PLUGIN_SOURCE/$PLUGIN_VERSION"
+The plugin must be copied from the marketplace cache to the agent's local `.claude/plugins/` directory:
+- **Source**: `$HOME/.claude/plugins/cache/emasoft-plugins/<plugin-name>/<latest-version>/`
+- **Destination**: `$HOME/agents/<session-name>/.claude/plugins/<plugin-name>/`
 
-SESSION_NAME="<role-prefix>-<descriptive>"
-PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-
-# Create directory and copy from marketplace cache
-mkdir -p "$(dirname "$PLUGIN_DEST")"
-cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
-
-# Verify copy succeeded
-if [ -f "$PLUGIN_DEST/.claude-plugin/plugin.json" ]; then
-  echo "Plugin copied successfully"
-else
-  echo "ERROR: Plugin copy failed!"
-  exit 1
-fi
-```
+**Verify**: the copied plugin contains `.claude-plugin/plugin.json`.
 
 ### 4.2 Spawn Command
 
-```bash
-SESSION_NAME="<role-prefix>-<descriptive>"
-WORKING_DIR="$HOME/agents/$SESSION_NAME"
-PLUGIN_PATH="$WORKING_DIR/.claude/plugins/<target-plugin>"
-AGENT_NAME="<prefix>-<role>-main-agent"
+Use the `ai-maestro-agents-management` skill to create a new agent:
+- **Name**: `<role-prefix>-<descriptive>` (the session name)
+- **Directory**: `$HOME/agents/<session-name>` (the working directory)
+- **Task**: task description for the agent
+- **Program args**: include standard Claude Code flags plus `--plugin-dir` and `--agent`
 
-aimaestro-agent.sh create "$SESSION_NAME" \
-  --dir "$WORKING_DIR" \
-  --task "Task description here" \
-  -- --dangerously-skip-permissions \
-     --chrome \
-     --add-dir /tmp \
-     --plugin-dir "$PLUGIN_PATH" \
-     --agent "$AGENT_NAME"
-```
+**Required parameters**:
+| Parameter | Purpose |
+|-----------|---------|
+| Name | Session name (also AI Maestro registry identity) |
+| Directory | Agent's working directory |
+| Task | Initial task prompt |
+| `--dangerously-skip-permissions` | Auto-approve file operations |
+| `--chrome` | Enable Chrome DevTools MCP |
+| `--add-dir /tmp` | Add /tmp to accessible directories |
+| `--plugin-dir` | Path to the plugin to load |
+| `--agent` | Agent definition file to use |
 
-**Flags Explained**:
-- `--dir` - Agent's working directory
-- `--task` - Initial task prompt for the agent
-- `--` - Separator between aimaestro-agent.sh flags and Claude Code flags
-- `--dangerously-skip-permissions` - Auto-approve file operations
-- `--chrome` - Enable Chrome DevTools MCP
-- `--add-dir /tmp` - Add /tmp to accessible directories
-- `--plugin-dir` - Path to plugin to load
-- `--agent` - Agent definition file to use
+**Verify**: the new agent appears in the agent list with "online" status.
 
 ### 4.3 Role to Plugin/Agent Mapping
 
@@ -193,56 +168,27 @@ aimaestro-agent.sh create "$SESSION_NAME" \
 
 ### 4.4 Example: Spawn Orchestrator
 
-```bash
-# Step 1: Define session name
-SESSION_NAME="eoa-svgbbox-orchestrator"
+1. Copy `emasoft-orchestrator-agent` plugin from marketplace cache to `$HOME/agents/eoa-svgbbox-orchestrator/.claude/plugins/emasoft-orchestrator-agent/`
+2. Use the `ai-maestro-agents-management` skill to create a new agent:
+   - **Name**: `eoa-svgbbox-orchestrator`
+   - **Directory**: `$HOME/agents/eoa-svgbbox-orchestrator`
+   - **Task**: "Orchestrate development of svgbbox library features"
+   - **Plugin**: `emasoft-orchestrator-agent`
+   - **Agent**: `eoa-orchestrator-main-agent`
 
-# Step 2: Install plugin from marketplace cache
-# Prerequisite: claude plugin install emasoft-orchestrator-agent@emasoft-plugins
-PLUGIN_NAME="emasoft-orchestrator-agent"
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-PLUGIN_SOURCE="$MARKETPLACE_CACHE/$PLUGIN_VERSION"
-PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-mkdir -p "$(dirname "$PLUGIN_DEST")"
-cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
-
-# Step 3: Spawn agent
-aimaestro-agent.sh create "$SESSION_NAME" \
-  --dir "$HOME/agents/$SESSION_NAME" \
-  --task "Orchestrate development of svgbbox library features" \
-  -- --dangerously-skip-permissions \
-     --chrome \
-     --add-dir /tmp \
-     --plugin-dir "$PLUGIN_DEST" \
-     --agent eoa-orchestrator-main-agent
-```
+**Verify**: agent `eoa-svgbbox-orchestrator` appears online in the agent list.
 
 ### 4.5 Example: Spawn Programmer
 
-```bash
-# Step 1: Define session name (Programmers use project-based naming)
-SESSION_NAME="svgbbox-programmer-001"
+1. Copy `emasoft-programmer-agent` plugin from marketplace cache to `$HOME/agents/svgbbox-programmer-001/.claude/plugins/emasoft-programmer-agent/`
+2. Use the `ai-maestro-agents-management` skill to create a new agent:
+   - **Name**: `svgbbox-programmer-001` (Programmers use project-based naming)
+   - **Directory**: `$HOME/agents/svgbbox-programmer-001`
+   - **Task**: "Implement authentication module for svgbbox library"
+   - **Plugin**: `emasoft-programmer-agent`
+   - **Agent**: `epa-programmer-main-agent`
 
-# Step 2: Install plugin from marketplace cache
-PLUGIN_NAME="emasoft-programmer-agent"
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-PLUGIN_SOURCE="$MARKETPLACE_CACHE/$PLUGIN_VERSION"
-PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-mkdir -p "$(dirname "$PLUGIN_DEST")"
-cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
-
-# Step 3: Spawn agent
-aimaestro-agent.sh create "$SESSION_NAME" \
-  --dir "$HOME/agents/$SESSION_NAME" \
-  --task "Implement authentication module for svgbbox library" \
-  -- --dangerously-skip-permissions \
-     --chrome \
-     --add-dir /tmp \
-     --plugin-dir "$PLUGIN_DEST" \
-     --agent epa-programmer-main-agent
-```
+**Verify**: agent `svgbbox-programmer-001` appears online in the agent list.
 
 ---
 
@@ -250,29 +196,16 @@ aimaestro-agent.sh create "$SESSION_NAME" \
 
 **When to use**: Agent was hibernated (tmux session exists but detached)
 
-```bash
-aimaestro-agent.sh wake <session-name>
-```
+Use the `ai-maestro-agents-management` skill to wake the agent:
+- **Name**: the session name of the hibernated agent
 
 **What happens**:
-- `aimaestro-agent.sh` internally adds `--continue` flag to Claude Code
+- The `--continue` flag is internally added to Claude Code
 - Reattaches to existing tmux session
 - Claude Code resumes from last state
-- Agent reconnects to AI Maestro
+- Agent reconnects to the agent registry
 
-**Example**:
-```bash
-aimaestro-agent.sh wake eoa-svgbbox-orchestrator
-```
-
-**Verification**:
-```bash
-# Check if session is running
-tmux list-sessions | grep <session-name>
-
-# Check AI Maestro registration
-curl -s "$AIMAESTRO_API/api/agents" | jq '.agents[] | select(.session_name == "<session-name>")'
-```
+**Verify**: agent status shows "online" in the agent list, and tmux session is running.
 
 ---
 
@@ -280,23 +213,17 @@ curl -s "$AIMAESTRO_API/api/agents" | jq '.agents[] | select(.session_name == "<
 
 **When to use**: Temporarily pause agent, preserve state
 
-```bash
-aimaestro-agent.sh hibernate <session-name>
-```
+Use the `ai-maestro-agents-management` skill to hibernate the agent:
+- **Name**: the session name of the agent to hibernate
 
 **What happens**:
 - Detaches from tmux session (session continues running)
-- Agent remains registered in AI Maestro
-- Can be woken later with `wake` command
-
-**Example**:
-```bash
-aimaestro-agent.sh hibernate eoa-svgbbox-orchestrator
-```
+- Agent remains registered in the agent registry
+- Can be woken later
 
 **Difference from Terminate**:
-| Action | Tmux Session | AI Maestro | State |
-|--------|--------------|------------|-------|
+| Action | Tmux Session | Registry | State |
+|--------|--------------|----------|-------|
 | **Hibernate** | Detached | Registered | Preserved |
 | **Terminate** | Killed | Unregistered | Lost |
 
@@ -306,38 +233,20 @@ aimaestro-agent.sh hibernate eoa-svgbbox-orchestrator
 
 **When to use**: Permanently stop agent, clean up resources
 
-```bash
-aimaestro-agent.sh delete <session-name> --confirm
-```
-
-**Flags**:
-- `--confirm` - Required to prevent accidental termination
-- `--force` - Forcefully kill tmux session (use if graceful stop fails)
+Use the `ai-maestro-agents-management` skill to terminate (delete) the agent:
+- **Name**: the session name of the agent to terminate
+- **Confirm**: required to prevent accidental termination
+- **Force**: optional, forcefully kill tmux session if graceful stop fails
 
 **What happens**:
 - Claude Code session stopped
 - Tmux session killed
-- Agent unregistered from AI Maestro
+- Agent unregistered from the agent registry
 - Working directory preserved (not deleted)
-
-**Example**:
-```bash
-# Normal termination
-aimaestro-agent.sh delete eoa-svgbbox-orchestrator --confirm
-
-# Forceful termination (if stuck)
-aimaestro-agent.sh delete eoa-svgbbox-orchestrator --confirm --force
-```
-
-**Cleanup (optional)**:
-```bash
-# Remove working directory
-rm -rf ~/agents/eoa-svgbbox-orchestrator
-```
 
 **CRITICAL**: Always terminate agents when work is complete to avoid:
 - Resource leaks (CPU, memory)
-- AI Maestro registry clutter
+- Agent registry clutter
 - Orphaned tmux sessions
 
 ---
@@ -381,36 +290,24 @@ claude --plugin-dir ~/plugins/emasoft-chief-of-staff \
 ```
 
 **Correct Approach**:
-```bash
-# RIGHT: One plugin per session
-claude --plugin-dir ~/plugins/emasoft-chief-of-staff
-
-# RIGHT: Spawn separate agent for other role
-aimaestro-agent.sh create eoa-orchestrator-one \
-  --plugin-dir ~/plugins/emasoft-orchestrator-agent
-
-# RIGHT: Use AI Maestro for cross-role communication
-curl -X POST "$AIMAESTRO_API/api/messages" \
-  -d '{"from": "ecos-one", "to": "eoa-orchestrator-one", ...}'
-```
+- **One plugin per session**: Load only ONE role plugin when launching Claude Code
+- **Spawn separate agent for other role**: Use the `ai-maestro-agents-management` skill to create a new agent with its own role plugin
+- **Cross-role communication**: Use the `agent-messaging` skill to send messages between agents
 
 ---
 
-## 9. AI Maestro Messaging
+## 9. Inter-Agent Messaging
+
+All messaging operations use the `agent-messaging` skill. Never use explicit API calls or command-line tools directly.
 
 ### 9.1 Send Message
 
-```bash
-curl -X POST "$AIMAESTRO_API/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "<sender-session-name>",
-    "to": "<receiver-session-name>",
-    "subject": "Subject",
-    "priority": "normal|high|urgent",
-    "content": {"type": "request|response|notification", "message": "..."}
-  }'
-```
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: the target agent session name
+- **Subject**: descriptive subject line
+- **Content**: structured message with type and body
+- **Priority**: `normal`, `high`, or `urgent`
+- **Type**: `request`, `response`, or `notification`
 
 **Priority Levels**:
 | Priority | Use Case | Example |
@@ -428,62 +325,31 @@ curl -X POST "$AIMAESTRO_API/api/messages" \
 
 ### 9.2 Check Inbox
 
-```bash
-curl -s "$AIMAESTRO_API/api/messages?agent=<session-name>&action=list&status=unread" \
-  | jq '.messages[].content.message'
-```
+Use the `agent-messaging` skill to check for unread messages.
 
 ### 9.3 Mark Message Read
 
-```bash
-curl -X POST "$AIMAESTRO_API/api/messages/<message-id>/read"
-```
+Use the `agent-messaging` skill to mark a message as read.
 
 ### 9.4 Message Workflow Example
 
-```bash
-# ECOS sends task to Orchestrator
-curl -X POST "$AIMAESTRO_API/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff-one",
-    "to": "eoa-svgbbox-orchestrator",
-    "subject": "Implement Feature X",
-    "priority": "high",
-    "content": {
-      "type": "request",
-      "message": "Please implement feature X with the following requirements: ..."
-    }
-  }'
+1. **ECOS sends task to Orchestrator** using the `agent-messaging` skill:
+   - **Recipient**: `eoa-svgbbox-orchestrator`
+   - **Subject**: "Implement Feature X"
+   - **Content**: request with feature requirements
+   - **Priority**: `high`
 
-# Orchestrator acknowledges
-curl -X POST "$AIMAESTRO_API/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "eoa-svgbbox-orchestrator",
-    "to": "ecos-chief-of-staff-one",
-    "subject": "Re: Implement Feature X",
-    "priority": "normal",
-    "content": {
-      "type": "response",
-      "message": "Acknowledged. Starting implementation. ETA: 2 hours."
-    }
-  }'
+2. **Orchestrator acknowledges** using the `agent-messaging` skill:
+   - **Recipient**: `ecos-chief-of-staff-one`
+   - **Subject**: "Re: Implement Feature X"
+   - **Content**: response acknowledging and providing ETA
+   - **Priority**: `normal`
 
-# Orchestrator completes task
-curl -X POST "$AIMAESTRO_API/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "eoa-svgbbox-orchestrator",
-    "to": "ecos-chief-of-staff-one",
-    "subject": "Re: Implement Feature X",
-    "priority": "normal",
-    "content": {
-      "type": "notification",
-      "message": "Feature X implementation complete. PR #42 ready for review."
-    }
-  }'
-```
+3. **Orchestrator reports completion** using the `agent-messaging` skill:
+   - **Recipient**: `ecos-chief-of-staff-one`
+   - **Subject**: "Re: Implement Feature X"
+   - **Content**: notification that implementation is complete with PR reference
+   - **Priority**: `normal`
 
 ---
 
@@ -580,38 +446,15 @@ eoa-svgbbox-orchestrator-1
 eoa-svgbbox-orchestrator-2
 ```
 
-**Uniqueness Check**:
-```bash
-# Before spawning, check if name exists
-curl -s "$AIMAESTRO_API/api/agents" | jq -r '.agents[].session_name' | grep "^${SESSION_NAME}$"
-# If output is empty, name is unique
-```
+**Uniqueness Check**: Before spawning, use the `ai-maestro-agents-management` skill to list all agents and verify the chosen session name is not already in use. If the name exists, append a number suffix.
 
 ### 11.4 Lifecycle Management
 
-**ECOS monitors agent health**:
-```bash
-# Heartbeat check (every 5 minutes)
-curl -s "$AIMAESTRO_API/api/agents/<session-name>/status"
+**ECOS monitors agent health**: Use the `ai-maestro-agents-management` skill to check agent status, heartbeat timestamps, message backlog, and last activity time (every 5 minutes).
 
-# Check message backlog
-curl -s "$AIMAESTRO_API/api/messages?agent=<session-name>&status=unread" | jq '.count'
+**ECOS hibernates idle agents**: If an agent has been idle for more than 30 minutes with no pending tasks, use the `ai-maestro-agents-management` skill to hibernate it.
 
-# Check last activity
-curl -s "$AIMAESTRO_API/api/agents/<session-name>/last-activity"
-```
-
-**ECOS hibernates idle agents**:
-```bash
-# If agent idle > 30 minutes with no pending tasks
-aimaestro-agent.sh hibernate <session-name>
-```
-
-**ECOS terminates completed agents**:
-```bash
-# After work is done and verified
-aimaestro-agent.sh delete <session-name> --confirm
-```
+**ECOS terminates completed agents**: After work is done and verified, use the `ai-maestro-agents-management` skill to terminate the agent (with confirmation).
 
 ### 11.5 Task Delegation Flow
 
@@ -646,22 +489,13 @@ User Request
 
 ### 12.1 Agent Won't Spawn
 
-**Symptom**: `aimaestro-agent.sh create` fails
+**Symptom**: Agent creation fails
 
 **Check**:
-```bash
-# 1. Session name already exists?
-tmux list-sessions | grep <session-name>
-
-# 2. AI Maestro running?
-curl -s "$AIMAESTRO_API/api/agents" | jq .
-
-# 3. Plugin exists at path?
-ls -la ~/agents/<session-name>/.claude/plugins/<plugin-name>/.claude-plugin/plugin.json
-
-# 4. Claude Code binary accessible?
-which claude
-```
+1. Session name already exists? Check with `tmux list-sessions`
+2. Agent registry running? Use the `ai-maestro-agents-management` skill to list agents
+3. Plugin exists at path? Check `~/agents/<session-name>/.claude/plugins/<plugin-name>/.claude-plugin/plugin.json`
+4. Claude Code binary accessible? Check with `which claude`
 
 ### 12.2 Agent Can't Find Skills
 
@@ -688,16 +522,7 @@ cat ~/agents/<session-name>/.claude/plugins/<plugin-name>/skills/ecos-agent-life
 
 **Why**: Plugin mutual exclusivity - can't reference other plugin's skills
 
-**Fix**: Spawn separate agent with correct plugin!
-
-```bash
-# WRONG: Try to use EOA skill in ECOS session
-/learn eoa-two-phase-orchestration  # Fails!
-
-# RIGHT: Spawn EOA agent, send task via AI Maestro
-aimaestro-agent.sh create eoa-temp-orchestrator ...
-curl -X POST "$AIMAESTRO_API/api/messages" -d '{"to": "eoa-temp-orchestrator", ...}'
-```
+**Fix**: Spawn a separate agent with the correct plugin using the `ai-maestro-agents-management` skill, then send the task via the `agent-messaging` skill.
 
 ### 12.4 Plugin Hooks Conflict
 
@@ -713,53 +538,34 @@ ps aux | grep "claude.*--plugin-dir" | grep <session-name>
 
 **Fix**: Only load ONE role plugin per agent!
 
-### 12.5 AI Maestro Messages Not Received
+### 12.5 Messages Not Received
 
 **Symptom**: Agent doesn't receive messages
 
 **Check**:
-```bash
-# 1. Agent registered?
-curl -s "$AIMAESTRO_API/api/agents" | jq '.agents[] | select(.session_name == "<session-name>")'
+1. Agent registered? Use the `ai-maestro-agents-management` skill to verify agent exists
+2. Messages in inbox? Use the `agent-messaging` skill to check for unread messages
+3. Message poll hook working? Check plugin's `hooks/hooks.json` for UserPromptSubmit hook
 
-# 2. Messages in inbox?
-curl -s "$AIMAESTRO_API/api/messages?agent=<session-name>&action=list&status=unread"
-
-# 3. Message poll hook working?
-# Check plugin's hooks/hooks.json for UserPromptSubmit hook
-```
-
-**Fix**: Ensure AI Maestro hook is loaded (check plugin's hooks.json)
+**Fix**: Ensure the messaging hook is loaded (check plugin's hooks.json)
 
 ---
 
-## 13. Quick Reference Commands
+## 13. Quick Reference
 
-```bash
-# Spawn agent
-aimaestro-agent.sh create <session> --dir ~/agents/<session> --task "..." -- --plugin-dir ~/agents/<session>/.claude/plugins/<plugin> --agent <agent-name>
+All operations below use intent-based skill references:
 
-# Wake hibernated agent
-aimaestro-agent.sh wake <session>
-
-# Hibernate agent
-aimaestro-agent.sh hibernate <session>
-
-# Terminate agent
-aimaestro-agent.sh delete <session> --confirm
-
-# Send message
-curl -X POST "$AIMAESTRO_API/api/messages" -H "Content-Type: application/json" -d '{"from":"<from>","to":"<to>","subject":"...","priority":"normal","content":{"type":"request","message":"..."}}'
-
-# Check inbox
-curl -s "$AIMAESTRO_API/api/messages?agent=<session>&action=list&status=unread" | jq .
-
-# List agents
-curl -s "$AIMAESTRO_API/api/agents" | jq '.agents[] | {session: .session_name, status: .status}'
-
-# Check agent status
-curl -s "$AIMAESTRO_API/api/agents/<session>/status" | jq .
-```
+| Operation | Skill | Intent |
+|-----------|-------|--------|
+| **Spawn agent** | `ai-maestro-agents-management` | Create a new agent with name, directory, task, and plugin |
+| **Wake agent** | `ai-maestro-agents-management` | Wake a hibernated agent by name |
+| **Hibernate agent** | `ai-maestro-agents-management` | Hibernate an agent by name |
+| **Terminate agent** | `ai-maestro-agents-management` | Delete an agent by name (with confirmation) |
+| **List agents** | `ai-maestro-agents-management` | List all registered agents with status |
+| **Check agent health** | `ai-maestro-agents-management` | Check health status for an agent |
+| **Send message** | `agent-messaging` | Send message to a recipient with subject, content, and priority |
+| **Check inbox** | `agent-messaging` | Check for unread messages |
+| **Mark read** | `agent-messaging` | Mark a message as read |
 
 ---
 
