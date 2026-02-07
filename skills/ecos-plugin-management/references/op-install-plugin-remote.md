@@ -18,69 +18,44 @@ version: 1.0.0
 
 ## Prerequisites
 
-- `aimaestro-agent.sh` CLI is available in PATH
+- The `ai-maestro-agents-management` skill is available
 - Target agent is running and registered in AI Maestro
 - Marketplace is accessible (for marketplace installs)
-- AI Maestro is running locally at `http://localhost:23000`
+- AI Maestro is running locally
 
 ## Procedure
 
 ### Step 1: Verify Target Agent Exists
 
-```bash
-# List available agents
-aimaestro-agent.sh list
+Use the `ai-maestro-agents-management` skill to list available agents and check the target agent's status.
 
-# Check target agent status
-aimaestro-agent.sh status <agent-session-name>
-# Expected: running or hibernated
-```
+**Verify**: the target agent exists and is in a running or hibernated state.
 
 ### Step 2: Add Marketplace to Remote Agent (If Needed)
 
-```bash
-# Add marketplace (auto-restarts agent)
-aimaestro-agent.sh plugin marketplace add <agent-session-name> github:Emasoft/emasoft-plugins
-```
+Use the `ai-maestro-agents-management` skill to add a marketplace to the target agent (e.g., `github:Emasoft/emasoft-plugins`).
+
+**Note**: This auto-restarts the agent.
 
 ### Step 3: Install Plugin
 
-```bash
-# Install plugin from marketplace (auto-restarts agent)
-aimaestro-agent.sh plugin install <agent-session-name> <plugin-name>
-
-# Example
-aimaestro-agent.sh plugin install dev-backend-alice perfect-skill-suggester
-```
+Use the `ai-maestro-agents-management` skill to install the plugin on the target agent.
 
 **Note**: Remote installs automatically trigger agent restart.
 
 ### Step 4: Verify Installation
 
-```bash
-# List plugins on remote agent
-aimaestro-agent.sh plugin list <agent-session-name>
-
-# Check specific plugin
-aimaestro-agent.sh plugin list <agent-session-name> | grep <plugin-name>
-```
+Use the `ai-maestro-agents-management` skill to list plugins on the target agent and verify the new plugin appears.
 
 ### Step 5: Send Notification (Optional)
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Plugin Installed",
-    "priority": "normal",
-    "content": {
-      "type": "team-notification",
-      "message": "Plugin <plugin-name> has been installed. New capabilities are now available."
-    }
-  }'
-```
+Use the `agent-messaging` skill to notify the target agent:
+- **Recipient**: the target agent session name
+- **Subject**: `Plugin Installed`
+- **Priority**: `normal`
+- **Content**: type `team-notification`, informing the agent that the plugin has been installed and new capabilities are available
+
+**Verify**: confirm message delivery.
 
 ## Checklist
 
@@ -89,7 +64,7 @@ Copy this checklist and track your progress:
 - [ ] Verify target agent exists and is accessible
 - [ ] Check agent status (running/hibernated)
 - [ ] Add marketplace if not already registered
-- [ ] Execute plugin install command
+- [ ] Execute plugin install
 - [ ] Wait for automatic agent restart
 - [ ] Verify plugin appears in list
 - [ ] Send notification to agent
@@ -99,89 +74,41 @@ Copy this checklist and track your progress:
 
 ### Example: Installing Plugin on Multiple Agents
 
-```bash
-# List of agents to update
-AGENTS="dev-backend-alice dev-frontend-bob dev-api-charlie"
-PLUGIN="perfect-skill-suggester"
+For each target agent (`dev-backend-alice`, `dev-frontend-bob`, `dev-api-charlie`):
 
-for AGENT in $AGENTS; do
-  echo "Installing $PLUGIN on $AGENT..."
-
-  # Install (auto-restarts)
-  aimaestro-agent.sh plugin install $AGENT $PLUGIN
-
-  # Wait for restart to complete
-  sleep 5
-
-  # Verify
-  aimaestro-agent.sh plugin list $AGENT | grep $PLUGIN
-
-  # Notify
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "from": "ecos-chief-of-staff",
-      "to": "'"$AGENT"'",
-      "subject": "Plugin Update",
-      "priority": "normal",
-      "content": {"type": "team-notification", "message": "Plugin '"$PLUGIN"' installed."}
-    }'
-done
-```
+1. Use the `ai-maestro-agents-management` skill to install the plugin on the agent (auto-restarts)
+2. Wait for restart to complete
+3. Use the skill to list plugins on the agent and verify installation
+4. Use the `agent-messaging` skill to notify the agent about the update
 
 ### Example: Remote Marketplace Management
 
-```bash
-SESSION_NAME="dev-backend-alice"
-
-# List marketplaces on remote agent
-aimaestro-agent.sh plugin marketplace list $SESSION_NAME
-
-# Add marketplace
-aimaestro-agent.sh plugin marketplace add $SESSION_NAME github:Emasoft/emasoft-plugins
-
-# Update marketplace cache
-aimaestro-agent.sh plugin marketplace update $SESSION_NAME
-
-# Remove marketplace
-aimaestro-agent.sh plugin marketplace remove $SESSION_NAME old-marketplace
-```
+Use the `ai-maestro-agents-management` skill for all marketplace operations on a remote agent:
+- **List marketplaces** on the agent
+- **Add marketplace** to the agent
+- **Update marketplace cache** on the agent
+- **Remove marketplace** from the agent
 
 ### Example: Remote Plugin Operations
 
-```bash
-SESSION_NAME="dev-backend-alice"
-
-# List all plugins
-aimaestro-agent.sh plugin list $SESSION_NAME
-
-# Enable a disabled plugin
-aimaestro-agent.sh plugin enable $SESSION_NAME my-plugin
-
-# Disable a plugin
-aimaestro-agent.sh plugin disable $SESSION_NAME my-plugin
-
-# Uninstall a plugin
-aimaestro-agent.sh plugin uninstall $SESSION_NAME old-plugin
-
-# Clean plugin cache (fix corruption)
-aimaestro-agent.sh plugin clean $SESSION_NAME --dry-run  # Preview
-aimaestro-agent.sh plugin clean $SESSION_NAME            # Execute
-
-# Reinstall (fix corrupted install)
-aimaestro-agent.sh plugin reinstall $SESSION_NAME my-plugin
-```
+Use the `ai-maestro-agents-management` skill for all plugin operations on a remote agent:
+- **List all plugins** installed on the agent
+- **Enable** a disabled plugin
+- **Disable** a plugin without uninstalling
+- **Uninstall** a plugin
+- **Clean plugin cache** to fix corruption (preview first, then execute)
+- **Reinstall** a corrupted plugin
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Agent not found | Wrong session name | Check `aimaestro-agent.sh list` for correct name |
-| Agent not responding | Session crashed | Restart with `aimaestro-agent.sh restart <name>` |
+| Agent not found | Wrong session name | Use the skill to list agents and find the correct name |
+| Agent not responding | Session crashed | Use the skill to restart the agent |
 | Marketplace add fails | Network issue | Check connectivity, retry |
 | Plugin install fails | Plugin not in marketplace | Verify plugin name, update marketplace cache |
-| Auto-restart fails | Claude Code issue | Manual restart: `aimaestro-agent.sh restart <name>` |
-| Plugin not appearing | Cache issue | Run `aimaestro-agent.sh plugin clean <name>` then reinstall |
+| Auto-restart fails | Claude Code issue | Use the skill to manually restart the agent |
+| Plugin not appearing | Cache issue | Use the skill to clean plugin cache, then reinstall |
 
 ## Related Operations
 

@@ -1,14 +1,14 @@
-# Agent Lifecycle CLI Examples
+# Agent Lifecycle Examples
 
 ## Table of Contents
-- [1.1 Spawning a Code Implementer Agent](#11-spawning-a-code-implementer-agent)
+- [1.1 Creating a Code Implementer Agent](#11-creating-a-code-implementer-agent)
 - [1.2 Terminating a Completed Agent](#12-terminating-a-completed-agent)
 - [1.3 Hibernating an Idle Agent](#13-hibernating-an-idle-agent)
 - [1.4 End of Day - Hibernate All Non-Critical Agents](#14-end-of-day---hibernate-all-non-critical-agents)
 - [1.5 Resume Work Next Day](#15-resume-work-next-day)
 
 ## Use-Case TOC
-- When creating a new implementer agent -> [1.1 Spawning](#11-spawning-a-code-implementer-agent)
+- When creating a new implementer agent -> [1.1 Creating](#11-creating-a-code-implementer-agent)
 - When an agent's work is complete -> [1.2 Terminating](#12-terminating-a-completed-agent)
 - When conserving resources for a single agent -> [1.3 Hibernating](#13-hibernating-an-idle-agent)
 - When ending work session -> [1.4 End of Day](#14-end-of-day---hibernate-all-non-critical-agents)
@@ -16,28 +16,27 @@
 
 ---
 
-## 1.1 Spawning a Code Implementer Agent
+## 1.1 Creating a Code Implementer Agent
 
-**Command:**
-```bash
-# Create agent using aimaestro-agent.sh CLI (macOS/Linux)
-aimaestro-agent.sh create code-impl-auth \
-  --dir {baseDir}/myproject/auth \
-  --task "Implement user authentication module" \
-  --tags "implementer,python,auth" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+Use the `ai-maestro-agents-management` skill to create a new agent:
 
-**Expected Output:**
-```
- Directory created: {baseDir}/myproject/auth
- Git repository initialized
- Agent registered in AI Maestro
- tmux session created: code-impl-auth
-Agent 'code-impl-auth' is now ONLINE
-```
+- **Name**: `code-impl-auth`
+- **Directory**: `{baseDir}/myproject/auth`
+- **Task**: `Implement user authentication module`
+- **Tags**: `implementer,python,auth`
+- **Program args**: include `continue`, `--dangerously-skip-permissions`, `--chrome`, `--add-dir /tmp`
 
-**Required Claude Code Arguments (pass after `--`):**
+**Expected result:**
+- Directory created at the specified path
+- Git repository initialized
+- Agent registered in AI Maestro
+- tmux session created with the agent name
+- Agent is now ONLINE
+
+**Verify**: the new agent appears in the agent list with "online" status.
+
+**Required Claude Code Arguments:**
+
 | Argument | Purpose |
 |----------|---------|
 | `continue` | Resume previous session context |
@@ -49,22 +48,16 @@ Agent 'code-impl-auth' is now ONLINE
 
 ## 1.2 Terminating a Completed Agent
 
-**Command:**
-```bash
-# Terminate agent using aimaestro-agent.sh CLI
-aimaestro-agent.sh delete code-impl-auth --confirm
-```
+Use the `ai-maestro-agents-management` skill to terminate agent `code-impl-auth` with confirmation.
 
-**Expected Output:**
-```
- Agent validated: code-impl-auth
- tmux session killed
- Agent removed from registry
-Agent 'code-impl-auth' has been DELETED
-```
+**Expected result:**
+- Agent validated
+- tmux session killed
+- Agent removed from registry
+- Agent is now DELETED
 
 **Important Notes:**
-- `--confirm` flag is REQUIRED for safety
+- Confirmation is REQUIRED for safety
 - Consider hibernating instead if you may need the agent later
 - Ensure all work is complete before termination
 
@@ -72,52 +65,32 @@ Agent 'code-impl-auth' has been DELETED
 
 ## 1.3 Hibernating an Idle Agent
 
-**Hibernate Command:**
-```bash
-aimaestro-agent.sh hibernate test-engineer-01
-```
+**To hibernate:** Use the `ai-maestro-agents-management` skill to hibernate agent `test-engineer-01`.
 
-**Hibernate Output:**
-```
- Agent state saved
- tmux session terminated
- Registry updated: status = hibernated
-Agent 'test-engineer-01' is now HIBERNATED
-```
+**Expected result:**
+- Agent state saved
+- tmux session terminated
+- Registry updated: status = hibernated
+- Agent is now HIBERNATED
 
-**Wake Command:**
-```bash
-aimaestro-agent.sh wake test-engineer-01
-```
+**To wake:** Use the `ai-maestro-agents-management` skill to wake agent `test-engineer-01`.
 
-**Wake Output:**
-```
- Agent state retrieved
- tmux session created: test-engineer-01
- Claude Code launched
-Agent 'test-engineer-01' is now ONLINE
-```
+**Expected result:**
+- Agent state retrieved
+- tmux session created
+- Claude Code launched
+- Agent is now ONLINE
 
 ---
 
 ## 1.4 End of Day - Hibernate All Non-Critical Agents
 
-**Workflow Commands:**
-```bash
-# Step 1: List all online agents
-aimaestro-agent.sh list --status online
+**Workflow:**
 
-# Step 2: Hibernate non-critical agents
-aimaestro-agent.sh hibernate frontend-ui
-aimaestro-agent.sh hibernate data-processor
-aimaestro-agent.sh hibernate docs-writer
-
-# Step 3: Keep critical agent running
-# (backend-api stays online)
-
-# Step 4: Verify status
-aimaestro-agent.sh list --status all
-```
+1. Use the `ai-maestro-agents-management` skill to list all online agents
+2. Hibernate non-critical agents (e.g., `frontend-ui`, `data-processor`, `docs-writer`) using the skill
+3. Keep critical agents running (e.g., `backend-api` stays online)
+4. Use the skill to list all agents and verify the final state
 
 **Key Points:**
 - List agents before bulk operations
@@ -128,36 +101,32 @@ aimaestro-agent.sh list --status all
 
 ## 1.5 Resume Work Next Day
 
-**Workflow Commands:**
-```bash
-# Wake needed agents
-aimaestro-agent.sh wake frontend-ui
-aimaestro-agent.sh wake data-processor
+**Workflow:**
 
-# Attach to a specific agent's session
-aimaestro-agent.sh wake docs-writer --attach
-```
+1. Use the `ai-maestro-agents-management` skill to wake needed agents (e.g., `frontend-ui`, `data-processor`)
+2. For agents you want to interact with immediately, wake with the attach option (e.g., `docs-writer`)
 
 **Key Points:**
 - Wake agents in priority order (most needed first)
-- Use `--attach` to immediately connect to an agent's tmux session
+- Use the attach option to immediately connect to an agent's tmux session
 - Verify agent status after waking
 
 ---
 
-## CLI Quick Reference
+## Operations Quick Reference
 
-| Operation | Command |
-|-----------|---------|
-| List agents | `aimaestro-agent.sh list` |
-| Show agent | `aimaestro-agent.sh show <name>` |
-| Create agent | `aimaestro-agent.sh create <name> --dir <path>` |
-| Delete agent | `aimaestro-agent.sh delete <name> --confirm` |
-| Hibernate | `aimaestro-agent.sh hibernate <name>` |
-| Wake | `aimaestro-agent.sh wake <name>` |
-| Restart | `aimaestro-agent.sh restart <name>` |
-| Update task | `aimaestro-agent.sh update <name> --task "..."` |
-| Update tags | `aimaestro-agent.sh update <name> --tags "a,b,c"` |
+All operations are performed using the `ai-maestro-agents-management` skill:
+
+| Operation | Description |
+|-----------|-------------|
+| List agents | List all agents, optionally filtered by status |
+| Show agent | Display detailed information about a specific agent |
+| Create agent | Create a new agent with name, directory, and configuration |
+| Terminate agent | Permanently remove an agent (requires confirmation) |
+| Hibernate agent | Save state and suspend an agent |
+| Wake agent | Restore state and resume a hibernated agent |
+| Restart agent | Hibernate + wake cycle (for plugin changes) |
+| Update agent | Modify task description or tags |
 
 ---
 

@@ -1,36 +1,36 @@
-# aimaestro-agent.sh CLI Reference
+# Agent Lifecycle Operations Reference
 
-Complete command-line interface reference for managing Claude Code agent lifecycles.
+Complete reference for managing Claude Code agent lifecycles using the `ai-maestro-agents-management` skill.
 
 ## Contents
 
-- 1.0 Quick Command Reference
-- 2.0 Spawning new agents with aimaestro-agent.sh create
-  - 2.1 Basic spawn syntax and required Claude Code arguments
-  - 2.2 Spawn with task description and tags
-  - 2.3 Spawn using an existing directory (--force-folder)
+- 1.0 Quick Operations Reference
+- 2.0 Creating new agents
+  - 2.1 Basic creation with required Claude Code arguments
+  - 2.2 Creation with task description and tags
+  - 2.3 Creation using an existing directory
   - 2.4 Platform-specific temporary directory configuration
-  - 2.5 Post-spawn plugin installation workflow
-- 3.0 Terminating agents with aimaestro-agent.sh delete
-  - 3.1 Graceful termination with confirmation requirement
+  - 2.5 Post-creation plugin installation workflow
+- 3.0 Terminating agents
+  - 3.1 Graceful termination with confirmation
   - 3.2 When to terminate vs. hibernate
-- 4.0 Hibernating agents with aimaestro-agent.sh hibernate
+- 4.0 Hibernating agents
   - 4.1 Saving agent state and freeing resources
   - 4.2 Hibernate workflow and state persistence
-- 5.0 Waking hibernated agents with aimaestro-agent.sh wake
+- 5.0 Waking hibernated agents
   - 5.1 Restoring agent state and resuming operation
   - 5.2 Wake with automatic session attachment
-- 6.0 Restarting agents after plugin changes with aimaestro-agent.sh restart
+- 6.0 Restarting agents after plugin changes
   - 6.1 Hibernate-wake cycle for plugin/marketplace updates
   - 6.2 Restart limitations (cannot restart self)
-- 7.0 Updating agent properties with aimaestro-agent.sh update
+- 7.0 Updating agent properties
   - 7.1 Modifying task descriptions
   - 7.2 Updating tag collections
   - 7.3 Adding and removing individual tags
-- 8.0 Listing and filtering agents with aimaestro-agent.sh list
+- 8.0 Listing and filtering agents
   - 8.1 Filtering by agent state (online/offline/hibernated)
   - 8.2 Listing all agents regardless of state
-- 9.0 Inspecting agent details with aimaestro-agent.sh show
+- 9.0 Inspecting agent details
   - 9.1 Viewing detailed agent information
   - 9.2 JSON output format for scripting
 - 10.0 Agent state management and monitoring
@@ -38,48 +38,46 @@ Complete command-line interface reference for managing Claude Code agent lifecyc
   - 10.2 Health check procedures for unresponsive agents
   - 10.3 Recovery workflows for offline agents
 - 11.0 Error handling and troubleshooting
-  - 11.1 Common spawn errors and recovery
+  - 11.1 Common creation errors and recovery
   - 11.2 Common lifecycle operation errors and recovery
   - 11.3 Plugin installation errors and recovery
 - 12.0 Common workflows
-  - 12.1 Complete agent spawn and configuration workflow
+  - 12.1 Complete agent creation and configuration workflow
   - 12.2 Batch hibernation for resource management
   - 12.3 Mass plugin installation across agent fleet
   - 12.4 Agent recovery from unresponsive state
 
 ---
 
-## 1.0 Quick Command Reference
+## 1.0 Quick Operations Reference
 
-| Command | Purpose |
-|---------|---------|
-| `aimaestro-agent.sh create <name> --dir <path>` | Create new agent |
-| `aimaestro-agent.sh delete <name> --confirm` | Terminate agent |
-| `aimaestro-agent.sh hibernate <name>` | Save state and suspend |
-| `aimaestro-agent.sh wake <name>` | Restore state and resume |
-| `aimaestro-agent.sh restart <name>` | Hibernate + wake (for plugin changes) |
-| `aimaestro-agent.sh list` | List all agents |
-| `aimaestro-agent.sh show <name>` | Show agent details |
-| `aimaestro-agent.sh update <name>` | Update agent properties |
-| `aimaestro-agent.sh plugin marketplace add <agent> <marketplace>` | Add marketplace to agent |
-| `aimaestro-agent.sh plugin install <agent> <plugin>` | Install plugin on agent |
-| `aimaestro-agent.sh plugin list <agent>` | List agent's installed plugins |
+All operations below are performed using the `ai-maestro-agents-management` skill.
+
+| Operation | Description |
+|-----------|-------------|
+| Create agent | Create a new agent with a name, working directory, and Claude Code arguments |
+| Terminate agent | Permanently remove an agent (requires confirmation) |
+| Hibernate agent | Save state and suspend an agent |
+| Wake agent | Restore state and resume a hibernated agent |
+| Restart agent | Hibernate + wake cycle (for plugin changes) |
+| List agents | List all agents, optionally filtered by status |
+| Show agent | Display detailed agent information |
+| Update agent | Modify agent task description or tags |
+| Add marketplace | Register a plugin marketplace on an agent |
+| Install plugin | Install a plugin from a marketplace on an agent |
+| List plugins | List plugins installed on an agent |
 
 ---
 
-## 2.0 Spawning new agents with aimaestro-agent.sh create
+## 2.0 Creating new agents
 
-### 2.1 Basic spawn syntax and required Claude Code arguments
+### 2.1 Basic creation with required Claude Code arguments
 
-The `create` command spawns a new Claude Code agent instance in a tmux session. All arguments after `--` are passed directly to Claude Code.
+Use the `ai-maestro-agents-management` skill to create a new agent. Provide:
 
-**Basic syntax:**
-```bash
-aimaestro-agent.sh create <name> --dir <path> \
-  -- <claude-code-arguments>
-```
-
-**Required Claude Code arguments (ALWAYS pass after `--`):**
+- **Name**: unique identifier for the agent
+- **Directory**: working directory path for the agent
+- **Claude Code arguments**: the following arguments must always be included:
 
 | Argument | Purpose |
 |----------|---------|
@@ -88,71 +86,35 @@ aimaestro-agent.sh create <name> --dir <path> \
 | `--chrome` | Enable Chrome DevTools integration |
 | `--add-dir <TEMP>` | Add temp directory access |
 
-**Minimal working example:**
-```bash
-aimaestro-agent.sh create my-agent --dir ~/projects/my-agent \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
-
-**What the CLI does automatically:**
-1. Creates the directory (or validates if using --force-folder)
+**What happens automatically during creation:**
+1. Creates the directory (or validates if using existing directory)
 2. Initializes a git repository
 3. Creates CLAUDE.md template from default or custom template
 4. Registers agent in AI Maestro registry
 5. Creates tmux session with the agent name
 6. Launches Claude Code with the specified arguments
 
-### 2.2 Spawn with task description and tags
+**Verify**: the new agent appears in the agent list with "online" status.
 
-Add metadata to your agents for better organization and discoverability:
+### 2.2 Creation with task description and tags
 
-```bash
-aimaestro-agent.sh create <name> \
-  --dir <path> \
-  --task "Description of work" \
-  --tags "role,project,team" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+When creating an agent, you can include metadata for organization and discoverability:
 
-**Example:**
-```bash
-aimaestro-agent.sh create code-reviewer-auth \
-  --dir ~/projects/auth-review \
-  --task "Review authentication module code" \
-  --tags "reviewer,auth,security" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+- **Task**: human-readable description of the agent's work (shown in list and show operations)
+- **Tags**: comma-separated labels for filtering and categorization
 
-**Task and tags usage:**
-- **task**: Human-readable description shown in `list` and `show` commands
-- **tags**: Comma-separated labels for filtering and categorization
-- Both can be updated later with `aimaestro-agent.sh update`
+Both can be updated later using the update operation.
 
-### 2.3 Spawn using an existing directory (--force-folder)
+### 2.3 Creation using an existing directory
 
-If you want to spawn an agent in an existing directory (e.g., a pre-configured project folder):
+If you want to create an agent in an existing directory (e.g., a pre-configured project folder), specify that the existing directory should be used (force-folder option).
 
-```bash
-aimaestro-agent.sh create <name> \
-  --dir <existing-path> \
-  --force-folder \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh create docs-writer \
-  --dir ~/projects/documentation \
-  --force-folder \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
-
-**When to use --force-folder:**
+**When to use this:**
 - Directory already exists
 - Directory contains project files you want the agent to access
-- You've pre-configured CLAUDE.md or other setup files
+- You have pre-configured CLAUDE.md or other setup files
 
-**Without --force-folder**, the CLI will error if the directory already exists.
+**Without force-folder**, the creation will error if the directory already exists.
 
 ### 2.4 Platform-specific temporary directory configuration
 
@@ -160,114 +122,56 @@ The `--add-dir <TEMP>` argument grants Claude Code access to the system's tempor
 
 **Platform-specific temp directories:**
 
-| Platform | Path | Example |
-|----------|------|---------|
-| macOS | `/tmp` | `--add-dir /tmp` |
-| Linux | `/tmp` | `--add-dir /tmp` |
-| Windows | `%TEMP%` or full path | `--add-dir %TEMP%` or `--add-dir C:\Users\<user>\AppData\Local\Temp` |
+| Platform | Path |
+|----------|------|
+| macOS | `/tmp` |
+| Linux | `/tmp` |
+| Windows | `%TEMP%` or `C:\Users\<user>\AppData\Local\Temp` |
 
-**macOS/Linux example:**
-```bash
-aimaestro-agent.sh create my-agent --dir ~/projects/my-agent \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+### 2.5 Post-creation plugin installation workflow
 
-**Windows example:**
-```bash
-aimaestro-agent.sh create my-agent --dir C:\projects\my-agent \
-  -- continue --dangerously-skip-permissions --chrome --add-dir %TEMP%
-```
+After creating an agent, install plugins using the `ai-maestro-agents-management` skill:
 
-### 2.5 Post-spawn plugin installation workflow
-
-After spawning an agent, install plugins using the CLI's plugin management commands.
-
-**Step 1: Add marketplace to the agent**
-```bash
-aimaestro-agent.sh plugin marketplace add <agent> <marketplace-url>
-```
-
-**Step 2: Install plugin on the agent**
-```bash
-aimaestro-agent.sh plugin install <agent> <plugin-name>
-```
-
-**Complete example:**
-```bash
-# Spawn agent
-aimaestro-agent.sh create code-reviewer \
-  --dir ~/projects/review \
-  --tags "reviewer" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-
-# Add Emasoft marketplace
-aimaestro-agent.sh plugin marketplace add code-reviewer github:Emasoft/emasoft-plugins
-
-# Install Chief of Staff plugin
-aimaestro-agent.sh plugin install code-reviewer emasoft-chief-of-staff
-
-# Verify installation
-aimaestro-agent.sh plugin list code-reviewer
-```
+1. **Add marketplace** to the agent (specify the marketplace URL)
+2. **Install plugin** on the agent (specify the plugin name)
+3. **Verify** using the list plugins operation
 
 **Important notes:**
-- Each plugin command automatically restarts the target agent (hibernate + wake)
+- Each plugin operation automatically restarts the target agent (hibernate + wake)
 - You cannot modify plugins on your own session (the current agent)
 - Marketplace URL format: `github:Owner/repo` or full HTTPS URL
 
 ---
 
-## 3.0 Terminating agents with aimaestro-agent.sh delete
+## 3.0 Terminating agents
 
-### 3.1 Graceful termination with confirmation requirement
+### 3.1 Graceful termination with confirmation
 
-The `delete` command permanently terminates an agent and removes it from the registry.
+Use the `ai-maestro-agents-management` skill to terminate an agent. Confirmation is required to prevent accidental deletions.
 
-**Syntax:**
-```bash
-aimaestro-agent.sh delete <name> --confirm
-```
-
-**The --confirm flag is REQUIRED** to prevent accidental deletions.
-
-**Example:**
-```bash
-aimaestro-agent.sh delete test-agent-01 --confirm
-```
-
-**What happens during deletion:**
+**What happens during termination:**
 1. Kills the tmux session (if running)
 2. Removes agent from AI Maestro registry
-3. **Does NOT delete the working directory** (your project files are safe)
+3. **Does NOT delete the working directory** (project files are safe)
 
 ### 3.2 When to terminate vs. hibernate
 
 | Use Case | Action | Reason |
 |----------|--------|--------|
-| Agent no longer needed | `delete --confirm` | Frees registry and session resources |
-| Temporary pause (hours/days) | `hibernate` | Preserves state, can resume later |
+| Agent no longer needed | Terminate | Frees registry and session resources |
+| Temporary pause (hours/days) | Hibernate | Preserves state, can resume later |
 | Short break (minutes) | Leave running | No action needed |
-| Unresponsive/corrupted | `delete --confirm` then recreate | Clean slate recovery |
+| Unresponsive/corrupted | Terminate then recreate | Clean slate recovery |
 
 **IMPORTANT**: Termination is permanent. The agent cannot be restored from the registry. Consider hibernating first if you might need the agent again.
 
 ---
 
-## 4.0 Hibernating agents with aimaestro-agent.sh hibernate
+## 4.0 Hibernating agents
 
 ### 4.1 Saving agent state and freeing resources
 
-The `hibernate` command suspends an agent while preserving its state.
-
-**Syntax:**
-```bash
-aimaestro-agent.sh hibernate <name>
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh hibernate docs-writer
-```
+Use the `ai-maestro-agents-management` skill to hibernate an agent.
 
 ### 4.2 Hibernate workflow and state persistence
 
@@ -290,33 +194,15 @@ aimaestro-agent.sh hibernate docs-writer
 - In-memory state
 - Unsaved file changes (commit before hibernating!)
 
-**Example workflow:**
-```bash
-# Before hibernating, ensure work is committed
-tmux send-keys -t docs-writer "git status" C-m
-tmux send-keys -t docs-writer "git add . && git commit -m 'Hibernate checkpoint'" C-m
-
-# Hibernate the agent
-aimaestro-agent.sh hibernate docs-writer
-```
+**Before hibernating**, ensure work is committed (use `git add . && git commit` in the agent's tmux session).
 
 ---
 
-## 5.0 Waking hibernated agents with aimaestro-agent.sh wake
+## 5.0 Waking hibernated agents
 
 ### 5.1 Restoring agent state and resuming operation
 
-The `wake` command resumes a hibernated agent.
-
-**Syntax:**
-```bash
-aimaestro-agent.sh wake <name>
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh wake docs-writer
-```
+Use the `ai-maestro-agents-management` skill to wake a hibernated agent.
 
 **What happens during wake:**
 1. Creates new tmux session with agent name
@@ -326,17 +212,7 @@ aimaestro-agent.sh wake docs-writer
 
 ### 5.2 Wake with automatic session attachment
 
-You can wake an agent and immediately attach to its tmux session:
-
-**Syntax:**
-```bash
-aimaestro-agent.sh wake <name> --attach
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh wake docs-writer --attach
-```
+You can wake an agent and immediately attach to its tmux session by specifying the attach option.
 
 This is useful when you want to interact with the agent immediately after waking it.
 
@@ -345,38 +221,13 @@ This is useful when you want to interact with the agent immediately after waking
 
 ---
 
-## 6.0 Restarting agents after plugin changes with aimaestro-agent.sh restart
+## 6.0 Restarting agents after plugin changes
 
 ### 6.1 Hibernate-wake cycle for plugin/marketplace updates
 
-The `restart` command performs a hibernate-wake cycle, which is required after plugin or marketplace changes.
+Use the `ai-maestro-agents-management` skill to restart an agent. This performs a hibernate-wake cycle, which is required after plugin or marketplace changes.
 
-**Syntax:**
-```bash
-aimaestro-agent.sh restart <name>
-```
-
-**Example:**
-```bash
-# After installing a plugin
-aimaestro-agent.sh plugin install code-reviewer emasoft-chief-of-staff
-
-# No manual restart needed - plugin commands auto-restart
-
-# But if you manually edited plugin files
-aimaestro-agent.sh restart code-reviewer
-```
-
-**With custom wait time:**
-```bash
-# Wait 5 seconds between hibernate and wake
-aimaestro-agent.sh restart code-reviewer --wait 5
-```
-
-**What restart does:**
-1. Hibernates the agent (saves state, kills session)
-2. Waits (default 2 seconds, customizable with --wait)
-3. Wakes the agent (recreates session, launches Claude Code)
+You can optionally specify a custom wait time between hibernate and wake (default 2 seconds).
 
 **Why restart is needed:**
 - Claude Code loads plugins on startup only
@@ -387,197 +238,65 @@ aimaestro-agent.sh restart code-reviewer --wait 5
 
 **You cannot restart the current agent** (the one executing the command).
 
-**Example of the error:**
-```bash
-# If executed from code-reviewer agent
-aimaestro-agent.sh restart code-reviewer
-
-# Output: ERROR: Cannot restart current session
-```
-
 **Workaround:**
 1. Exit Claude Code manually
-2. Relaunch with `aimaestro-agent.sh wake code-reviewer`
+2. Use the `ai-maestro-agents-management` skill to wake your own agent from another agent
 
-**Or from another agent:**
-```bash
-# From orchestrator-master, restart code-reviewer
-aimaestro-agent.sh restart code-reviewer
-```
+**Or from another agent:** use the skill to restart the target agent.
 
 ---
 
-## 7.0 Updating agent properties with aimaestro-agent.sh update
+## 7.0 Updating agent properties
 
 ### 7.1 Modifying task descriptions
 
-Change the task description displayed in `list` and `show` commands:
-
-**Syntax:**
-```bash
-aimaestro-agent.sh update <name> --task "New task description"
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh update code-reviewer --task "Review authentication and authorization modules"
-```
+Use the `ai-maestro-agents-management` skill to update an agent's task description (shown in list and show operations).
 
 ### 7.2 Updating tag collections
 
-Replace the entire tag collection:
-
-**Syntax:**
-```bash
-aimaestro-agent.sh update <name> --tags "tag1,tag2,tag3"
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh update code-reviewer --tags "reviewer,security,auth,critical"
-```
+Use the skill to replace the entire tag collection on an agent (comma-separated labels).
 
 **Note**: This replaces ALL existing tags.
 
 ### 7.3 Adding and removing individual tags
 
-Add a single tag without replacing existing tags:
-
-**Syntax:**
-```bash
-aimaestro-agent.sh update <name> --add-tag "new-tag"
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh update code-reviewer --add-tag "priority"
-```
-
-Remove a single tag:
-
-**Syntax:**
-```bash
-aimaestro-agent.sh update <name> --remove-tag "old-tag"
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh update code-reviewer --remove-tag "deprecated"
-```
+Use the skill to add a single tag without replacing existing tags, or to remove a single tag.
 
 ---
 
-## 8.0 Listing and filtering agents with aimaestro-agent.sh list
+## 8.0 Listing and filtering agents
 
 ### 8.1 Filtering by agent state (online/offline/hibernated)
 
-**List all agents:**
-```bash
-aimaestro-agent.sh list --status all
-```
-
-**List online agents only:**
-```bash
-aimaestro-agent.sh list --status online
-```
-
-**List offline agents only:**
-```bash
-aimaestro-agent.sh list --status offline
-```
-
-**List hibernated agents only:**
-```bash
-aimaestro-agent.sh list --status hibernated
-```
+Use the `ai-maestro-agents-management` skill to list agents, optionally filtering by status:
+- **online**: currently running agents
+- **offline**: crashed or stopped agents
+- **hibernated**: explicitly suspended agents
+- **all**: all agents regardless of state
 
 ### 8.2 Listing all agents regardless of state
 
-**Default (shows all):**
-```bash
-aimaestro-agent.sh list
-```
+The default list operation shows all agents. Output includes name, status, and task for each agent.
 
-**Output format:**
-```
-NAME                STATUS      TASK
-code-reviewer       online      Review authentication module
-docs-writer         hibernated  Write API documentation
-test-runner-001     offline     Run integration tests
-```
-
-**Get just agent names (for scripting):**
-```bash
-aimaestro-agent.sh list --status online --format names
-```
-
-**Output:**
-```
-code-reviewer
-orchestrator-master
-```
+You can also request just agent names (for scripting purposes).
 
 ---
 
-## 9.0 Inspecting agent details with aimaestro-agent.sh show
+## 9.0 Inspecting agent details
 
 ### 9.1 Viewing detailed agent information
 
-**Syntax:**
-```bash
-aimaestro-agent.sh show <name>
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh show code-reviewer
-```
-
-**Example output:**
-```
-Agent: code-reviewer
-Status: online
-Directory: /Users/dev/projects/auth-review
-Task: Review authentication module code
-Tags: reviewer, auth, security
-Plugins: emasoft-chief-of-staff
-Marketplaces: github:Emasoft/emasoft-plugins
-Created: 2026-02-01 14:30:00
-Last updated: 2026-02-05 09:15:00
-```
+Use the `ai-maestro-agents-management` skill to show detailed information about a specific agent, including:
+- Name and status
+- Working directory
+- Task description
+- Tags
+- Installed plugins and marketplaces
+- Creation and last update timestamps
 
 ### 9.2 JSON output format for scripting
 
-**Syntax:**
-```bash
-aimaestro-agent.sh show <name> --format json
-```
-
-**Example:**
-```bash
-aimaestro-agent.sh show code-reviewer --format json | jq .
-```
-
-**Example JSON output:**
-```json
-{
-  "name": "code-reviewer",
-  "status": "online",
-  "directory": "/Users/dev/projects/auth-review",
-  "task": "Review authentication module code",
-  "tags": ["reviewer", "auth", "security"],
-  "plugins": ["emasoft-chief-of-staff"],
-  "marketplaces": ["github:Emasoft/emasoft-plugins"],
-  "created": "2026-02-01T14:30:00Z",
-  "updated": "2026-02-05T09:15:00Z"
-}
-```
-
-**Use with jq for status checks:**
-```bash
-# Check if agent is online (exit code based)
-aimaestro-agent.sh show code-reviewer --format json | jq -e '.status == "online"'
-```
+You can request the agent details in JSON format for programmatic use.
 
 ---
 
@@ -592,93 +311,52 @@ aimaestro-agent.sh show code-reviewer --format json | jq -e '.status == "online"
 | **hibernated** | Explicitly suspended | Does not exist | status = hibernated |
 
 **State transitions:**
-- `create` → online
-- `hibernate` → hibernated
-- `wake` → online (from hibernated)
-- `delete` → (removed from registry)
-- Session crash → offline (automatic)
+- Create -> online
+- Hibernate -> hibernated
+- Wake -> online (from hibernated)
+- Terminate -> (removed from registry)
+- Session crash -> offline (automatic)
 
 ### 10.2 Health check procedures for unresponsive agents
 
-**Step 1: Check agent status**
-```bash
-aimaestro-agent.sh show <agent-name>
-```
+**Step 1:** Use the `ai-maestro-agents-management` skill to show agent details and check status.
 
 **Step 2: Interpret status**
 
 | Status | Likely Cause | Next Action |
 |--------|--------------|-------------|
 | online | Agent running but not responding | Check tmux session, inspect logs |
-| offline | Session crashed | Try wake command |
+| offline | Session crashed | Try wake operation |
 | hibernated | Intentionally suspended | Wake to resume |
 
-**Step 3: Check tmux session directly**
-```bash
-tmux list-sessions | grep <agent-name>
-```
+**Step 3:** Check tmux session directly: `tmux list-sessions | grep <agent-name>`
 
-**Step 4: Inspect Claude Code logs (if session exists)**
-```bash
-tmux capture-pane -t <agent-name> -p | tail -50
-```
+**Step 4:** Inspect Claude Code logs (if session exists): `tmux capture-pane -t <agent-name> -p | tail -50`
 
 ### 10.3 Recovery workflows for offline agents
 
 **If agent is offline:**
 
-**Option 1: Try waking**
-```bash
-aimaestro-agent.sh wake <agent-name>
-```
-
-**Option 2: Check if actually hibernated**
-```bash
-aimaestro-agent.sh show <agent-name> | grep hibernated
-```
-
-If hibernated, use wake. If offline due to crash:
-
-**Option 3: Delete and recreate**
-```bash
-# Save directory path first
-dir=$(aimaestro-agent.sh show <agent-name> --format json | jq -r .directory)
-
-# Delete
-aimaestro-agent.sh delete <agent-name> --confirm
-
-# Recreate with same configuration
-aimaestro-agent.sh create <agent-name> \
-  --dir "$dir" \
-  --force-folder \
-  --task "Original task" \
-  --tags "original,tags" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+1. **Try waking**: Use the `ai-maestro-agents-management` skill to wake the agent
+2. **Check if actually hibernated**: Use the skill to show agent details and check for hibernated status
+3. **If wake fails, delete and recreate**:
+   - Save the agent's directory path and configuration using the show operation
+   - Use the skill to terminate the agent (with confirmation)
+   - Use the skill to create a new agent with the same name, directory (force-folder), task, and tags
+   - Reinstall plugins using the skill
 
 ---
 
 ## 11.0 Error handling and troubleshooting
 
-### 11.1 Common spawn errors and recovery
+### 11.1 Common creation errors and recovery
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| "Directory exists" | Path already exists | Use `--force-folder` flag |
-| "Agent name exists" | Name already in registry | Choose different name or delete first: `aimaestro-agent.sh delete <name> --confirm` |
+| "Directory exists" | Path already exists | Use the force-folder option |
+| "Agent name exists" | Name already in registry | Choose different name or terminate first |
 | "tmux session exists" | Orphaned tmux session | Kill session manually: `tmux kill-session -t <name>` |
 | "Claude Code not found" | Binary not in PATH | Install Claude Code or add to PATH |
-
-**Example recovery (directory exists):**
-```bash
-# Original command fails
-aimaestro-agent.sh create my-agent --dir ~/existing-project
-
-# ERROR: Directory exists
-
-# Solution: use --force-folder
-aimaestro-agent.sh create my-agent --dir ~/existing-project --force-folder
-```
 
 ### 11.2 Common lifecycle operation errors and recovery
 
@@ -686,204 +364,79 @@ aimaestro-agent.sh create my-agent --dir ~/existing-project --force-folder
 |-------|-------|----------|
 | "Agent not found" | Not in registry | Already deleted or typo in name |
 | "Agent not online" (hibernate) | Already stopped | No action needed, already hibernated/offline |
-| "Agent not hibernated" (wake) | Agent is online or offline | Check status first: `aimaestro-agent.sh show <name>` |
+| "Agent not hibernated" (wake) | Agent is online or offline | Check status first using the show operation |
 | "Cannot restart self" (restart) | Trying to restart current agent | Exit and relaunch Claude Code manually |
-
-**Example recovery (wake fails):**
-```bash
-# Wake command fails
-aimaestro-agent.sh wake my-agent
-
-# ERROR: Agent not hibernated
-
-# Check actual status
-aimaestro-agent.sh show my-agent
-
-# If online: no action needed
-# If offline: agent crashed, recreate or check logs
-```
 
 ### 11.3 Plugin installation errors and recovery
 
 | Error | Cause | Solution |
 |-------|-------|----------|
-| "Marketplace not found" | Marketplace not added to agent | Add marketplace first: `aimaestro-agent.sh plugin marketplace add <agent> <url>` |
-| "Plugin not found" | Plugin doesn't exist in marketplace | Check marketplace contents, verify plugin name |
+| "Marketplace not found" | Marketplace not added to agent | Add marketplace first using the skill |
+| "Plugin not found" | Plugin does not exist in marketplace | Check marketplace contents, verify plugin name |
 | "Cannot modify self" | Trying to install plugin on current agent | Use different agent or exit and manually install |
-
-**Example recovery (marketplace not found):**
-```bash
-# Install fails
-aimaestro-agent.sh plugin install my-agent emasoft-chief-of-staff
-
-# ERROR: Marketplace not found
-
-# Solution: add marketplace first
-aimaestro-agent.sh plugin marketplace add my-agent github:Emasoft/emasoft-plugins
-
-# Now install plugin
-aimaestro-agent.sh plugin install my-agent emasoft-chief-of-staff
-```
 
 ---
 
 ## 12.0 Common workflows
 
-### 12.1 Complete agent spawn and configuration workflow
+### 12.1 Complete agent creation and configuration workflow
 
-**Full workflow from spawn to ready:**
+**Full workflow from creation to ready:**
 
-```bash
-# Step 1: Spawn agent
-aimaestro-agent.sh create code-reviewer-auth \
-  --dir ~/projects/auth-review \
-  --task "Review authentication module code" \
-  --tags "reviewer,auth,security" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
+1. **Create agent**: Use the `ai-maestro-agents-management` skill to create the agent with name, directory, task, and tags
+2. **Add marketplace**: Use the skill to add the Emasoft marketplace to the agent (auto-restarts agent)
+3. **Install plugin**: Use the skill to install the required plugin on the agent (auto-restarts agent)
+4. **Verify configuration**: Use the skill to show agent details
+5. **Check plugin installation**: Use the skill to list plugins on the agent
 
-# Step 2: Add marketplace (auto-restarts agent)
-aimaestro-agent.sh plugin marketplace add code-reviewer-auth github:Emasoft/emasoft-plugins
-
-# Step 3: Install plugin (auto-restarts agent)
-aimaestro-agent.sh plugin install code-reviewer-auth emasoft-chief-of-staff
-
-# Step 4: Verify configuration
-aimaestro-agent.sh show code-reviewer-auth
-
-# Step 5: Check plugin installation
-aimaestro-agent.sh plugin list code-reviewer-auth
-
-# Agent is now fully configured and ready
-```
+**Verify**: agent is online with the correct plugins installed.
 
 ### 12.2 Batch hibernation for resource management
 
 **Hibernate all online agents except critical ones:**
 
-```bash
-# Get list of online agents
-agents=$(aimaestro-agent.sh list --status online --format names)
-
-# Define critical agents to keep running
-critical="orchestrator-master monitoring-agent"
-
-# Hibernate all non-critical agents
-for agent in $agents; do
-  if ! echo "$critical" | grep -q "$agent"; then
-    echo "Hibernating $agent..."
-    aimaestro-agent.sh hibernate "$agent"
-  fi
-done
-
-# Verify
-aimaestro-agent.sh list --status hibernated
-```
+1. Use the `ai-maestro-agents-management` skill to list online agents
+2. Define critical agents to keep running (e.g., orchestrator, monitoring)
+3. For each non-critical agent, use the skill to hibernate it
+4. Use the skill to list hibernated agents to verify
 
 **Wake all hibernated agents:**
 
-```bash
-# Get hibernated agents
-hibernated=$(aimaestro-agent.sh list --status hibernated --format names)
-
-# Wake each
-for agent in $hibernated; do
-  echo "Waking $agent..."
-  aimaestro-agent.sh wake "$agent"
-done
-
-# Verify
-aimaestro-agent.sh list --status online
-```
+1. Use the skill to list hibernated agents
+2. For each hibernated agent, use the skill to wake it
+3. Use the skill to list online agents to verify
 
 ### 12.3 Mass plugin installation across agent fleet
 
 **Install plugin on all online agents:**
 
-```bash
-# Get list of online agents
-agents=$(aimaestro-agent.sh list --status online --format names)
-
-# Add marketplace to each (ignore if already exists)
-for agent in $agents; do
-  aimaestro-agent.sh plugin marketplace add "$agent" github:Emasoft/emasoft-plugins 2>/dev/null || true
-done
-
-# Install plugin on each (auto-restarts)
-for agent in $agents; do
-  echo "Installing on $agent..."
-  aimaestro-agent.sh plugin install "$agent" emasoft-chief-of-staff
-done
-
-# Verify installation
-for agent in $agents; do
-  echo "--- $agent ---"
-  aimaestro-agent.sh plugin list "$agent" | grep chief-of-staff
-done
-```
+1. Use the `ai-maestro-agents-management` skill to list online agents
+2. For each agent, use the skill to add the marketplace (if not already added)
+3. For each agent, use the skill to install the plugin (auto-restarts)
+4. For each agent, use the skill to list plugins and verify installation
 
 ### 12.4 Agent recovery from unresponsive state
 
 **Complete recovery procedure:**
 
-```bash
-# Step 1: Check agent status
-agent_name="test-runner-003"
-aimaestro-agent.sh show "$agent_name"
-
-# Step 2: If offline, try waking
-if aimaestro-agent.sh show "$agent_name" --format json | jq -e '.status == "offline"'; then
-  echo "Agent is offline, attempting wake..."
-  aimaestro-agent.sh wake "$agent_name"
-fi
-
-# Step 3: If wake fails, delete and recreate
-if ! aimaestro-agent.sh show "$agent_name" --format json | jq -e '.status == "online"'; then
-  echo "Wake failed, recreating agent..."
-
-  # Save configuration
-  dir=$(aimaestro-agent.sh show "$agent_name" --format json | jq -r .directory)
-  task=$(aimaestro-agent.sh show "$agent_name" --format json | jq -r .task)
-  tags=$(aimaestro-agent.sh show "$agent_name" --format json | jq -r '.tags | join(",")')
-
-  # Delete
-  aimaestro-agent.sh delete "$agent_name" --confirm
-
-  # Recreate
-  aimaestro-agent.sh create "$agent_name" \
-    --dir "$dir" \
-    --force-folder \
-    --task "$task" \
-    --tags "$tags" \
-    -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-
-  # Reinstall plugins
-  aimaestro-agent.sh plugin marketplace add "$agent_name" github:Emasoft/emasoft-plugins
-  aimaestro-agent.sh plugin install "$agent_name" emasoft-chief-of-staff
-fi
-
-# Step 4: Verify recovery
-aimaestro-agent.sh show "$agent_name"
-```
+1. Use the `ai-maestro-agents-management` skill to show agent status
+2. If offline, use the skill to try waking the agent
+3. If wake fails, save configuration (directory, task, tags) from the show operation
+4. Use the skill to terminate the agent (with confirmation)
+5. Use the skill to create a new agent with the same configuration (force-folder)
+6. Use the skill to add marketplace and install plugins
+7. Use the skill to show agent details and verify recovery
 
 ---
 
 ## Exit Codes
 
-All `aimaestro-agent.sh` commands use standard exit codes:
+All agent lifecycle operations use standard exit codes:
 
-| Code | Meaning | Example |
-|------|---------|---------|
-| 0 | Success | Command completed successfully |
-| 1 | General error | Invalid arguments, command failed |
-| 2 | Agent not found | Agent doesn't exist in registry |
-| 3 | Permission denied | Cannot modify current agent |
-| 4 | State conflict | Cannot wake online agent, cannot hibernate offline agent |
-
-**Use in scripts:**
-```bash
-if aimaestro-agent.sh show my-agent &>/dev/null; then
-  echo "Agent exists"
-else
-  echo "Agent not found"
-fi
-```
+| Code | Meaning |
+|------|---------|
+| 0 | Success - command completed successfully |
+| 1 | General error - invalid arguments or command failed |
+| 2 | Agent not found - agent does not exist in registry |
+| 3 | Permission denied - cannot modify current agent |
+| 4 | State conflict - cannot wake online agent, cannot hibernate offline agent |
