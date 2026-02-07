@@ -18,8 +18,9 @@ version: 1.0.0
 
 ## Prerequisites
 
-- AI Maestro is running locally at `http://localhost:23000`
-- `aimaestro-agent.sh` CLI is available in PATH
+- AI Maestro is running locally
+- The `ai-maestro-agents-management` skill is available
+- The `agent-messaging` skill is available
 - tmux is installed for session management
 - Team registry location is writable (`.emasoft/team-registry.json`)
 - Plugin for the agent role is installed in marketplace cache
@@ -47,34 +48,19 @@ Select the appropriate agent type based on the task requirements. ECOS chooses t
 
 ### Step 2: Setup Plugin for Agent
 
-Copy the plugin from marketplace cache to agent's local folder:
+Copy the plugin from the **emasoft-plugins marketplace cache** to the agent's local folder:
+- **Source**: `$HOME/.claude/plugins/cache/emasoft-plugins/<plugin-name>/<latest-version>/`
+- **Destination**: `$HOME/agents/<session-name>/.claude/plugins/<plugin-name>/`
 
-```bash
-# Variables
-SESSION_NAME="<chosen-session-name>"
-PLUGIN_NAME="<plugin-name>"
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-PLUGIN_SOURCE="$MARKETPLACE_CACHE/$PLUGIN_VERSION"
-PLUGIN_DEST="$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-
-# Create destination and copy
-mkdir -p "$(dirname "$PLUGIN_DEST")"
-cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
-```
+Create the destination directory and copy the plugin files.
 
 ### Step 3: Create Agent Instance
 
-Use aimaestro-agent.sh to create the agent:
-
-```bash
-aimaestro-agent.sh create $SESSION_NAME \
-  --dir ~/agents/$SESSION_NAME \
-  --task "<task description>" \
-  -- --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --plugin-dir ~/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME \
-  --agent <prefix>-<role>-main-agent
-```
+Use the `ai-maestro-agents-management` skill to create a new agent:
+- **Name**: the chosen session name
+- **Directory**: `~/agents/<session-name>/` (FLAT structure)
+- **Task**: description of the agent's purpose
+- **Program args**: include `--dangerously-skip-permissions`, `--chrome`, `--add-dir /tmp`, `--plugin-dir` pointing to the copied plugin, and `--agent <prefix>-<role>-main-agent`
 
 **Important flags:**
 - `--dir`: Working directory for the agent (FLAT structure: `~/agents/<session-name>/`)
@@ -84,18 +70,13 @@ aimaestro-agent.sh create $SESSION_NAME \
 
 ### Step 4: Verify Initialization
 
-```bash
-# Check agent status
-aimaestro-agent.sh status $SESSION_NAME
-
-# Expected output: "running"
-```
+Use the `ai-maestro-agents-management` skill to check the agent's status. Expected status: running.
 
 ### Step 5: Register in Team Registry
 
 ```bash
 uv run python scripts/ecos_team_registry.py add-agent \
-  --name "$SESSION_NAME" \
+  --name "<session-name>" \
   --role "<role>" \
   --project "<project>" \
   --status "running"
@@ -103,17 +84,11 @@ uv run python scripts/ecos_team_registry.py add-agent \
 
 ### Step 6: Send Welcome Message
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$SESSION_NAME"'",
-    "subject": "Welcome - Agent Created",
-    "priority": "high",
-    "content": {"type": "team-notification", "message": "You have been created and registered. Awaiting role assignment from orchestrator."}
-  }'
-```
+Use the `agent-messaging` skill to send a welcome message:
+- **Recipient**: the new agent session name
+- **Subject**: `Welcome - Agent Created`
+- **Priority**: `high`
+- **Content**: type `team-notification`, informing the agent it has been created and registered, and is awaiting role assignment from the orchestrator
 
 ## Checklist
 
@@ -123,89 +98,61 @@ Copy this checklist and track your progress:
 - [ ] Choose unique session name following naming convention
 - [ ] Verify plugin exists in marketplace cache
 - [ ] Copy plugin to agent's local folder
-- [ ] Execute aimaestro-agent.sh create command
+- [ ] Create agent via `ai-maestro-agents-management` skill
 - [ ] Verify agent status is "running"
 - [ ] Register agent in team registry
-- [ ] Send welcome message via AI Maestro
+- [ ] Send welcome message via `agent-messaging` skill
 - [ ] Confirm agent acknowledgment received
 
 ## Examples
 
 ### Example: Creating an Orchestrator for svgbbox Project
 
-```bash
-# Step 1: Set variables
-SESSION_NAME="eoa-svgbbox-orchestrator"
-PLUGIN_NAME="emasoft-orchestrator-agent"
-
-# Step 2: Setup plugin
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-mkdir -p "$HOME/agents/$SESSION_NAME/.claude/plugins"
-cp -r "$MARKETPLACE_CACHE/$PLUGIN_VERSION" "$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-
-# Step 3: Create agent
-aimaestro-agent.sh create $SESSION_NAME \
-  --dir ~/agents/$SESSION_NAME \
-  --task "Orchestrate tasks for svgbbox-library-team" \
-  -- --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --plugin-dir ~/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME \
-  --agent eoa-orchestrator-main-agent
-
-# Step 4: Verify
-aimaestro-agent.sh status $SESSION_NAME
-# Expected: running
-
-# Step 5: Register
-uv run python scripts/ecos_team_registry.py add-agent \
-  --name "$SESSION_NAME" \
-  --role "orchestrator" \
-  --project "svgbbox" \
-  --status "running"
-```
+1. Set variables: session name `eoa-svgbbox-orchestrator`, plugin `emasoft-orchestrator-agent`
+2. Copy plugin from marketplace cache (`$HOME/.claude/plugins/cache/emasoft-plugins/emasoft-orchestrator-agent/<latest-version>/`) to `$HOME/agents/eoa-svgbbox-orchestrator/.claude/plugins/emasoft-orchestrator-agent/`
+3. Use the `ai-maestro-agents-management` skill to create a new agent:
+   - **Name**: `eoa-svgbbox-orchestrator`
+   - **Directory**: `~/agents/eoa-svgbbox-orchestrator`
+   - **Task**: `Orchestrate tasks for svgbbox-library-team`
+   - **Program args**: include `--dangerously-skip-permissions`, `--chrome`, `--add-dir /tmp`, `--plugin-dir ~/agents/eoa-svgbbox-orchestrator/.claude/plugins/emasoft-orchestrator-agent`, `--agent eoa-orchestrator-main-agent`
+4. Use the `ai-maestro-agents-management` skill to verify status is "running"
+5. Register in team registry:
+   ```bash
+   uv run python scripts/ecos_team_registry.py add-agent \
+     --name "eoa-svgbbox-orchestrator" \
+     --role "orchestrator" \
+     --project "svgbbox" \
+     --status "running"
+   ```
 
 ### Example: Creating a Programmer for svgbbox Project
 
-```bash
-# Step 1: Set variables (Programmers use project-based naming)
-SESSION_NAME="svgbbox-programmer-001"
-PLUGIN_NAME="emasoft-programmer-agent"
-
-# Step 2: Setup plugin
-MARKETPLACE_CACHE="$HOME/.claude/plugins/cache/emasoft-plugins/$PLUGIN_NAME"
-PLUGIN_VERSION=$(ls -1 "$MARKETPLACE_CACHE" | sort -V | tail -1)
-mkdir -p "$HOME/agents/$SESSION_NAME/.claude/plugins"
-cp -r "$MARKETPLACE_CACHE/$PLUGIN_VERSION" "$HOME/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME"
-
-# Step 3: Create agent
-aimaestro-agent.sh create $SESSION_NAME \
-  --dir ~/agents/$SESSION_NAME \
-  --task "Implement authentication module for svgbbox" \
-  -- --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --plugin-dir ~/agents/$SESSION_NAME/.claude/plugins/$PLUGIN_NAME \
-  --agent epa-programmer-main-agent
-
-# Step 4: Verify
-aimaestro-agent.sh status $SESSION_NAME
-# Expected: running
-
-# Step 5: Register
-uv run python scripts/ecos_team_registry.py add-agent \
-  --name "$SESSION_NAME" \
-  --role "programmer" \
-  --project "svgbbox" \
-  --status "running"
-```
+1. Set variables: session name `svgbbox-programmer-001`, plugin `emasoft-programmer-agent` (Programmers use project-based naming)
+2. Copy plugin from marketplace cache to `$HOME/agents/svgbbox-programmer-001/.claude/plugins/emasoft-programmer-agent/`
+3. Use the `ai-maestro-agents-management` skill to create a new agent:
+   - **Name**: `svgbbox-programmer-001`
+   - **Directory**: `~/agents/svgbbox-programmer-001`
+   - **Task**: `Implement authentication module for svgbbox`
+   - **Program args**: include `--dangerously-skip-permissions`, `--chrome`, `--add-dir /tmp`, `--plugin-dir ~/agents/svgbbox-programmer-001/.claude/plugins/emasoft-programmer-agent`, `--agent epa-programmer-main-agent`
+4. Use the `ai-maestro-agents-management` skill to verify status is "running"
+5. Register in team registry:
+   ```bash
+   uv run python scripts/ecos_team_registry.py add-agent \
+     --name "svgbbox-programmer-001" \
+     --role "programmer" \
+     --project "svgbbox" \
+     --status "running"
+   ```
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Plugin not found in cache | Plugin not installed from marketplace | Run `claude plugin install <plugin>@emasoft-plugins` first |
+| Plugin not found in cache | Plugin not installed from marketplace | Install the plugin from the marketplace first |
 | Session name already exists | Name collision | Choose a different unique session name |
 | tmux session creation failed | tmux not installed or permission issue | Install tmux or check permissions |
-| Agent status not "running" | Initialization failed | Check agent logs, retry with --debug flag |
-| AI Maestro unreachable | Service not running | Start AI Maestro with `aimaestro start` |
+| Agent status not "running" | Initialization failed | Check agent logs, retry with debug options |
+| AI Maestro unreachable | Service not running | Start AI Maestro service |
 
 ## Related Operations
 

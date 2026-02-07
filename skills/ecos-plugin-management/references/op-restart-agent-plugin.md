@@ -20,7 +20,7 @@ version: 1.0.0
 ## Prerequisites
 
 - Agent session is accessible
-- `aimaestro-agent.sh` CLI available (for remote agents)
+- The `ai-maestro-agents-management` skill is available (for remote agents)
 - Claude Code CLI available (for local agent)
 
 ## Procedure
@@ -29,77 +29,43 @@ version: 1.0.0
 
 Claude Code caches plugin state in memory. You MUST exit and relaunch.
 
-```bash
-# Step 1: Exit current session
-exit
-
-# Step 2: Relaunch Claude Code
-claude
-
-# Or with specific plugin
-claude --plugin-dir /path/to/my-plugin
-```
+1. Save any important state
+2. Exit the current Claude Code session
+3. Relaunch Claude Code (optionally with `--plugin-dir /path/to/my-plugin` for specific plugin loading)
 
 ### For Remote Agents
 
-Use aimaestro-agent.sh for remote restarts.
-
 #### Step 1: Send Pre-Restart Warning
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Restart Warning",
-    "priority": "urgent",
-    "content": {
-      "type": "hibernation-warning",
-      "message": "Agent will restart in 30 seconds for plugin changes. Please save current state."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: the target agent session name
+- **Subject**: `Restart Warning`
+- **Priority**: `urgent`
+- **Content**: type `hibernation-warning`, informing the agent it will restart in 30 seconds for plugin changes and should save current state
 
 #### Step 2: Wait for Acknowledgment
 
-```bash
-sleep 30
-```
+Wait 30 seconds for the agent to save state.
 
 #### Step 3: Execute Restart
 
-```bash
-# Standard restart
-aimaestro-agent.sh restart <agent-session-name>
+Use the `ai-maestro-agents-management` skill to restart the target agent.
 
-# With longer wait time (slow systems)
-aimaestro-agent.sh restart <agent-session-name> --wait 5
-```
+For slow systems, use a longer wait time option if available.
 
 #### Step 4: Verify Agent Resumed
 
-```bash
-# Check status
-aimaestro-agent.sh status <agent-session-name>
-# Expected: running
+Use the `ai-maestro-agents-management` skill to check the agent's status. Expected status: running.
 
-# Send confirmation request
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Restart Complete",
-    "priority": "high",
-    "content": {
-      "type": "status-request",
-      "message": "Restart complete. Please confirm you are operational and new plugins are loaded."
-    }
-  }'
-```
+Then use the `agent-messaging` skill to send a confirmation request:
+- **Recipient**: the target agent session name
+- **Subject**: `Restart Complete`
+- **Priority**: `high`
+- **Content**: type `status-request`, asking the agent to confirm it is operational and new plugins are loaded
 
 #### Step 5: Update Registry Status
+
+Update the team registry log with the restart event:
 
 ```bash
 uv run python scripts/ecos_team_registry.py log \
@@ -123,7 +89,7 @@ Copy this checklist and track your progress:
 **For Remote Agent:**
 - [ ] Send restart warning message
 - [ ] Wait for acknowledgment (or timeout)
-- [ ] Execute restart command
+- [ ] Execute restart via `ai-maestro-agents-management` skill
 - [ ] Wait for agent to come back online
 - [ ] Verify status is "running"
 - [ ] Send confirmation request
@@ -133,108 +99,52 @@ Copy this checklist and track your progress:
 
 ### Example: Restarting Self After Plugin Install
 
-```bash
-# You just ran: claude plugin install my-plugin@marketplace
-# Now you must restart
-
-# Save your work, then:
-exit
-
-# Relaunch
-claude
-
-# Verify new plugin loaded
-/hooks
-# Should show new hooks from my-plugin
-```
+1. Install the plugin (e.g., via `claude plugin install my-plugin@marketplace`)
+2. Save your work
+3. Exit Claude Code
+4. Relaunch Claude Code
+5. Run `/hooks` to verify new hooks from the plugin are loaded
 
 ### Example: Restarting Remote Agent
 
-```bash
-SESSION_NAME="dev-backend-alice"
+For agent `dev-backend-alice`:
 
-# Warning
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$SESSION_NAME"'",
-    "subject": "Restart in 30s",
-    "priority": "urgent",
-    "content": {"type": "hibernation-warning", "message": "Restarting for plugin update."}
-  }'
-
-# Wait
-sleep 30
-
-# Restart
-aimaestro-agent.sh restart $SESSION_NAME
-
-# Wait for restart
-sleep 5
-
-# Verify
-aimaestro-agent.sh status $SESSION_NAME
-# Output: running
-
-# Confirm
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$SESSION_NAME"'",
-    "subject": "Restart Complete",
-    "priority": "high",
-    "content": {"type": "status-request", "message": "Please confirm new plugins loaded."}
-  }'
-```
+1. Use the `agent-messaging` skill to send a restart warning:
+   - **Recipient**: `dev-backend-alice`
+   - **Subject**: `Restart in 30s`
+   - **Priority**: `urgent`
+   - **Content**: type `hibernation-warning`, message: "Restarting for plugin update."
+2. Wait 30 seconds
+3. Use the `ai-maestro-agents-management` skill to restart agent `dev-backend-alice`
+4. Wait for restart to complete
+5. Use the `ai-maestro-agents-management` skill to check the agent's status (expected: running)
+6. Use the `agent-messaging` skill to send a confirmation request:
+   - **Recipient**: `dev-backend-alice`
+   - **Subject**: `Restart Complete`
+   - **Priority**: `high`
+   - **Content**: type `status-request`, asking the agent to confirm new plugins loaded
 
 ### Example: Batch Restart Multiple Agents
 
-```bash
-AGENTS="dev-backend-alice dev-frontend-bob"
+For agents `dev-backend-alice` and `dev-frontend-bob`:
 
-# Send warnings
-for AGENT in $AGENTS; do
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "from": "ecos-chief-of-staff",
-      "to": "'"$AGENT"'",
-      "subject": "Batch Restart",
-      "priority": "urgent",
-      "content": {"type": "hibernation-warning", "message": "Batch restart for plugin updates in 30s."}
-    }'
-done
-
-# Wait
-sleep 30
-
-# Restart all
-for AGENT in $AGENTS; do
-  aimaestro-agent.sh restart $AGENT
-  echo "Restarted $AGENT"
-done
-
-# Wait for all to come back
-sleep 10
-
-# Verify all
-for AGENT in $AGENTS; do
-  STATUS=$(aimaestro-agent.sh status $AGENT)
-  echo "$AGENT: $STATUS"
-done
-```
+1. Use the `agent-messaging` skill to send restart warnings to each agent:
+   - **Priority**: `urgent`
+   - **Content**: type `hibernation-warning`, message: "Batch restart for plugin updates in 30s."
+2. Wait 30 seconds
+3. Use the `ai-maestro-agents-management` skill to restart each agent
+4. Wait for all agents to come back online
+5. Use the `ai-maestro-agents-management` skill to check each agent's status
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Agent not responding after restart | Restart failed | Check tmux session, retry restart |
-| Status not "running" | Claude Code crashed | Check logs, try `aimaestro-agent.sh restart --force` |
+| Agent not responding after restart | Restart failed | Check tmux session, retry restart via the skill |
+| Status not "running" | Claude Code crashed | Check logs, try force restart via the skill |
 | Old plugins still loaded | Cache issue | Clear plugin cache before restart |
 | New hooks not appearing | Plugin not properly installed | Verify plugin installation before restart |
-| Restart hangs | Long-running task interrupted | Use `--force` flag if needed |
+| Restart hangs | Long-running task interrupted | Use force option if available |
 | Agent lost context | Normal behavior | Send context restoration message |
 
 ## Related Operations

@@ -20,9 +20,9 @@ version: 1.0.0
 
 ## Prerequisites
 
-- AI Maestro is running locally at `http://localhost:23000`
+- AI Maestro is running locally
+- The `agent-messaging` skill is available
 - Target agent is registered in AI Maestro
-- Network connectivity to localhost
 
 ## Procedure
 
@@ -53,47 +53,27 @@ Select appropriate message type:
 
 ### Step 3: Compose Message Content
 
-The `content` field must be a JSON object with `type` and `message`:
+The content must include:
+- **type**: the message type from Step 1
+- **message**: human-readable message text
 
-```json
-{
-  "type": "<message-type>",
-  "message": "<human-readable message text>"
-}
-```
+Additional fields may be included as needed.
 
 ### Step 4: Send Message
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<target-agent-name>",
-    "subject": "<brief subject line>",
-    "priority": "<normal|high|urgent>",
-    "content": {
-      "type": "<message-type>",
-      "message": "<detailed message text>"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: the target agent session name
+- **Subject**: a brief, descriptive subject line
+- **Priority**: `normal`, `high`, or `urgent`
+- **Content**: structured object with `type` and `message` fields
 
 ### Step 5: Verify Delivery (Optional)
 
-```bash
-# Check if message was delivered
-curl -s "http://localhost:23000/api/messages?agent=<target-agent>&action=list&status=unread" | jq '.'
-```
+Use the `agent-messaging` skill to check the message status or list unread messages for the target agent.
 
 ### Step 6: Wait for Response (If Expected)
 
-For messages expecting a response, poll your inbox:
-
-```bash
-# Check for responses
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=list&status=unread" | jq '.messages[].content.message'
-```
+For messages expecting a response, use the `agent-messaging` skill to poll your inbox for unread messages.
 
 ## Checklist
 
@@ -103,7 +83,7 @@ Copy this checklist and track your progress:
 - [ ] Select priority level
 - [ ] Compose clear message content
 - [ ] Verify target agent name is correct
-- [ ] Send message via curl
+- [ ] Send message via `agent-messaging` skill
 - [ ] Check for delivery confirmation
 - [ ] Wait for response if expected
 - [ ] Log message exchange if significant
@@ -112,85 +92,49 @@ Copy this checklist and track your progress:
 
 ### Example: Role Assignment Message
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "dev-api-charlie",
-    "subject": "Role Assignment - API Developer",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "You are assigned as API Developer on the backend-api project. Your responsibilities include implementing endpoints, writing tests, and maintaining API documentation. Please acknowledge this assignment."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a role assignment:
+- **Recipient**: `dev-api-charlie`
+- **Subject**: `Role Assignment - API Developer`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "You are assigned as API Developer on the backend-api project. Your responsibilities include implementing endpoints, writing tests, and maintaining API documentation. Please acknowledge this assignment."
 
 ### Example: Status Request Message
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eoa-webapp-orchestrator",
-    "subject": "Status Request - Sprint Progress",
-    "priority": "normal",
-    "content": {
-      "type": "status-request",
-      "message": "Please provide current sprint progress including: completed tasks, in-progress work, blocked items, and estimated completion."
-    }
-  }'
-```
+Use the `agent-messaging` skill to request status:
+- **Recipient**: `eoa-webapp-orchestrator`
+- **Subject**: `Status Request - Sprint Progress`
+- **Priority**: `normal`
+- **Content**: type `status-request`, message: "Please provide current sprint progress including: completed tasks, in-progress work, blocked items, and estimated completion."
 
 ### Example: Hibernation Warning Message
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "dev-frontend-bob",
-    "subject": "Hibernation Warning - 60 Seconds",
-    "priority": "urgent",
-    "content": {
-      "type": "hibernation-warning",
-      "message": "You will be hibernated in 60 seconds due to idle timeout. Please save any transient state and acknowledge."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a hibernation warning:
+- **Recipient**: `dev-frontend-bob`
+- **Subject**: `Hibernation Warning - 60 Seconds`
+- **Priority**: `urgent`
+- **Content**: type `hibernation-warning`, message: "You will be hibernated in 60 seconds due to idle timeout. Please save any transient state and acknowledge."
 
 ### Example: Team Broadcast Message
 
-```bash
-# Get all running agents
-AGENTS=$(uv run python scripts/ecos_team_registry.py list --filter-status running --names-only)
+To broadcast to all running agents:
 
-# Send to each
-for AGENT in $AGENTS; do
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "from": "ecos-chief-of-staff",
-      "to": "'"$AGENT"'",
-      "subject": "Team Announcement",
-      "priority": "normal",
-      "content": {
-        "type": "team-notification",
-        "message": "Sprint planning meeting in 30 minutes. Please prepare your status updates."
-      }
-    }'
-done
-```
+1. Get all running agent names from the team registry:
+   ```bash
+   AGENTS=$(uv run python scripts/ecos_team_registry.py list --filter-status running --names-only)
+   ```
+2. For each agent, use the `agent-messaging` skill to send a team notification:
+   - **Recipient**: the agent session name
+   - **Subject**: `Team Announcement`
+   - **Priority**: `normal`
+   - **Content**: type `team-notification`, message: "Sprint planning meeting in 30 minutes. Please prepare your status updates."
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Connection refused | AI Maestro not running | Start AI Maestro with `aimaestro start` |
-| Agent not found | Wrong agent name or not registered | Check agent name with `aimaestro-agent.sh list` |
-| Invalid JSON | Malformed content field | Ensure content is valid JSON object |
+| Connection refused | AI Maestro not running | Start AI Maestro service |
+| Agent not found | Wrong agent name or not registered | Use the `ai-maestro-agents-management` skill to list agents for correct name |
+| Invalid content format | Malformed content field | Ensure content is a valid object with `type` and `message` fields |
 | Message not delivered | Agent session dead | Check agent status, respawn if needed |
 | No response received | Agent not processing messages | Send ping, check if agent is responsive |
 | Rate limit exceeded | Too many messages | Slow down message frequency, batch if possible |

@@ -20,28 +20,22 @@ version: 1.0.0
 ## Prerequisites
 
 - Agent exists and is registered in team registry
-- AI Maestro is running locally at `http://localhost:23000`
-- `aimaestro-agent.sh` CLI is available in PATH
+- AI Maestro is running locally
+- The `ai-maestro-agents-management` skill is available
+- The `agent-messaging` skill is available
 - Team registry is accessible
 
 ## Procedure
 
 ### Step 1: Verify Work Is Complete
 
-Before terminating, confirm the agent has no pending work:
+Before terminating, confirm the agent has no pending work.
 
-```bash
-# Send status request
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Pre-Termination Status Check",
-    "priority": "high",
-    "content": {"type": "status-request", "message": "Please confirm all tasks are complete before termination."}
-  }'
-```
+Use the `agent-messaging` skill to send a status request:
+- **Recipient**: the target agent session name
+- **Subject**: `Pre-Termination Status Check`
+- **Priority**: `high`
+- **Content**: type `status-request`, asking the agent to confirm all tasks are complete before termination
 
 Wait for confirmation response.
 
@@ -49,42 +43,25 @@ Wait for confirmation response.
 
 If state preservation is needed for audit or handoff:
 
-```bash
-# Request state dump
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "State Dump Request",
-    "priority": "high",
-    "content": {"type": "request", "message": "Please save your current state to ~/.emasoft/agent-states/<session-name>-final.json before termination."}
-  }'
-```
+Use the `agent-messaging` skill to request a state dump:
+- **Recipient**: the target agent session name
+- **Subject**: `State Dump Request`
+- **Priority**: `high`
+- **Content**: type `request`, asking the agent to save its current state to `~/.emasoft/agent-states/<session-name>-final.json` before termination
 
 ### Step 3: Send Termination Warning
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Termination Notice",
-    "priority": "urgent",
-    "content": {"type": "hibernation-warning", "message": "You will be terminated in 60 seconds. Please complete any final cleanup."}
-  }'
-```
+Use the `agent-messaging` skill to send a termination notice:
+- **Recipient**: the target agent session name
+- **Subject**: `Termination Notice`
+- **Priority**: `urgent`
+- **Content**: type `hibernation-warning`, informing the agent it will be terminated in 60 seconds and should complete any final cleanup
 
 ### Step 4: Execute Termination
 
-```bash
-# Graceful termination (recommended)
-aimaestro-agent.sh delete <agent-session-name> --confirm
+Use the `ai-maestro-agents-management` skill to terminate the agent with confirmation.
 
-# Force termination (if graceful fails)
-aimaestro-agent.sh delete <agent-session-name> --confirm --force
-```
+If graceful termination fails, use the force option if available.
 
 ### Step 5: Update Team Registry
 
@@ -95,17 +72,9 @@ uv run python scripts/ecos_team_registry.py remove-agent \
 
 ### Step 6: Cleanup Resources
 
-```bash
-# Remove agent working directory (optional - keep for audit)
-# rm -rf ~/agents/<agent-session-name>
-
-# Remove agent from plugin cache (optional)
-# rm -rf ~/agents/<agent-session-name>/.claude
-```
+Optionally remove the agent's working directory and local plugin cache. Keep the directory if audit trail is needed.
 
 ### Step 7: Log Termination
-
-Document the termination in the team registry log:
 
 ```bash
 uv run python scripts/ecos_team_registry.py log \
@@ -124,7 +93,7 @@ Copy this checklist and track your progress:
 - [ ] Save final state if needed
 - [ ] Send termination warning (60 second notice)
 - [ ] Wait for agent acknowledgment or timeout
-- [ ] Execute termination command with --confirm
+- [ ] Execute termination via `ai-maestro-agents-management` skill with confirmation
 - [ ] Verify agent status is "terminated" or session gone
 - [ ] Update team registry to remove agent
 - [ ] Log termination event
@@ -134,59 +103,43 @@ Copy this checklist and track your progress:
 
 ### Example: Terminating a Completed Developer Agent
 
-```bash
-SESSION_NAME="dev-backend-alice"
+For agent `dev-backend-alice`:
 
-# Step 1: Request status
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$SESSION_NAME"'",
-    "subject": "Pre-Termination Status Check",
-    "priority": "high",
-    "content": {"type": "status-request", "message": "Please confirm all tasks are complete."}
-  }'
-
-# Wait for response...
-
-# Step 2: Send warning
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$SESSION_NAME"'",
-    "subject": "Termination Notice",
-    "priority": "urgent",
-    "content": {"type": "hibernation-warning", "message": "Termination in 60 seconds."}
-  }'
-
-# Wait 60 seconds...
-sleep 60
-
-# Step 3: Execute
-aimaestro-agent.sh delete $SESSION_NAME --confirm
-
-# Step 4: Update registry
-uv run python scripts/ecos_team_registry.py remove-agent --name "$SESSION_NAME"
-
-# Step 5: Log
-uv run python scripts/ecos_team_registry.py log \
-  --event "termination" \
-  --agent "$SESSION_NAME" \
-  --reason "Task completed - backend API implementation finished" \
-  --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-```
+1. Use the `agent-messaging` skill to send a pre-termination status check:
+   - **Recipient**: `dev-backend-alice`
+   - **Subject**: `Pre-Termination Status Check`
+   - **Priority**: `high`
+   - **Content**: type `status-request`, message: "Please confirm all tasks are complete."
+2. Wait for response confirming work is done
+3. Use the `agent-messaging` skill to send a termination warning:
+   - **Recipient**: `dev-backend-alice`
+   - **Subject**: `Termination Notice`
+   - **Priority**: `urgent`
+   - **Content**: type `hibernation-warning`, message: "Termination in 60 seconds."
+4. Wait 60 seconds
+5. Use the `ai-maestro-agents-management` skill to terminate agent `dev-backend-alice` with confirmation
+6. Update registry:
+   ```bash
+   uv run python scripts/ecos_team_registry.py remove-agent --name "dev-backend-alice"
+   ```
+7. Log the event:
+   ```bash
+   uv run python scripts/ecos_team_registry.py log \
+     --event "termination" \
+     --agent "dev-backend-alice" \
+     --reason "Task completed - backend API implementation finished" \
+     --timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+   ```
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| Agent not responding to status check | Agent hung or crashed | Proceed with forced termination using --force |
+| Agent not responding to status check | Agent hung or crashed | Proceed with forced termination |
 | Termination command fails | tmux session stuck | Kill tmux session manually: `tmux kill-session -t <name>` |
 | Agent still appears in registry | Registry not updated | Manually remove entry or run remove-agent again |
 | Work not complete | Premature termination request | Delay termination, assign work to another agent |
-| Cannot find agent session | Wrong session name | Check `aimaestro-agent.sh list` for correct name |
+| Cannot find agent session | Wrong session name | Use the `ai-maestro-agents-management` skill to list agents for correct name |
 
 ## Related Operations
 
