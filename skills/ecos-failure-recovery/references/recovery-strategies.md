@@ -65,25 +65,22 @@ ECOS employs five recovery strategies in order of escalating intervention:
 
 Use this strategy when:
 - Failure is classified as **transient**
-- Agent has missed 1-2 heartbeats but status API shows "online" or "busy"
+- Agent has missed 1-2 heartbeats but status shows "online" or "busy"
 - Network issues are suspected (other agents also having brief issues)
 - Agent is likely processing a complex request
 
 **Do NOT use when:**
 - Agent has been unresponsive for more than 5 minutes
-- Status API shows agent as "offline"
+- Status shows agent as "offline"
 - Agent process is confirmed dead
 
 ### 3.3.2 Implementation Procedure
 
-1. **Log the wait decision:**
-```bash
-echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAME\", \"action\": \"wait_and_retry\", \"attempt\": 1}" >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl
-```
+1. **Log the wait decision** to the recovery log at `$CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl`
 
 2. **Set a timer for the retry interval** (see backoff schedule below)
 
-3. **Continue monitoring** - send periodic heartbeats at increased frequency
+3. **Continue monitoring** - use the `agent-messaging` skill to send periodic health check pings at increased frequency
 
 4. **Evaluate at each interval** - did agent respond?
 
@@ -100,17 +97,9 @@ echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAM
 
 ### 3.3.4 Success and Failure Criteria
 
-**Success**: Agent responds to heartbeat or message within the retry window.
-```bash
-# Log successful recovery
-echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAME\", \"action\": \"wait_and_retry\", \"result\": \"success\", \"attempts\": 2, \"total_downtime\": \"90 seconds\"}" >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl
-```
+**Success**: Agent responds to heartbeat or message within the retry window. Log the successful recovery with timestamp, agent name, attempts count, and total downtime.
 
-**Failure**: No response after 4 attempts (5 minutes total).
-```bash
-# Log failed recovery, prepare for escalation
-echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAME\", \"action\": \"wait_and_retry\", \"result\": \"failed\", \"attempts\": 4, \"escalating_to\": \"restart\"}" >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl
-```
+**Failure**: No response after 4 attempts (5 minutes total). Log the failed recovery and escalation decision.
 
 ---
 
@@ -133,24 +122,13 @@ Use this strategy when:
 
 A soft restart sends a graceful termination signal and allows the agent to clean up before restarting.
 
-**Step 1: Request graceful shutdown via AI Maestro**
+**Step 1: Request graceful shutdown**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_SESSION_NAME",
-    "subject": "[SYSTEM] Graceful restart requested",
-    "priority": "urgent",
-    "content": {
-      "type": "system-command",
-      "message": "ECOS has detected you are unresponsive. Please save your state and restart. If you receive this message, acknowledge and restart within 2 minutes.",
-      "command": "graceful_restart",
-      "timeout_seconds": 120
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the unresponsive agent session name
+- **Subject**: `[SYSTEM] Graceful restart requested`
+- **Priority**: `urgent`
+- **Content**: type `system-command`, message: "ECOS has detected you are unresponsive. Please save your state and restart. If you receive this message, acknowledge and restart within 2 minutes." Include `command`: "graceful_restart", `timeout_seconds`: 120.
 
 **Step 2: Wait 2 minutes for acknowledgment**
 
@@ -160,53 +138,23 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 A hard restart forcefully terminates the agent process and starts a new one. Use only when soft restart fails.
 
-**IMPORTANT**: Hard restart requires SSH access to the agent's host or coordination with the user who controls that host.
+**IMPORTANT**: Hard restart requires coordination with the user who controls that host.
 
 **Step 1: Notify manager about hard restart**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[ACTION] Hard restart required for agent",
-    "priority": "high",
-    "content": {
-      "type": "action-notification",
-      "message": "Soft restart failed for agent libs-svg-svgbbox. Initiating hard restart. The agent may lose unsaved work.",
-      "agent": "libs-svg-svgbbox",
-      "action": "hard_restart",
-      "risk": "Unsaved work may be lost",
-      "proceeding_in": "30 seconds"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager` (or the manager session name)
+- **Subject**: `[ACTION] Hard restart required for agent`
+- **Priority**: `high`
+- **Content**: type `action-notification`, message: "Soft restart failed for agent [agent-name]. Initiating hard restart. The agent may lose unsaved work." Include `agent`, `action`: "hard_restart", `risk`: "Unsaved work may be lost", `proceeding_in`: "30 seconds".
 
-**Step 2: Request user to execute restart** (ECOS cannot directly control remote processes)
+**Step 2: Request user to execute restart**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "USER_OR_ADMIN_AGENT",
-    "subject": "[USER ACTION REQUIRED] Restart agent process",
-    "priority": "urgent",
-    "content": {
-      "type": "user-action-required",
-      "message": "Please restart the Claude Code session for agent libs-svg-svgbbox. The session is unresponsive and cannot be recovered remotely.",
-      "instructions": [
-        "1. Find the terminal running libs-svg-svgbbox Claude Code session",
-        "2. Press Ctrl+C to terminate the session",
-        "3. Run: claude --resume (or start a new session)",
-        "4. Verify the agent is responsive"
-      ],
-      "agent": "libs-svg-svgbbox",
-      "urgency": "Please complete within 10 minutes"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the user or admin agent session name
+- **Subject**: `[USER ACTION REQUIRED] Restart agent process`
+- **Priority**: `urgent`
+- **Content**: type `user-action-required`, message: "Please restart the Claude Code session for agent [agent-name]. The session is unresponsive and cannot be recovered remotely." Include `instructions` listing the steps: find the terminal, press Ctrl+C, run claude --resume, verify responsiveness. Include `agent` and `urgency`: "Please complete within 10 minutes".
 
 **Step 3: Wait for restart confirmation**
 
@@ -218,29 +166,13 @@ After restart (soft or hard), verify the agent is functional:
 
 **Step 2: Send verification heartbeat**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_SESSION_NAME",
-    "subject": "[VERIFICATION] Post-restart health check",
-    "priority": "high",
-    "content": {
-      "type": "verification",
-      "message": "Please confirm you are operational after restart. Respond with your current status and any issues.",
-      "expected_response": "status_report",
-      "timeout_seconds": 120
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the restarted agent session name
+- **Subject**: `[VERIFICATION] Post-restart health check`
+- **Priority**: `high`
+- **Content**: type `verification`, message: "Please confirm you are operational after restart. Respond with your current status and any issues." Include `expected_response`: "status_report", `timeout_seconds`: 120.
 
-**Step 3: Verify response and log result**
-
-```bash
-# Log successful restart
-echo "{\"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\", \"agent\": \"AGENT_NAME\", \"action\": \"restart\", \"type\": \"soft|hard\", \"result\": \"success\", \"downtime\": \"X minutes\"}" >> $CLAUDE_PROJECT_DIR/.ecos/agent-health/recovery-log.jsonl
-```
+**Step 3: Verify response and log result** to the recovery log.
 
 ---
 
@@ -262,9 +194,7 @@ Use this strategy when:
 
 **Step 1: Check AI Maestro for session status**
 
-```bash
-curl -s "http://localhost:23000/api/agents/AGENT_SESSION_NAME/status" | jq '.status'
-```
+Use the `ai-maestro-agents-management` skill to get the agent's details and check its status field.
 
 Look for status values indicating hibernation:
 - `"idle"` - Session exists but inactive
@@ -275,61 +205,26 @@ Look for status values indicating hibernation:
 
 ```bash
 # Check for tmux session
-ssh USER@HOST "tmux list-sessions | grep AGENT_SESSION_NAME"
-
-# Check for screen session
-ssh USER@HOST "screen -list | grep AGENT_SESSION_NAME"
-
-# Check for Claude process
-ssh USER@HOST "pgrep -f 'claude.*AGENT_SESSION_NAME'"
+tmux has-session -t <agent-name> 2>/dev/null && echo "SESSION_EXISTS" || echo "SESSION_MISSING"
 ```
 
 ### 3.5.3 Wake Procedure
 
 **For tmux sessions:**
 
-```bash
-# Request user to wake tmux session
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "USER_OR_ADMIN_AGENT",
-    "subject": "[USER ACTION REQUIRED] Wake hibernated agent",
-    "priority": "high",
-    "content": {
-      "type": "user-action-required",
-      "message": "Agent libs-svg-svgbbox is hibernated in a tmux session. Please wake it.",
-      "instructions": [
-        "1. SSH to the host: ssh USER@HOST",
-        "2. Attach to tmux: tmux attach -t SESSION_NAME",
-        "3. The Claude session should resume automatically",
-        "4. If not responsive, press Enter to wake it"
-      ],
-      "agent": "libs-svg-svgbbox"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send to the user or admin agent:
+- **Recipient**: the user or admin agent session name
+- **Subject**: `[USER ACTION REQUIRED] Wake hibernated agent`
+- **Priority**: `high`
+- **Content**: type `user-action-required`, message: "Agent [agent-name] is hibernated in a tmux session. Please wake it." Include `instructions` listing: SSH to the host, attach to tmux session, the Claude session should resume automatically, press Enter if not responsive. Include `agent`.
 
 **For idle Claude sessions:**
 
-Sometimes a Claude Code session goes idle due to inactivity. Sending a message may wake it:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_SESSION_NAME",
-    "subject": "[WAKE] Activity ping",
-    "priority": "high",
-    "content": {
-      "type": "wake-ping",
-      "message": "This is a wake-up ping. Please acknowledge if you are active.",
-      "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-    }
-  }'
-```
+Sometimes a Claude Code session goes idle due to inactivity. Sending a message may wake it. Use the `agent-messaging` skill to send:
+- **Recipient**: the idle agent session name
+- **Subject**: `[WAKE] Activity ping`
+- **Priority**: `high`
+- **Content**: type `wake-ping`, message: "This is a wake-up ping. Please acknowledge if you are active." Include `timestamp`.
 
 ### 3.5.4 Post-Wake Verification
 
@@ -362,28 +257,13 @@ Use this strategy when:
 
 ### 3.6.3 Requesting Resource Changes
 
-ECOS cannot directly modify system resources. Request changes via manager:
+ECOS cannot directly modify system resources. Request changes via manager.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[RESOURCE REQUEST] Agent needs more resources",
-    "priority": "high",
-    "content": {
-      "type": "resource-request",
-      "message": "Agent libs-svg-svgbbox crashed due to insufficient memory. Requesting memory increase to allow recovery.",
-      "agent": "libs-svg-svgbbox",
-      "resource_issue": "out_of_memory",
-      "current_allocation": "4GB RAM",
-      "requested_allocation": "8GB RAM",
-      "justification": "Processing large SVG files requires more memory",
-      "alternative": "Reduce batch size from 100 to 20 files"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager` (or the manager session name)
+- **Subject**: `[RESOURCE REQUEST] Agent needs more resources`
+- **Priority**: `high`
+- **Content**: type `resource-request`, message: "Agent [agent-name] crashed due to insufficient memory. Requesting memory increase to allow recovery." Include fields: `agent`, `resource_issue` (e.g., "out_of_memory"), `current_allocation`, `requested_allocation`, `justification`, `alternative` (a workaround if resource increase is denied).
 
 ---
 
@@ -414,29 +294,11 @@ See `references/agent-replacement-protocol.md` for the complete replacement work
 
 **Short version:**
 
-```bash
-# Request replacement from manager
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[REPLACEMENT] Recovery failed, replacement required",
-    "priority": "urgent",
-    "content": {
-      "type": "replacement-request",
-      "message": "All recovery strategies have failed for agent libs-svg-svgbbox. Requesting approval to proceed with replacement.",
-      "agent": "libs-svg-svgbbox",
-      "recovery_attempts": [
-        {"strategy": "wait_and_retry", "result": "failed", "attempts": 4},
-        {"strategy": "restart_soft", "result": "failed", "reason": "no acknowledgment"},
-        {"strategy": "restart_hard", "result": "failed", "reason": "process not found"}
-      ],
-      "recommendation": "replace",
-      "awaiting_approval": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a replacement request:
+- **Recipient**: `eama-assistant-manager` (or the manager session name)
+- **Subject**: `[REPLACEMENT] Recovery failed, replacement required`
+- **Priority**: `urgent`
+- **Content**: type `replacement-request`, message: "All recovery strategies have failed for agent [agent-name]. Requesting approval to proceed with replacement." Include fields: `agent`, `recovery_attempts` (array of strategies tried with results), `recommendation`: "replace", `awaiting_approval`: true.
 
 ---
 
@@ -505,7 +367,7 @@ START: Recoverable failure detected
 **Cause**: Agent's message polling hook may be disabled or the agent is truly unresponsive.
 
 **Solution**:
-1. Check AI Maestro message queue - is the message delivered?
+1. Use the `agent-messaging` skill to check the message queue - is the message delivered?
 2. If delivered but not acknowledged, agent is unresponsive
 3. Proceed to hard restart
 

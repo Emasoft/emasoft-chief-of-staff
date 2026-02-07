@@ -45,20 +45,12 @@ When monitoring agent health, run these checks in order:
 
 **Purpose**: Verify agent registration and last-seen timestamp.
 
-```bash
-# Get agent status from AI Maestro
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.session_name == "<agent-name>")'
-```
-
-**Expected fields:**
-- `status`: "online", "offline", "hibernated"
-- `last_seen`: ISO timestamp (check if stale)
-- `session_name`: Full session name
+Use the `ai-maestro-agents-management` skill to get the agent's details by session name. The result includes status, last_seen timestamp, and session_name fields.
 
 **What to look for:**
-- If `status == "offline"` → Agent may be down
-- If `last_seen > 10 minutes ago` → Agent may be stale
-- If agent not in registry → Agent never registered or crashed
+- If `status == "offline"` then the agent may be down
+- If `last_seen > 10 minutes ago` then the agent may be stale
+- If agent not in registry then the agent never registered or crashed
 
 ### 1.2 Verifying tmux Session Existence
 
@@ -70,8 +62,8 @@ tmux has-session -t <agent-name> 2>/dev/null && echo "SESSION_EXISTS" || echo "S
 ```
 
 **What to look for:**
-- `SESSION_MISSING` → TERMINAL failure (session crashed)
-- `SESSION_EXISTS` → Continue to process health check
+- `SESSION_MISSING` then TERMINAL failure (session crashed)
+- `SESSION_EXISTS` then continue to process health check
 
 ### 1.3 Checking Process Health
 
@@ -83,35 +75,25 @@ tmux list-panes -t <agent-name> -F '#{pane_pid}' 2>/dev/null | xargs -I {} ps -p
 ```
 
 **What to look for:**
-- Process not found → RECOVERABLE failure (process crashed but session exists)
-- `state == D` (uninterruptible sleep) → Possible stuck process
-- `state == S` (sleeping) → Normal idle state
+- Process not found then RECOVERABLE failure (process crashed but session exists)
+- `state == D` (uninterruptible sleep) then possible stuck process
+- `state == S` (sleeping) then normal idle state
 
 ### 1.4 Testing Message Response
 
 **Purpose**: Confirm the agent can receive and respond to messages.
 
-```bash
-# Send health check ping
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "<agent-name>",
-    "subject": "Health Check Ping",
-    "priority": "high",
-    "content": {"type": "health-check", "message": "PING"}
-  }'
+Use the `agent-messaging` skill to send a health check ping:
+- **Recipient**: the target agent session name
+- **Subject**: `Health Check Ping`
+- **Priority**: `high`
+- **Content**: type `health-check`, message: "PING"
 
-# Wait 60 seconds, then check for response
-sleep 60
-curl -s "http://localhost:23000/api/messages?agent=${SESSION_NAME}&action=list&status=unread" | \
-  jq '.messages[] | select(.subject == "Health Check Pong")'
-```
+Wait 60 seconds, then use the `agent-messaging` skill to check for unread messages. Look for a response with subject "Health Check Pong".
 
 **What to look for:**
-- No response within 60 seconds → RECOVERABLE or TERMINAL depending on other checks
-- Response received → Agent is healthy
+- No response within 60 seconds then RECOVERABLE or TERMINAL depending on other checks
+- Response received then agent is healthy
 
 ### 1.5 Checking Host Reachability for Remote Agents
 
@@ -123,8 +105,8 @@ ping -c 3 <host-ip> && echo "HOST_REACHABLE" || echo "HOST_UNREACHABLE"
 ```
 
 **What to look for:**
-- `HOST_UNREACHABLE` → TERMINAL failure (host down, cannot recover remotely)
-- `HOST_REACHABLE` → Host is up, agent issue is local
+- `HOST_UNREACHABLE` then TERMINAL failure (host down, cannot recover remotely)
+- `HOST_REACHABLE` then host is up, agent issue is local
 
 ---
 
@@ -167,10 +149,10 @@ RETURN "HEALTHY"
 ```
 
 **Key decision points:**
-1. **Session exists?** No → TERMINAL
-2. **Process running?** No → RECOVERABLE
-3. **Responds to pings?** No → Count failures (1 = TRANSIENT, 2-3 = RECOVERABLE, 3+ = TERMINAL)
-4. **Last seen recent?** No → RECOVERABLE
+1. **Session exists?** No then TERMINAL
+2. **Process running?** No then RECOVERABLE
+3. **Responds to pings?** No then count failures (1 = TRANSIENT, 2-3 = RECOVERABLE, 3+ = TERMINAL)
+4. **Last seen recent?** No then RECOVERABLE
 
 ---
 
@@ -192,10 +174,7 @@ FAILURE_DETECTED
     |       |
     |       YES --> Notify agent of pending recovery
     |               |
-    |               +-- Attempt soft restart:
-    |                   - Send SIGTERM to process
-    |                   - Wait 30 seconds
-    |                   - Check if recovered
+    |               +-- Attempt soft restart
     |                   |
     |                   +-- Recovered? --> Log & continue monitoring
     |                   +-- Not recovered? --> Attempt wake via lifecycle-manager
@@ -211,14 +190,9 @@ FAILURE_DETECTED
                     |
                     +-- Check recovery policy
                         |
-                        +-- Auto-replace authorized? --> Route to lifecycle-manager:
-                        |                               - Terminate failed agent
-                        |                               - Spawn replacement
-                        |                               - Reassign tasks
+                        +-- Auto-replace authorized? --> Route to lifecycle-manager
                         |
-                        +-- Approval required? --> Request approval from EAMA:
-                                                   - Wait for response
-                                                   - Execute approved action
+                        +-- Approval required? --> Request approval from EAMA
 ```
 
 ### 3.2 Transient Recovery (Automatic)
@@ -227,23 +201,13 @@ FAILURE_DETECTED
 
 **Procedure:**
 
-```bash
-# 1. Wait 30 seconds
-sleep 30
-
-# 2. Re-check health
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.session_name == "<agent>")'
-
-# 3. If still failing, retry up to 3 times with exponential backoff
-for i in 1 2 3; do
-    sleep $((30 * i))
-    # Check health again
-done
-```
+1. Wait 30 seconds
+2. Use the `ai-maestro-agents-management` skill to re-check the agent's status
+3. If still failing, retry up to 3 times with exponential backoff (30s, 60s, 90s)
 
 **Decision after 3 retries:**
-- If healthy → Log and continue monitoring
-- If still failing → Escalate to RECOVERABLE
+- If healthy then log and continue monitoring
+- If still failing then escalate to RECOVERABLE
 
 ### 3.3 Recoverable Recovery (Automatic with Notification)
 
@@ -251,28 +215,19 @@ done
 
 **Procedure:**
 
-```bash
-# 1. Notify agent of pending recovery
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "<agent>",
-    "subject": "Recovery Warning",
-    "priority": "urgent",
-    "content": {"type": "recovery-warning", "message": "You will be restarted in 60 seconds due to unresponsiveness"}
-  }'
+1. Use the `agent-messaging` skill to notify the agent of pending recovery:
+   - **Recipient**: the failing agent session name
+   - **Subject**: `Recovery Warning`
+   - **Priority**: `urgent`
+   - **Content**: type `recovery-warning`, message: "You will be restarted in 60 seconds due to unresponsiveness."
 
-# 2. Wait for potential self-recovery
-sleep 60
+2. Wait 60 seconds for potential self-recovery
 
-# 3. If still unresponsive, attempt restart via lifecycle-manager
-# Route to ecos-lifecycle-manager with restart request
-```
+3. If still unresponsive, use the `ai-maestro-agents-management` skill to restart the agent
 
 **Decision after restart:**
-- If healthy → Log and continue monitoring
-- If still failing → Escalate to TERMINAL
+- If healthy then log and continue monitoring
+- If still failing then escalate to TERMINAL
 
 ### 3.4 Terminal Recovery (Requires Approval Unless Pre-Authorized)
 
@@ -280,44 +235,23 @@ sleep 60
 
 **Procedure:**
 
-```bash
-# 1. Notify orchestrator of task orphaning risk
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "orchestrator-master",
-    "subject": "Agent Failure - Tasks Need Reassignment",
-    "priority": "urgent",
-    "content": {"type": "failure-report", "message": "Agent <agent> has TERMINAL failure. Assigned tasks need reassignment."}
-  }'
+1. Use the `agent-messaging` skill to notify the orchestrator of task orphaning risk:
+   - **Recipient**: the orchestrator session name (e.g., `orchestrator-master`)
+   - **Subject**: `Agent Failure - Tasks Need Reassignment`
+   - **Priority**: `urgent`
+   - **Content**: type `failure-report`, message: "Agent [agent-name] has TERMINAL failure. Assigned tasks need reassignment."
 
-# 2. Notify manager for critical failure
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "assistant-manager",
-    "subject": "CRITICAL: Agent Failure",
-    "priority": "urgent",
-    "content": {"type": "critical-failure", "message": "Agent <agent> has experienced TERMINAL failure. Classification: <reason>. Recovery options: 1) Replace agent, 2) Reassign tasks only, 3) Manual investigation. Awaiting approval."}
-  }'
+2. Use the `agent-messaging` skill to notify the manager for critical failure:
+   - **Recipient**: `eama-assistant-manager` (or the manager session name)
+   - **Subject**: `CRITICAL: Agent Failure`
+   - **Priority**: `urgent`
+   - **Content**: type `critical-failure`, message: "Agent [agent-name] has experienced TERMINAL failure. Classification: [reason]. Recovery options: 1) Replace agent, 2) Reassign tasks only, 3) Manual investigation. Awaiting approval."
 
-# 3. Check if pre-authorized for auto-replace
-recovery_policy=$(cat "$CLAUDE_PROJECT_DIR/thoughts/shared/recovery-policy.json" | jq '.auto_replace_on_terminal')
-
-if [ "$recovery_policy" == "true" ]; then
-    # Auto-replace via lifecycle-manager
-    # Route to ecos-lifecycle-manager
-else
-    # Wait for manager approval
-    # Poll for approval message
-fi
-```
+3. Check the recovery policy file at `$CLAUDE_PROJECT_DIR/thoughts/shared/recovery-policy.json`. If `auto_replace_on_terminal` is true, proceed with automatic replacement via the `ai-maestro-agents-management` skill. Otherwise, wait for manager approval by polling inbox.
 
 **Required notifications:**
-- Orchestrator → Task reassignment
-- Manager → Approval request
+- Orchestrator: Task reassignment
+- Manager: Approval request
 
 ---
 
@@ -343,72 +277,29 @@ kill -TERM $PID
 
 # Wait for restart
 sleep 30
-
-# Check health
-curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.session_name == "<agent-name>")'
 ```
+
+After waiting, use the `ai-maestro-agents-management` skill to check the agent's status.
 
 ### 4.2 Wake via Lifecycle Manager
 
 **When to use**: Soft restart failed or process is in unrecoverable state.
 
 **Steps:**
-1. Route restart request to `ecos-lifecycle-manager`
-2. Lifecycle manager uses `aimaestro-agent.sh restart <agent-name>`
-3. Wait for agent to re-register with AI Maestro
-4. Verify health
-
-**Message format:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "ecos-lifecycle-manager",
-  "subject": "Restart Agent",
-  "priority": "high",
-  "content": {
-    "type": "restart-request",
-    "agent": "<agent-name>",
-    "reason": "unresponsive",
-    "method": "wake"
-  }
-}
-```
+1. Use the `ai-maestro-agents-management` skill to restart the agent
+2. Wait for agent to re-register with AI Maestro
+3. Verify health
 
 ### 4.3 Full Agent Replacement
 
 **When to use**: Terminal failure (session crashed, cannot restart).
 
 **Steps:**
-1. Route replacement request to `ecos-lifecycle-manager`
-2. Lifecycle manager:
-   - Terminates old agent (cleanup)
-   - Spawns new agent with incremented name (e.g., worker-001 → worker-002)
-   - Transfers tasks to new agent
-3. Update agent registry
-4. Notify all affected parties
-
-**Message format:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "ecos-lifecycle-manager",
-  "subject": "Agent Replacement Request",
-  "priority": "high",
-  "content": {
-    "type": "replacement-request",
-    "message": "Replace failed agent with new instance",
-    "failed_agent": "worker-test-billing-003",
-    "replacement_config": {
-      "session_name": "worker-test-billing-004",
-      "role": "tester",
-      "project": "billing-service",
-      "plugins": ["emasoft-orchestrator-agent"],
-      "directory": "/Users/dev/projects/billing-tests"
-    },
-    "transfer_tasks": ["review PR #42", "run integration tests"]
-  }
-}
-```
+1. Use the `ai-maestro-agents-management` skill to terminate the failed agent (cleanup)
+2. Use the `ai-maestro-agents-management` skill to spawn a new agent with incremented name (e.g., worker-001 to worker-002)
+3. Transfer tasks to new agent
+4. Update agent registry
+5. Notify all affected parties using the `agent-messaging` skill
 
 ---
 
@@ -518,21 +409,11 @@ This file must be accessible to the Recovery Coordinator agent.
 
 **Purpose**: Notify the failing agent before forceful restart.
 
-**Message schema:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "<agent>",
-  "subject": "Recovery Warning",
-  "priority": "urgent",
-  "content": {
-    "type": "recovery-warning",
-    "message": "You have been unresponsive for 3 minutes. Recovery will be attempted in 60 seconds.",
-    "recovery_type": "soft_restart",
-    "countdown_seconds": 60
-  }
-}
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the failing agent session name
+- **Subject**: `Recovery Warning`
+- **Priority**: `urgent`
+- **Content**: type `recovery-warning`, message: "You have been unresponsive for 3 minutes. Recovery will be attempted in 60 seconds." Include `recovery_type`: "soft_restart", `countdown_seconds`: 60.
 
 **When to send:**
 - Before all RECOVERABLE actions
@@ -543,24 +424,11 @@ This file must be accessible to the Recovery Coordinator agent.
 
 **Purpose**: Prevent task loss when agent fails.
 
-**Message schema:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "orchestrator-master",
-  "subject": "Agent Failure - Tasks Need Reassignment",
-  "priority": "urgent",
-  "content": {
-    "type": "failure-report",
-    "message": "Agent worker-test-billing-003 has experienced TERMINAL failure.",
-    "failed_agent": "worker-test-billing-003",
-    "failure_classification": "TERMINAL",
-    "failure_reason": "tmux session crashed",
-    "orphaned_tasks": ["review PR #42", "run integration tests"],
-    "recommended_action": "reassign_tasks"
-  }
-}
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the orchestrator session name (e.g., `orchestrator-master`)
+- **Subject**: `Agent Failure - Tasks Need Reassignment`
+- **Priority**: `urgent`
+- **Content**: type `failure-report`, message: "Agent [agent-name] has experienced TERMINAL failure." Include `failed_agent`, `failure_classification`: "TERMINAL", `failure_reason`, `orphaned_tasks` (list of task descriptions), `recommended_action`: "reassign_tasks".
 
 **When to send:**
 - ALL TERMINAL failures
@@ -570,30 +438,11 @@ This file must be accessible to the Recovery Coordinator agent.
 
 **Purpose**: Get human approval for terminal recovery actions.
 
-**Message schema:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "assistant-manager",
-  "subject": "CRITICAL: Agent Terminal Failure",
-  "priority": "urgent",
-  "content": {
-    "type": "critical-failure",
-    "message": "Agent worker-test-billing-003 has experienced TERMINAL failure requiring approval.",
-    "failed_agent": "worker-test-billing-003",
-    "failure_classification": "TERMINAL",
-    "failure_reason": "tmux session crashed, multiple recovery attempts failed",
-    "recovery_attempts": 3,
-    "orphaned_tasks": ["review PR #42", "run integration tests"],
-    "recovery_options": [
-      {"option": "replace", "description": "Terminate and spawn replacement agent"},
-      {"option": "reassign_only", "description": "Reassign tasks to existing agents"},
-      {"option": "investigate", "description": "Manual investigation required"}
-    ],
-    "awaiting": "approval"
-  }
-}
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager` (or the manager session name)
+- **Subject**: `CRITICAL: Agent Terminal Failure`
+- **Priority**: `urgent`
+- **Content**: type `critical-failure`, message: "Agent [agent-name] has experienced TERMINAL failure requiring approval." Include `failed_agent`, `failure_classification`: "TERMINAL", `failure_reason`, `recovery_attempts` count, `orphaned_tasks` list, `recovery_options` array listing "replace", "reassign_only", and "investigate" options with descriptions, `awaiting`: "approval".
 
 **When to send:**
 - TERMINAL failures when `auto_replace_on_terminal: false`
@@ -603,30 +452,12 @@ This file must be accessible to the Recovery Coordinator agent.
 
 **Purpose**: Execute approved terminal recovery.
 
-**Message schema:**
-```json
-{
-  "from": "chief-of-staff",
-  "to": "ecos-lifecycle-manager",
-  "subject": "Agent Replacement Request",
-  "priority": "high",
-  "content": {
-    "type": "replacement-request",
-    "message": "Replace failed agent with new instance",
-    "failed_agent": "worker-test-billing-003",
-    "replacement_config": {
-      "session_name": "worker-test-billing-004",
-      "role": "tester",
-      "project": "billing-service",
-      "plugins": ["emasoft-orchestrator-agent"],
-      "directory": "/Users/dev/projects/billing-tests"
-    },
-    "transfer_tasks": ["review PR #42", "run integration tests"]
-  }
-}
-```
+Use the `ai-maestro-agents-management` skill to:
+1. Terminate the failed agent
+2. Spawn a replacement agent with the specified configuration (session name, role, project, plugins, directory)
+3. Transfer tasks to the new agent
 
-**When to send:**
+**When to execute:**
 - After manager approval OR
 - When `auto_replace_on_terminal: true`
 
