@@ -2,7 +2,7 @@
 name: ecos-broadcast-notification
 description: "Send notification to multiple agents simultaneously with filtering by role or project"
 argument-hint: "--agents <names> | --role <role> | --project <project> --subject <text> --message <text> [--priority normal|high|urgent]"
-allowed-tools: ["Bash(curl:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -29,12 +29,9 @@ Send a notification to multiple agents simultaneously with filtering options by 
 # --priority normal|high|urgent  Message priority (default: normal)
 ```
 
-## AI Maestro API Integration
+## Messaging Integration
 
-This command uses the AI Maestro messaging API to broadcast notifications. It first queries the agent registry to resolve filter criteria, then sends messages to all matching agents.
-
-**Agent List Endpoint**: `http://localhost:23000/api/agents`
-**Message Endpoint**: `http://localhost:23000/api/messages`
+This command uses the `agent-messaging` skill to broadcast notifications. It first queries the agent registry to resolve filter criteria, then sends messages to all matching agents using the `agent-messaging` skill.
 
 ## Arguments
 
@@ -69,24 +66,20 @@ This command uses the AI Maestro messaging API to broadcast notifications. It fi
 ### By Role
 
 ```bash
-# Query agents by role from registry
-curl -s "http://localhost:23000/api/agents" | \
-  jq -r '.agents[] | select(.role == "helper") | .session_name'
-
 /ecos-broadcast-notification --role helper \
   --subject "Helper Agents" --message "New task assignment protocol active"
 ```
 
+The command uses the `ai-maestro-agents-management` skill to query agents matching the role filter.
+
 ### By Project
 
 ```bash
-# Query agents by project from registry
-curl -s "http://localhost:23000/api/agents" | \
-  jq -r '.agents[] | select(.project == "skill-factory") | .session_name'
-
 /ecos-broadcast-notification --project skill-factory \
   --subject "Project Update" --message "New milestone requirements posted"
 ```
+
+The command uses the `ai-maestro-agents-management` skill to query agents matching the project filter.
 
 ## Examples
 
@@ -113,62 +106,17 @@ curl -s "http://localhost:23000/api/agents" | \
 
 ## Implementation
 
-Execute the following curl commands:
+This command is implemented by:
 
-```bash
-#!/bin/bash
-# Broadcast notification implementation
+1. **Resolving target agents** using the `ai-maestro-agents-management` skill to list agents matching the filter criteria (by name, role, or project)
+2. **Sending messages** to each resolved agent using the `agent-messaging` skill:
+   - **Recipient**: each matching agent
+   - **Subject**: the provided subject
+   - **Content**: the provided message with type "broadcast"
+   - **Priority**: the provided priority level
+3. **Recording delivery status** for each agent
 
-API_BASE="http://localhost:23000"
-AGENTS=""
-ROLE=""
-PROJECT=""
-SUBJECT=""
-MESSAGE=""
-PRIORITY="normal"
-
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --agents) AGENTS="$2"; shift 2 ;;
-    --role) ROLE="$2"; shift 2 ;;
-    --project) PROJECT="$2"; shift 2 ;;
-    --subject) SUBJECT="$2"; shift 2 ;;
-    --message) MESSAGE="$2"; shift 2 ;;
-    --priority) PRIORITY="$2"; shift 2 ;;
-    *) shift ;;
-  esac
-done
-
-# Resolve target agents
-if [ -n "$AGENTS" ]; then
-  TARGET_AGENTS=$(echo "$AGENTS" | tr ',' '\n')
-elif [ -n "$ROLE" ]; then
-  if [ "$ROLE" = "*" ]; then
-    TARGET_AGENTS=$(curl -s "${API_BASE}/api/agents" | jq -r '.agents[].session_name')
-  else
-    TARGET_AGENTS=$(curl -s "${API_BASE}/api/agents" | jq -r ".agents[] | select(.role == \"$ROLE\") | .session_name")
-  fi
-elif [ -n "$PROJECT" ]; then
-  TARGET_AGENTS=$(curl -s "${API_BASE}/api/agents" | jq -r ".agents[] | select(.project == \"$PROJECT\") | .session_name")
-fi
-
-# Send to each agent
-for agent in $TARGET_AGENTS; do
-  curl -s -X POST "${API_BASE}/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"$SUBJECT\",
-      \"priority\": \"$PRIORITY\",
-      \"content\": {
-        \"type\": \"broadcast\",
-        \"message\": \"$MESSAGE\"
-      }
-    }"
-  echo "Sent to: $agent"
-done
-```
+**Verify**: each target agent receives the broadcast message.
 
 ## Broadcast Flow
 

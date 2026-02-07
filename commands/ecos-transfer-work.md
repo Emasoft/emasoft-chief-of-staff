@@ -2,7 +2,7 @@
 name: ecos-transfer-work
 description: "Transfer work from one agent to another by sending handoff documentation via AI Maestro messaging"
 argument-hint: "--from <AGENT> --to <AGENT> --handoff-file <PATH> [--priority urgent|high|normal]"
-allowed-tools: ["Bash(curl:*)", "Read"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
 user-invocable: true
 ---
 
@@ -131,62 +131,36 @@ Brief description of the task being transferred.
 
 ### Step 1: Validate Arguments
 
-```bash
-# Check source agent exists
-aimaestro-agent.sh show helper-backend
+Use the `ai-maestro-agents-management` skill to:
+- Check that the source agent exists (show agent details)
+- Check that the target agent exists and is online (health check)
 
-# Check target agent exists and is online
-aimaestro-agent.sh health --agent helper-backend-v2
-```
+**Verify**: both agents are valid and the target is online.
 
 ### Step 2: Read Handoff File
 
-The command reads the handoff file to include its contents in the message:
-
-```bash
-# Read the handoff file
-cat ~/handoffs/backend-transfer.md
-```
+Read the handoff file contents to include in the transfer message.
 
 ### Step 3: Send Transfer Message
 
-```bash
-# Send handoff via AI Maestro API
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-backend-v2",
-    "subject": "[WORK TRANSFER] Task handoff from helper-backend",
-    "priority": "high",
-    "content": {
-      "type": "handoff",
-      "from_agent": "helper-backend",
-      "handoff_file": "/Users/dev/handoffs/backend-transfer.md",
-      "summary": "API endpoint tests 50% complete",
-      "message": "Work transfer from helper-backend. Review the handoff document and continue the task."
-    }
-  }'
-```
+Send the handoff to the target agent using the `agent-messaging` skill:
+- **Recipient**: the target agent
+- **Subject**: `[WORK TRANSFER] Task handoff from <source-agent>`
+- **Content**: handoff document with source agent name, handoff file path, summary, and instructions
+- **Type**: `handoff`
+- **Priority**: `high`
+
+**Verify**: target agent receives the handoff message.
 
 ### Step 4: Notify Orchestrator (if requested)
 
-```bash
-# Notify EOA about the transfer
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eoa-orchestrator",
-    "subject": "[TRANSFER NOTIFICATION] Work transferred: helper-backend -> helper-backend-v2",
-    "priority": "normal",
-    "content": {
-      "type": "notification",
-      "action": "work_transfer",
-      "from_agent": "helper-backend",
-      "to_agent": "helper-backend-v2",
-      "message": "Work has been transferred. Please update tracking as needed."
-    }
-  }'
-```
+If `--notify-orchestrator` is set, send a notification to EOA using the `agent-messaging` skill:
+- **Recipient**: `eoa-orchestrator`
+- **Subject**: `[TRANSFER NOTIFICATION] Work transferred: <from> -> <to>`
+- **Content**: notification about the work transfer with both agent names
+- **Priority**: `normal`
+
+**Verify**: EOA receives the transfer notification.
 
 ## Output Format
 

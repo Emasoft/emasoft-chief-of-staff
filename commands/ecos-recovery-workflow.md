@@ -2,7 +2,7 @@
 name: ecos-recovery-workflow
 description: "Execute recovery workflow for a failed or unhealthy agent with restart, hibernate-wake, or replace actions"
 argument-hint: "--agent <NAME> --action [restart|hibernate-wake|replace] [--timeout <SECONDS>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Bash(curl:*)", "Task"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -87,17 +87,12 @@ Execute a recovery workflow for a failed, unresponsive, or degraded agent. Suppo
 5. Verify agent is responsive (if --verify)
 ```
 
-**CLI Commands Executed**:
-```bash
-# Restart the agent's tmux session
-aimaestro-agent.sh restart helper-backend
+**Operations**: Use the `ai-maestro-agents-management` skill to:
+1. Restart the agent's tmux session
+2. Wait for the agent to come online (timeout: 60s)
+3. Verify health (if `--verify`)
 
-# Wait for agent to come online
-aimaestro-agent.sh wait --agent helper-backend --timeout 60
-
-# Verify health (if --verify)
-aimaestro-agent.sh health --agent helper-backend
-```
+**Verify**: agent status shows "online" and health check reports "HEALTHY".
 
 ### Action: hibernate-wake
 
@@ -113,23 +108,14 @@ aimaestro-agent.sh health --agent helper-backend
 6. Verify agent is responsive (if --verify)
 ```
 
-**CLI Commands Executed**:
-```bash
-# Hibernate the agent
-aimaestro-agent.sh hibernate helper-backend
+**Operations**: Use the `ai-maestro-agents-management` skill to:
+1. Hibernate the agent
+2. Wait briefly for hibernation to complete
+3. Wake the agent
+4. Wait for the agent to come online (timeout: 60s)
+5. Verify health (if `--verify`)
 
-# Wait for hibernation
-sleep 5
-
-# Wake the agent
-aimaestro-agent.sh wake helper-backend
-
-# Wait for agent to come online
-aimaestro-agent.sh wait --agent helper-backend --timeout 60
-
-# Verify health (if --verify)
-aimaestro-agent.sh health --agent helper-backend
-```
+**Verify**: agent status shows "online" and health check reports "HEALTHY".
 
 ### Action: replace
 
@@ -315,4 +301,4 @@ For automated recovery, use escalation pattern:
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh --help`
+Full documentation: `ai-maestro-agents-management` skill

@@ -114,19 +114,25 @@ uv run python scripts/ecos_team_registry.py <command> [args]
 ```
 Commands: `create`, `add-agent`, `remove-agent`, `update-status`, `list`, `publish`
 
-**Agent Creation (via AI Maestro):**
-```bash
-aimaestro-agent.sh create <name> --dir <path> --task "description" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp \
-  --agent <prefix>-<role>-main-agent
-```
+**Agent Creation:**
 
-**Send AI Maestro Message:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"from": "ecos-chief-of-staff", "to": "<target>", "subject": "...", "content": {...}}'
-```
+Use the `ai-maestro-agents-management` skill to create a new agent:
+- **Name**: follow the naming convention for the role
+- **Directory**: agent working directory path
+- **Task**: task description
+- **Program args**: include `--plugin-dir` pointing to the plugin directory, and `--agent` with the main agent name from the plugin
+
+**Verify**: the new agent appears in the agent list with "online" status.
+
+**Send Inter-Agent Message:**
+
+Send a message to another agent using the `agent-messaging` skill:
+- **Recipient**: the target agent session name
+- **Subject**: descriptive subject line
+- **Content**: structured message content
+- **Priority**: appropriate priority level
+
+**Verify**: confirm message delivery.
 
 > For full message templates (approval, notification, status), see [ecos-notification-protocols/references/ai-maestro-message-templates.md](../skills/ecos-notification-protocols/references/ai-maestro-message-templates.md).
 
@@ -138,17 +144,15 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 **Steps:**
 1. Delegate to **ecos-approval-coordinator** to request approval from EAMA
-2. If approved, delegate to **ecos-lifecycle-manager** to spawn agent:
-   ```bash
-   aimaestro-agent.sh create worker-dev-auth-001 \
-     --dir /path/to/project \
-     --task "Develop auth module" \
-     -- continue --dangerously-skip-permissions --chrome --add-dir /tmp \
-     --agent eoa-orchestrator-main-agent
-   ```
-3. Verify agent health via AI Maestro message (30s timeout)
+2. If approved, delegate to **ecos-lifecycle-manager** to spawn agent using the `ai-maestro-agents-management` skill:
+   - **Name**: `worker-dev-auth-001`
+   - **Directory**: `/path/to/project`
+   - **Task**: "Develop auth module"
+   - **Program args**: include `--plugin-dir` and `--agent` flags as needed
+   - **Verify**: agent appears in agent list with "online" status
+3. Verify agent health by sending a health check message using the `agent-messaging` skill (30s timeout)
 4. Use `ecos_team_registry.py add-agent` to add agent to team
-5. Notify EOA of new agent availability via AI Maestro message
+5. Notify EOA of new agent availability using the `agent-messaging` skill
 6. Log operation to `docs_dev/chief-of-staff/agent-lifecycle.log`
 
 > For detailed checklist, see [ecos-agent-lifecycle/references/workflow-checklists.md](../skills/ecos-agent-lifecycle/references/workflow-checklists.md).
@@ -158,12 +162,12 @@ curl -X POST "http://localhost:23000/api/messages" \
 **Scenario:** Agent idle for 2+ hours, may be needed again
 
 **Steps:**
-1. Check agent idle time via AI Maestro message history
-2. Send notification to agent: "You will be hibernated in 30s. Save state."
+1. Check agent idle time via message history using the `agent-messaging` skill
+2. Send a notification to the agent using the `agent-messaging` skill: "You will be hibernated in 30s. Save state."
 3. Wait 30 seconds
 4. Save agent context to `$CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
 5. Update agent status in team registry to `hibernated`
-6. Update agent status in AI Maestro to `hibernated`
+6. Update agent status using the `ai-maestro-agents-management` skill to `hibernated`
 7. Log operation to lifecycle log
 
 > For success criteria, see [ecos-agent-lifecycle/references/success-criteria.md](../skills/ecos-agent-lifecycle/references/success-criteria.md).
@@ -176,8 +180,8 @@ curl -X POST "http://localhost:23000/api/messages" \
 1. Delegate to **ecos-approval-coordinator** to request approval from EAMA
 2. If approved, send notification to agent: "You will be terminated in 30s. Save state."
 3. Wait 30 seconds for agent to save state
-4. Run `aimaestro-agent.sh terminate <agent-name>`
-5. Verify tmux session removed and agent deregistered from AI Maestro
+4. Use the `ai-maestro-agents-management` skill to terminate the agent
+5. Verify the agent session is removed and deregistered
 6. Remove agent from team registry
 7. Notify EOA of agent removal
 8. Log operation to lifecycle log

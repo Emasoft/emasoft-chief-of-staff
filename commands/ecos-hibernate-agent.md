@@ -2,7 +2,7 @@
 name: ecos-hibernate-agent
 description: "Put a remote agent to sleep, preserving its state for later resumption using AI Maestro CLI"
 argument-hint: "<AGENT_NAME>"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,13 +12,11 @@ Put a remote agent to sleep, preserving its state for later resumption using the
 
 ## Usage
 
-```!
-aimaestro-agent.sh hibernate $ARGUMENTS
-```
+Use the `ai-maestro-agents-management` skill to hibernate the agent with the provided arguments.
 
-## AI Maestro CLI Integration
+## What This Command Does
 
-This command uses the **aimaestro-agent.sh** CLI tool for agent hibernation. The CLI:
+This command hibernates an agent session. The operation:
 1. Saves the agent state
 2. Kills the tmux session (frees system resources)
 3. Updates the agent registry status to `hibernated`
@@ -59,7 +57,7 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent hibernation. The
 ## Hibernation Flow
 
 ```
-1. aimaestro-agent.sh hibernate <agent>
+1. Hibernate command issued for <agent>
    |
 2. Agent state saved to storage
    |
@@ -67,7 +65,7 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent hibernation. The
    |
 4. Registry updated: status = hibernated
    |
-5. ✓ Agent hibernated successfully
+5. Agent hibernated successfully
 ```
 
 ## State Preservation
@@ -92,19 +90,17 @@ When hibernated, AI Maestro preserves:
 ═══════════════════════════════════════════════════════════════
   Agent 'helper-python' is now HIBERNATED
 
-  Wake with: aimaestro-agent.sh wake helper-python
+  Wake with: /ecos-wake-agent helper-python
 ═══════════════════════════════════════════════════════════════
 ```
 
 ## View Hibernated Agents
 
-```bash
-# List all agents including hibernated
-aimaestro-agent.sh list --status all
+Use the `ai-maestro-agents-management` skill to list agents:
+- To see all agents including hibernated: list with status filter `all`
+- To see only hibernated agents: list with status filter `hibernated`
 
-# List only hibernated agents
-aimaestro-agent.sh list --status hibernated
-```
+Or use the `/ecos-staff-status` command with appropriate flags.
 
 ## Error Handling
 
@@ -123,4 +119,4 @@ aimaestro-agent.sh list --status hibernated
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh hibernate --help`
+Full documentation: `ai-maestro-agents-management` skill

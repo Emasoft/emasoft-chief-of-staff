@@ -2,7 +2,7 @@
 name: ecos-install-skill-notify
 description: "Install skill with full notification protocol: notify, wait for ok, install, verify"
 argument-hint: "--agent <name> | --global --skill <name> | --marketplace <marketplace>/<skill> [--wait-for-ok]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Bash(curl:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -28,14 +28,11 @@ Install a skill to an agent (or globally) with a complete notification workflow:
 # --wait-for-ok                 Wait for agent acknowledgment before proceeding
 ```
 
-## AI Maestro CLI & API Integration
+## Skill Integration
 
-This command combines:
-1. **AI Maestro Messaging API** - For notifications and acknowledgments
-2. **aimaestro-agent.sh CLI** - For plugin/skill installation
-
-**API Endpoint**: `http://localhost:23000/api/messages`
-**CLI Tool**: `aimaestro-agent.sh plugin install`
+This command combines two skills:
+1. **`agent-messaging` skill** - For notifications and acknowledgments
+2. **`ai-maestro-agents-management` skill** - For plugin/skill installation
 
 ## Arguments
 
@@ -100,174 +97,31 @@ Phase 4: POST-INSTALLATION VERIFICATION
 
 ## Implementation
 
-Execute the full workflow:
+This command executes a 4-phase workflow:
 
-```bash
-#!/bin/bash
-# Full skill installation with notification protocol
+**Phase 1: Pre-installation Notification**
+- If `--global`, use the `ai-maestro-agents-management` skill to list all agents
+- For each target agent, send a notification using the `agent-messaging` skill:
+  - **Recipient**: the target agent
+  - **Subject**: `[SKILL INSTALL] <skill-id>`
+  - **Content**: "Skill installation starting. Your session will hibernate -> install -> wake. Please finish current work and reply 'ok' when ready."
+  - **Priority**: `high`
 
-API_BASE="http://localhost:23000"
-SELF_AGENT="${SESSION_NAME:-orchestrator}"
-TARGET_AGENT=""
-GLOBAL=false
-SKILL=""
-MARKETPLACE_SKILL=""
-WAIT_FOR_OK=false
-TIMEOUT=120
-REMIND_INTERVAL=30
+**Phase 2: Wait for Acknowledgment (if --wait-for-ok)**
+- For each agent, use the `agent-messaging` skill to poll for acknowledgment messages (timeout: 120s)
+- Send reminder messages every 30 seconds using the `agent-messaging` skill
+- If timeout reached, proceed with warning
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --agent) TARGET_AGENT="$2"; shift 2 ;;
-    --global) GLOBAL=true; shift ;;
-    --skill) SKILL="$2"; shift 2 ;;
-    --marketplace) MARKETPLACE_SKILL="$2"; shift 2 ;;
-    --wait-for-ok) WAIT_FOR_OK=true; shift ;;
-    *) shift ;;
-  esac
-done
+**Phase 3: Installation**
+- Use the `ai-maestro-agents-management` skill to install the plugin on the target agent (or globally)
+- This automatically handles hibernate -> install -> wake cycle
 
-# Determine skill identifier
-if [ -n "$MARKETPLACE_SKILL" ]; then
-  SKILL_ID="$MARKETPLACE_SKILL"
-else
-  SKILL_ID="$SKILL"
-fi
+**Phase 4: Post-installation Verification**
+- For each agent, send a verification notification using the `agent-messaging` skill:
+  - **Subject**: `[VERIFY] Skill installed: <skill-id>`
+  - **Content**: "Skill installation complete. Please verify the skill is active and working correctly."
 
-echo "========================================"
-echo "  SKILL INSTALLATION PROTOCOL"
-echo "========================================"
-echo ""
-
-# Phase 1: Pre-installation notification
-echo "Phase 1: Pre-installation Notification"
-echo "---------------------------------------"
-
-if [ "$GLOBAL" = true ]; then
-  # Get all agents
-  AGENTS=$(curl -s "${API_BASE}/api/agents" | jq -r '.agents[].session_name')
-else
-  AGENTS="$TARGET_AGENT"
-fi
-
-for agent in $AGENTS; do
-  echo "Notifying: $agent"
-  curl -s -X POST "${API_BASE}/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"[SKILL INSTALL] $SKILL_ID\",
-      \"priority\": \"high\",
-      \"content\": {
-        \"type\": \"notification\",
-        \"operation\": \"skill-install\",
-        \"skill\": \"$SKILL_ID\",
-        \"message\": \"Skill installation starting. Your session will hibernate -> install -> wake. Please finish current work and reply 'ok' when ready.\"
-      }
-    }"
-  echo " - Notification sent"
-done
-
-# Phase 2: Wait for acknowledgment (if --wait-for-ok)
-if [ "$WAIT_FOR_OK" = true ]; then
-  echo ""
-  echo "Phase 2: Waiting for Acknowledgment"
-  echo "------------------------------------"
-
-  for agent in $AGENTS; do
-    echo "Waiting for: $agent (timeout: ${TIMEOUT}s)"
-
-    start_time=$(date +%s)
-    last_remind=$start_time
-    ack_received=false
-
-    while true; do
-      current_time=$(date +%s)
-      elapsed=$((current_time - start_time))
-
-      # Check timeout
-      if [ $elapsed -ge $TIMEOUT ]; then
-        echo "  [WARNING] Timeout waiting for $agent - proceeding anyway"
-        break
-      fi
-
-      # Poll for acknowledgment
-      ack=$(curl -s "${API_BASE}/api/messages?agent=${SELF_AGENT}&action=list&status=unread" | \
-        jq -r ".messages[] | select(.from == \"$agent\" and .content.status == \"ready\") | .content.status" | head -1)
-
-      if [ "$ack" = "ready" ]; then
-        echo "  [OK] Agent $agent acknowledged (${elapsed}s)"
-        ack_received=true
-        break
-      fi
-
-      # Send reminder
-      time_since_remind=$((current_time - last_remind))
-      if [ $time_since_remind -ge $REMIND_INTERVAL ]; then
-        echo "  [REMINDER] Sending reminder to $agent (${elapsed}s elapsed)"
-        curl -s -X POST "${API_BASE}/api/messages" \
-          -H "Content-Type: application/json" \
-          -d "{
-            \"to\": \"$agent\",
-            \"subject\": \"[REMINDER] Skill install waiting\",
-            \"priority\": \"high\",
-            \"content\": {
-              \"type\": \"reminder\",
-              \"message\": \"Waiting for your acknowledgment. Please save work and reply 'ok'. (${elapsed}s of ${TIMEOUT}s)\"
-            }
-          }"
-        last_remind=$current_time
-      fi
-
-      sleep 5
-    done
-  done
-fi
-
-# Phase 3: Installation
-echo ""
-echo "Phase 3: Installation"
-echo "---------------------"
-
-if [ "$GLOBAL" = true ]; then
-  echo "Installing globally..."
-  aimaestro-agent.sh plugin install --global "$SKILL_ID"
-else
-  echo "Installing to: $TARGET_AGENT"
-  aimaestro-agent.sh plugin install "$TARGET_AGENT" "$SKILL_ID"
-fi
-
-echo "Installation complete"
-
-# Phase 4: Post-installation verification notification
-echo ""
-echo "Phase 4: Verification Notification"
-echo "-----------------------------------"
-
-for agent in $AGENTS; do
-  echo "Notifying: $agent"
-  curl -s -X POST "${API_BASE}/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"[VERIFY] Skill installed: $SKILL_ID\",
-      \"priority\": \"normal\",
-      \"content\": {
-        \"type\": \"notification\",
-        \"operation\": \"verify-skill\",
-        \"skill\": \"$SKILL_ID\",
-        \"message\": \"Skill installation complete. Please verify the skill is active and working correctly.\"
-      }
-    }"
-  echo " - Verification request sent"
-done
-
-echo ""
-echo "========================================"
-echo "  INSTALLATION PROTOCOL COMPLETE"
-echo "========================================"
-```
+**Verify**: all phases complete successfully, agents acknowledge and verify skill activation.
 
 ## Output Format
 

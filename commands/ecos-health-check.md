@@ -2,7 +2,7 @@
 name: ecos-health-check
 description: "Check health status of agents including heartbeat, responsiveness, and resource usage"
 argument-hint: "[--agent <NAME>] [--all] [--verbose] [--format table|json]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Bash(curl:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,18 +12,12 @@ Check the health status of one or more agents managed by AI Maestro, including l
 
 ## Usage
 
-```!
-# Single agent health check
-aimaestro-agent.sh health $ARGUMENTS
+Use the `ai-maestro-agents-management` skill to check agent health with the provided arguments.
 
-# If --all flag is provided, iterate over all agents
-# If --agent flag is provided, check specific agent
-```
+## What This Command Does
 
-## AI Maestro CLI Integration
-
-This command uses the **aimaestro-agent.sh** CLI tool for health monitoring. The CLI queries:
-1. AI Maestro agent registry for heartbeat timestamps
+This command checks agent health. The operation queries:
+1. Agent registry for heartbeat timestamps
 2. tmux session status for online/offline/hibernated detection
 3. System metrics for resource usage (CPU, memory)
 4. Agent responsiveness via ping mechanism
@@ -160,17 +154,9 @@ With `--verbose` flag, additional metrics are shown:
 }
 ```
 
-## API Direct Access
+## Programmatic Access
 
-For programmatic access, you can also query the AI Maestro API directly:
-
-```bash
-# Get health status via API
-curl -s "http://localhost:23000/api/agents/health?agent=backend-api" | jq .
-
-# Get all agents health
-curl -s "http://localhost:23000/api/agents/health" | jq .
-```
+For programmatic health checks, use the `ai-maestro-agents-management` skill to query agent health status for a specific agent or all agents.
 
 ## Error Handling
 
@@ -189,4 +175,4 @@ curl -s "http://localhost:23000/api/agents/health" | jq .
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh health --help`
+Full documentation: `ai-maestro-agents-management` skill

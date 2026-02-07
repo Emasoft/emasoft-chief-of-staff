@@ -2,7 +2,7 @@
 name: ecos-notify-agents
 description: "Notify agents before or after operations via AI Maestro messaging API"
 argument-hint: "--agents <name1,name2,...> | --all --operation <type> --message <text> [--require-ack]"
-allowed-tools: ["Bash(curl:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,52 +12,19 @@ Send notifications to specific agents or all agents before or after operations v
 
 ## Usage
 
-```!
-# Parse arguments and send notifications via AI Maestro API
-# Arguments: $ARGUMENTS
+Parse the provided arguments and send notifications to agents using the `agent-messaging` skill.
 
-# Extract parameters from arguments
-AGENTS=""
-ALL_AGENTS=false
-OPERATION=""
-MESSAGE=""
-REQUIRE_ACK=false
+## Messaging Integration
 
-# Parse command line style arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --agents) AGENTS="$2"; shift 2 ;;
-    --all) ALL_AGENTS=true; shift ;;
-    --operation) OPERATION="$2"; shift 2 ;;
-    --message) MESSAGE="$2"; shift 2 ;;
-    --require-ack) REQUIRE_ACK=true; shift ;;
-    *) shift ;;
-  esac
-done
+This command uses the `agent-messaging` skill to send notifications to agents.
 
-# Send notification to each agent via curl to AI Maestro API
-```
-
-## AI Maestro API Integration
-
-This command uses the AI Maestro messaging API to send notifications to agents.
-
-**API Endpoint**: `http://localhost:23000/api/messages`
-
-**Request Format**:
-```json
-{
-  "to": "<agent_name>",
-  "subject": "[NOTIFICATION] <operation>",
-  "priority": "normal",
-  "content": {
-    "type": "notification",
-    "operation": "<operation_type>",
-    "message": "<message_text>",
-    "requireAck": true|false
-  }
-}
-```
+For each target agent, send a notification message using the `agent-messaging` skill:
+- **Recipient**: the target agent
+- **Subject**: `[NOTIFICATION] <operation>`
+- **Content**: the notification message with operation type
+- **Type**: `notification`
+- **Priority**: `normal`
+- If `--require-ack` is set, include acknowledgment request in the message
 
 ## Arguments
 
@@ -136,31 +103,13 @@ This command uses the AI Maestro messaging API to send notifications to agents.
 
 ## Implementation
 
-Execute the following curl commands based on arguments:
+This command is implemented by:
 
-```bash
-# Get list of all agents (if --all specified)
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[].session_name'
+1. **Resolving target agents**: if `--all` is specified, use the `ai-maestro-agents-management` skill to list all agents; otherwise use the explicit agent list
+2. **Sending notifications**: for each target agent, send a message using the `agent-messaging` skill with the operation type and message content
+3. **Polling for acknowledgments** (if `--require-ack`): use the `agent-messaging` skill to check for incoming acknowledgment messages from each agent
 
-# Send notification to specific agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<AGENT_NAME>",
-    "subject": "[NOTIFICATION] <OPERATION>",
-    "priority": "normal",
-    "content": {
-      "type": "notification",
-      "operation": "<OPERATION>",
-      "message": "<MESSAGE>",
-      "requireAck": <REQUIRE_ACK>
-    }
-  }'
-
-# If --require-ack, poll for acknowledgment
-curl -s "http://localhost:23000/api/messages?agent=<FROM_AGENT>&action=list&status=unread" | \
-  jq '.messages[] | select(.content.type == "ack")'
-```
+**Verify**: each target agent receives the notification. If `--require-ack`, confirm acknowledgments are received.
 
 ## Output Format
 

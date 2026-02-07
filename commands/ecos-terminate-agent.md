@@ -2,7 +2,7 @@
 name: ecos-terminate-agent
 description: "Terminate a remote agent and clean up its session using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> --confirm [--keep-folder]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,16 +12,14 @@ Terminate a remote agent and clean up its tmux session using the AI Maestro CLI.
 
 ## Usage
 
-```!
-aimaestro-agent.sh delete $ARGUMENTS
-```
+Use the `ai-maestro-agents-management` skill to terminate (delete) the agent with the provided arguments.
 
-## AI Maestro CLI Integration
+## What This Command Does
 
-This command uses the **aimaestro-agent.sh** CLI tool for agent termination. The CLI:
+This command terminates an agent session. The operation:
 1. Validates the agent exists
 2. Kills the tmux session if running
-3. Removes the agent from the AI Maestro registry
+3. Removes the agent from the agent registry
 4. (Future: Optionally preserves project folder)
 
 ## Arguments
@@ -98,8 +96,8 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent termination. The
 Before terminating an agent:
 
 1. **Verify work is complete** - Check agent has no pending tasks
-2. **Backup important state** - Export agent if needed: `aimaestro-agent.sh export helper-python`
-3. **Consider hibernating** - If you might need the agent again
+2. **Backup important state** - Use the `ai-maestro-agents-management` skill to export agent state if needed
+3. **Consider hibernating** - If you might need the agent again. Use the `ai-maestro-agents-management` skill to export agent state if needed.
 
 ## Related Commands
 
@@ -110,4 +108,4 @@ Before terminating an agent:
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh delete --help`
+Full documentation: `ai-maestro-agents-management` skill

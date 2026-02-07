@@ -2,7 +2,7 @@
 name: ecos-notify-manager
 description: "Notify the Assistant Manager (EAMA) about issues, status updates, or alerts via AI Maestro"
 argument-hint: "--subject <TEXT> --message <TEXT> [--priority <PRIORITY>] [--type <TYPE>]"
-allowed-tools: ["Bash(curl:*)", "Bash(aimaestro:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,22 +12,13 @@ Send notifications to the Assistant Manager (EAMA) about issues, status updates,
 
 ## Usage
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'$ECOS_SESSION_NAME'",
-    "to": "emasoft-assistant-manager-agent",
-    "subject": "'$SUBJECT'",
-    "priority": "'$PRIORITY'",
-    "content": {
-      "type": "'$TYPE'",
-      "message": "'$MESSAGE'",
-      "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'",
-      "metadata": '$METADATA'
-    }
-  }'
-```
+Send a message to the Assistant Manager (EAMA) using the `agent-messaging` skill:
+- **Recipient**: `emasoft-assistant-manager-agent` (EAMA)
+- **Subject**: the provided subject
+- **Content**: structured message with type, message body, timestamp, and optional metadata
+- **Priority**: the provided priority level
+
+**Verify**: confirm message delivery to EAMA.
 
 ## Notification Types
 
@@ -103,29 +94,15 @@ curl -X POST "http://localhost:23000/api/messages" \
   --require-ack
 ```
 
-## Message Format
+## Message Content Structure
 
-The notification is sent as a structured AI Maestro message:
-
-```json
-{
-  "from": "emasoft-chief-of-staff",
-  "to": "emasoft-assistant-manager-agent",
-  "subject": "Agent helper-python unresponsive",
-  "priority": "high",
-  "content": {
-    "type": "issue_report",
-    "message": "Agent helper-python has not responded to heartbeat for 10 minutes...",
-    "timestamp": "2025-02-02T15:30:00Z",
-    "related_agent": "helper-python",
-    "require_ack": false,
-    "metadata": {
-      "last_heartbeat": "2025-02-02T15:20:00Z",
-      "last_state": "executing_pytest"
-    }
-  }
-}
-```
+Notifications to EAMA include the following content fields:
+- **type**: the notification type (e.g., `issue_report`, `status_update`, `alert`)
+- **message**: the full notification message
+- **timestamp**: UTC timestamp of the notification
+- **related_agent**: (optional) name of the related agent
+- **require_ack**: whether acknowledgment is requested
+- **metadata**: (optional) additional structured data
 
 ## Output Format
 

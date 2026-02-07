@@ -2,7 +2,7 @@
 name: ecos-wait-for-approval
 description: "Wait for approval response from EAMA with configurable timeout and polling"
 argument-hint: "--request-id <ID> [--timeout <SECONDS>] [--poll-interval <SECONDS>]"
-allowed-tools: ["Bash(curl:*)", "Bash(aimaestro:*)", "Bash(jq:*)", "Bash(sleep:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Bash(sleep:*)"]
 user-invocable: true
 ---
 
@@ -12,25 +12,10 @@ Wait for an approval response from the Assistant Manager (EAMA) with configurabl
 
 ## Usage
 
-```bash
-# Poll for approval response
-TIMEOUT=${TIMEOUT:-120}
-POLL_INTERVAL=${POLL_INTERVAL:-5}
-ELAPSED=0
-
-while [ $ELAPSED -lt $TIMEOUT ]; do
-  RESPONSE=$(curl -s "http://localhost:23000/api/messages?agent=$ECOS_SESSION_NAME&action=list&status=unread" | \
-    jq -r '.messages[] | select(.content.request_id == "'$REQUEST_ID'" and .content.type == "approval_response")')
-
-  if [ -n "$RESPONSE" ]; then
-    echo "$RESPONSE"
-    break
-  fi
-
-  sleep $POLL_INTERVAL
-  ELAPSED=$((ELAPSED + POLL_INTERVAL))
-done
-```
+Poll for an approval response from EAMA using the `agent-messaging` skill:
+1. Check for unread messages matching the request ID and type `approval_response`
+2. Poll at the configured interval until response received or timeout
+3. Return the approval decision when found
 
 ## Arguments
 
@@ -173,34 +158,17 @@ For long timeouts (>300s), polling interval automatically increases:
 
 Typical workflow combining request and wait:
 
-```bash
-# 1. Submit request
-REQUEST_ID=$(ecos-request-approval --type terminate --agent helper-python \
-  --reason "Critical bug" 2>&1 | grep "Request ID:" | awk '{print $3}')
-
-# 2. Wait for response
-DECISION=$(ecos-wait-for-approval --request-id "$REQUEST_ID" --quiet)
-
-# 3. Act on decision
-if [ "$DECISION" = "APPROVED" ]; then
-  /ecos-terminate-agent helper-python --confirm
-else
-  echo "Termination not approved: $DECISION"
-fi
-```
+1. Submit approval request via `/ecos-request-approval`
+2. Wait for response via `/ecos-wait-for-approval --request-id <ID>`
+3. If approved, execute the operation (e.g., `/ecos-terminate-agent`)
+4. If rejected, log the rejection and notify as appropriate
 
 ## Conditional Execution
 
-When using `--on-approved` and `--on-rejected`:
+When using `--on-approved` and `--on-rejected`, the command executes the appropriate action based on the decision:
 
-```bash
-/ecos-wait-for-approval --request-id ECOS-20250202150000-a1b2c3d4 \
-  --on-approved "aimaestro-agent.sh delete helper-python --confirm && \
-                 ecos-notify-manager --subject 'Termination complete' \
-                 --message 'helper-python terminated as approved'" \
-  --on-rejected "ecos-notify-manager --subject 'Termination blocked' \
-                 --message 'Manager rejected termination of helper-python'"
-```
+- **On approved**: Use the `ai-maestro-agents-management` skill to execute the approved operation, then notify the manager of completion using the `agent-messaging` skill
+- **On rejected**: Notify the manager that the operation was blocked using the `agent-messaging` skill
 
 ## Error Handling
 

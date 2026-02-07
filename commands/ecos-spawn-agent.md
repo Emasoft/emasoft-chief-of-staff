@@ -2,7 +2,7 @@
 name: ecos-spawn-agent
 description: "Create and launch a new remote agent in a tmux session using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> --dir <PATH> [--task <DESCRIPTION>] [--tags <TAGS>] [--no-session]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,17 +12,15 @@ Create and launch a new remote agent in a dedicated tmux session using the AI Ma
 
 ## Usage
 
-```!
-aimaestro-agent.sh create $ARGUMENTS
-```
+Use the `ai-maestro-agents-management` skill to create a new agent with the provided arguments.
 
-## AI Maestro CLI Integration
+## What This Command Does
 
-This command uses the **aimaestro-agent.sh** CLI tool for agent lifecycle management. The CLI:
+This command creates a new agent session. The operation:
 1. Creates the project folder at the specified path
 2. Initializes a git repository in the folder
 3. Creates a CLAUDE.md template
-4. Registers the agent in AI Maestro
+4. Registers the agent in the agent registry
 5. Creates a tmux session and launches Claude Code
 
 ## Arguments
@@ -39,11 +37,7 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent lifecycle manage
 
 ## Required Claude Code Arguments
 
-**IMPORTANT**: Always pass these arguments after `--` when spawning agents:
-
-```bash
--- continue --dangerously-skip-permissions --chrome --add-dir <TEMP_DIR>
-```
+**IMPORTANT**: When spawning agents, always include the standard Claude Code flags as program arguments:
 
 | Argument | Purpose |
 |----------|---------|
@@ -62,27 +56,18 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent lifecycle manage
 # Create a Python implementer agent (macOS/Linux)
 /ecos-spawn-agent helper-python --dir ~/projects/myapp \
   --task "Implement user authentication module" \
-  --tags "implementer,python,auth" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
+  --tags "implementer,python,auth"
 
 # Create a tester agent for a specific project
 /ecos-spawn-agent helper-tester --dir ~/projects/myapp-tests \
   --task "Write and run unit tests for API endpoints" \
-  --tags "tester,pytest" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
+  --tags "tester,pytest"
 
 # Create agent in existing folder
 /ecos-spawn-agent helper-docs --dir ~/projects/existing-project \
   --force-folder \
   --task "Generate API documentation" \
-  --tags "documenter" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-
-# Windows example
-/ecos-spawn-agent helper-win --dir C:\projects\myapp \
-  --task "Build Windows application" \
-  --tags "implementer,windows" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir %TEMP%
+  --tags "documenter"
 ```
 
 ## Output Format
@@ -106,15 +91,13 @@ This command uses the **aimaestro-agent.sh** CLI tool for agent lifecycle manage
 
 ## Post-Spawn Plugin Installation
 
-After spawning, install plugins for the agent:
+After spawning, install plugins for the agent using the `ai-maestro-agents-management` skill:
+- **Operation**: install plugin on agent
+- **Agent**: the newly spawned agent name
+- **Plugin**: the plugin to install (e.g., `emasoft-chief-of-staff`)
+- **Marketplace**: add marketplace first if needed (e.g., `github:Emasoft/emasoft-plugins`)
 
-```bash
-# Install a plugin on the new agent (auto-restarts the agent)
-aimaestro-agent.sh plugin install helper-python emasoft-chief-of-staff
-
-# Add a marketplace first if needed
-aimaestro-agent.sh plugin marketplace add helper-python github:Emasoft/emasoft-plugins
-```
+**Verify**: plugin appears in the agent's plugin list after restart.
 
 ## Error Handling
 
@@ -134,4 +117,4 @@ aimaestro-agent.sh plugin marketplace add helper-python github:Emasoft/emasoft-p
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh --help`
+Full documentation: `ai-maestro-agents-management` skill

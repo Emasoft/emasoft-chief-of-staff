@@ -2,7 +2,7 @@
 name: ecos-request-approval
 description: "Request approval from manager (EAMA) for agent operations via AI Maestro"
 argument-hint: "--type <TYPE> --agent <NAME> --reason <TEXT> [--urgent] [--timeout <SECONDS>]"
-allowed-tools: ["Bash(curl:*)", "Bash(aimaestro:*)", "Read"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
 user-invocable: true
 ---
 
@@ -12,25 +12,13 @@ Request approval from the Assistant Manager (EAMA) for sensitive agent operation
 
 ## Usage
 
-```bash
-# Send approval request to EAMA via AI Maestro API
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'$ECOS_SESSION_NAME'",
-    "to": "emasoft-assistant-manager-agent",
-    "subject": "[APPROVAL REQUEST] '$TYPE': '$AGENT_NAME'",
-    "priority": "'$PRIORITY'",
-    "content": {
-      "type": "approval_request",
-      "request_id": "'$REQUEST_ID'",
-      "operation_type": "'$TYPE'",
-      "agent_name": "'$AGENT_NAME'",
-      "reason": "'$REASON'",
-      "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-    }
-  }'
-```
+Send an approval request to EAMA using the `agent-messaging` skill:
+- **Recipient**: `emasoft-assistant-manager-agent` (EAMA)
+- **Subject**: `[APPROVAL REQUEST] <type>: <agent-name>`
+- **Content**: structured approval request with request ID, operation type, agent name, reason, and timestamp
+- **Priority**: `high` (or `urgent` if `--urgent` flag is set)
+
+**Verify**: confirm the approval request message was delivered to EAMA.
 
 ## Operations Requiring Approval
 

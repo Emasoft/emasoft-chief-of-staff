@@ -2,7 +2,7 @@
 name: ecos-replace-agent
 description: "Replace a failed or terminated agent with a new one, including manager approval, handoff generation, and kanban update"
 argument-hint: "--failed-agent <NAME> --new-name <NAME> --role <ROLE> --project <PROJECT> --dir <PATH>"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Bash(curl:*)", "Read", "Task"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Read", "Task"]
 user-invocable: true
 ---
 
@@ -101,115 +101,62 @@ Replace a failed, terminated, or unhealthy agent with a new one. This command or
 
 ### Step 1: Request Approval from EAMA
 
-The command sends an approval request to the EAMA (Emasoft Assistant Manager Agent):
+Send an approval request to the EAMA using the `agent-messaging` skill:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Replace Agent: <failed-agent>`
+- **Content**: approval request with failed agent details, new agent name, role, project, and reason
+- **Priority**: `high`
 
-```bash
-# Internal: Send approval request via AI Maestro API
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Replace Agent: helper-backend",
-    "priority": "high",
-    "content": {
-      "type": "approval_request",
-      "action": "replace_agent",
-      "failed_agent": "helper-backend",
-      "new_agent": "helper-backend-v2",
-      "role": "implementer",
-      "project": "myapp-api",
-      "reason": "Agent became unresponsive",
-      "message": "Requesting approval to replace failed agent"
-    }
-  }'
-```
+**Verify**: approval response received from EAMA.
 
 ### Step 2: Create New Agent
 
-After approval, creates the new agent using the AI Maestro CLI:
+After approval, use the `ai-maestro-agents-management` skill to create a new agent:
+- **Name**: the new agent name (e.g., `helper-backend-v2`)
+- **Directory**: the project working directory
+- **Task**: "Continue work from <failed-agent>"
+- **Tags**: role, project, and `replacement` tag
+- **Program args**: include standard Claude Code flags
 
-```bash
-# Internal: Create new agent
-aimaestro-agent.sh create helper-backend-v2 \
-  --dir ~/projects/myapp \
-  --task "Continue work from helper-backend" \
-  --tags "implementer,myapp-api,replacement" \
-  -- continue --dangerously-skip-permissions --chrome --add-dir /tmp
-```
+**Verify**: the new agent appears in the agent list with "online" status.
 
 ### Step 3: Request Handoff from EOA
 
-Request the EOA (Emasoft Orchestrator Agent) to generate handoff documentation:
+Send a handoff generation request to EOA using the `agent-messaging` skill:
+- **Recipient**: `eoa-orchestrator`
+- **Subject**: `[HANDOFF REQUEST] Generate handoff for <failed-agent> replacement`
+- **Content**: request to generate handoff documentation including failed and new agent names
+- **Priority**: `high`
 
-```bash
-# Internal: Request handoff generation
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eoa-orchestrator",
-    "subject": "[HANDOFF REQUEST] Generate handoff for helper-backend replacement",
-    "priority": "high",
-    "content": {
-      "type": "request",
-      "action": "generate_handoff",
-      "failed_agent": "helper-backend",
-      "new_agent": "helper-backend-v2",
-      "message": "Please generate handoff documentation for agent replacement"
-    }
-  }'
-```
+**Verify**: EOA responds with handoff document location.
 
 ### Step 4: Update GitHub Project Kanban
 
-Request EOA to update the GitHub Project board:
+Send a kanban update request to EOA using the `agent-messaging` skill:
+- **Recipient**: `eoa-orchestrator`
+- **Subject**: `[KANBAN UPDATE] Reassign cards from <old-agent> to <new-agent>`
+- **Content**: request to reassign all kanban cards
+- **Priority**: `normal`
 
-```bash
-# Internal: Request kanban update
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eoa-orchestrator",
-    "subject": "[KANBAN UPDATE] Reassign cards from helper-backend to helper-backend-v2",
-    "priority": "normal",
-    "content": {
-      "type": "request",
-      "action": "update_kanban",
-      "old_agent": "helper-backend",
-      "new_agent": "helper-backend-v2",
-      "message": "Reassign all kanban cards from old agent to new agent"
-    }
-  }'
-```
+**Verify**: EOA confirms cards have been reassigned.
 
 ### Step 5: Transfer Handoff to New Agent
 
-Send the handoff documentation to the new agent:
+Send the handoff documentation to the new agent using the `agent-messaging` skill:
+- **Recipient**: the new agent
+- **Subject**: `[HANDOFF] Work transfer from <failed-agent>`
+- **Content**: handoff document with instructions to review and continue work
+- **Priority**: `urgent`
 
-```bash
-# Internal: Send handoff to new agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-backend-v2",
-    "subject": "[HANDOFF] Work transfer from helper-backend",
-    "priority": "urgent",
-    "content": {
-      "type": "handoff",
-      "from_agent": "helper-backend",
-      "handoff_file": "/path/to/handoff.md",
-      "message": "You are replacing helper-backend. Please review the handoff and continue the work."
-    }
-  }'
-```
+**Verify**: new agent acknowledges receipt of handoff.
 
 ### Step 6: Verify New Agent Ready
 
-Health check and verification:
+Use the `ai-maestro-agents-management` skill to check health of the new agent:
+- **Agent**: the new agent name
+- **Mode**: verbose health check
 
-```bash
-# Internal: Verify new agent
-aimaestro-agent.sh health --agent helper-backend-v2 --verbose
-```
+**Verify**: health check reports "HEALTHY" with acceptable response time.
 
 ## Output Format
 

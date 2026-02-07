@@ -2,7 +2,7 @@
 name: ecos-wait-for-agent-ok
 description: "Wait for an agent to acknowledge readiness with polling and reminders"
 argument-hint: "--agent <name> [--timeout <seconds>] [--remind-interval <seconds>]"
-allowed-tools: ["Bash(curl:*)", "Read"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
 user-invocable: true
 ---
 
@@ -23,22 +23,11 @@ REMIND_INTERVAL=30
 # Parse arguments and poll for "ok" message from agent
 ```
 
-## AI Maestro API Integration
+## Messaging Integration
 
-This command polls the AI Maestro messaging API waiting for an acknowledgment message from a specific agent.
+This command uses the `agent-messaging` skill to poll for acknowledgment messages from a specific agent.
 
-**Poll Endpoint**: `http://localhost:23000/api/messages?agent=<self>&action=list&status=unread`
-
-**Expected Acknowledgment Format**:
-```json
-{
-  "from": "<agent_name>",
-  "content": {
-    "type": "ack",
-    "status": "ready"
-  }
-}
-```
+**Expected Acknowledgment**: A message from the target agent with type `ack` and status `ready`.
 
 ## Arguments
 
@@ -83,67 +72,17 @@ This command polls the AI Maestro messaging API waiting for an acknowledgment me
 
 ## Implementation
 
-Execute the following polling logic:
+This command implements a polling loop:
 
-```bash
-#!/bin/bash
-# Polling script for agent acknowledgment
+1. **Poll for acknowledgment**: Use the `agent-messaging` skill to check for unread messages from the target agent with type `ack` and status `ready`
+2. **Send reminders**: At each remind interval, send a reminder message to the target agent using the `agent-messaging` skill:
+   - **Recipient**: the target agent
+   - **Subject**: `[REMINDER] Waiting for your acknowledgment`
+   - **Content**: "Please acknowledge when ready. Waiting for Xs of Ys."
+   - **Priority**: `high`
+3. **Timeout handling**: If timeout is reached, exit with a warning but allow the calling workflow to proceed
 
-AGENT="$1"
-TIMEOUT="${2:-120}"
-REMIND_INTERVAL="${3:-30}"
-SELF_AGENT="${SESSION_NAME:-orchestrator}"
-API_BASE="http://localhost:23000"
-
-start_time=$(date +%s)
-last_remind=0
-
-echo "Waiting for acknowledgment from: $AGENT"
-echo "Timeout: ${TIMEOUT}s | Remind interval: ${REMIND_INTERVAL}s"
-
-while true; do
-  current_time=$(date +%s)
-  elapsed=$((current_time - start_time))
-
-  # Check timeout
-  if [ $elapsed -ge $TIMEOUT ]; then
-    echo "[WARNING] Timeout reached waiting for $AGENT"
-    echo "[WARNING] Proceeding without acknowledgment"
-    exit 0  # Exit success but with warning
-  fi
-
-  # Poll for acknowledgment
-  ack=$(curl -s "${API_BASE}/api/messages?agent=${SELF_AGENT}&action=list&status=unread" | \
-    jq -r ".messages[] | select(.from == \"$AGENT\" and .content.type == \"ack\") | .content.status")
-
-  if [ "$ack" = "ready" ]; then
-    echo "[SUCCESS] Agent $AGENT acknowledged: ready"
-    # Mark message as read
-    exit 0
-  fi
-
-  # Send reminder if interval elapsed
-  time_since_remind=$((current_time - last_remind))
-  if [ $time_since_remind -ge $REMIND_INTERVAL ]; then
-    echo "[REMINDER] Sending reminder to $AGENT..."
-    curl -s -X POST "${API_BASE}/api/messages" \
-      -H "Content-Type: application/json" \
-      -d "{
-        \"to\": \"$AGENT\",
-        \"subject\": \"[REMINDER] Waiting for your acknowledgment\",
-        \"priority\": \"high\",
-        \"content\": {
-          \"type\": \"reminder\",
-          \"message\": \"Please acknowledge when ready. Waiting for ${elapsed}s of ${TIMEOUT}s.\"
-        }
-      }"
-    last_remind=$current_time
-  fi
-
-  # Wait before next poll
-  sleep 5
-done
-```
+**Verify**: acknowledgment received or timeout reached with appropriate warning.
 
 ## Output Format
 
@@ -226,7 +165,7 @@ Agents should respond with this message format:
 /ecos-wait-for-agent-ok --agent helper-python --timeout 120
 
 # 3. Proceed with operation (skill install, restart, etc.)
-aimaestro-agent.sh plugin install helper-python my-skill@marketplace
+# Use the ai-maestro-agents-management skill to install the plugin
 ```
 
 ## Error Handling

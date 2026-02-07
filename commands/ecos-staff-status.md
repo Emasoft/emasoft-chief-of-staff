@@ -2,7 +2,7 @@
 name: ecos-staff-status
 description: "View all remote agents with status, working directory, and tags using AI Maestro CLI"
 argument-hint: "[--status online|offline|hibernated|all] [--format table|json|names]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,14 +12,12 @@ View all remote agents managed by AI Maestro.
 
 ## Usage
 
-```!
-aimaestro-agent.sh list $ARGUMENTS
-```
+Use the `ai-maestro-agents-management` skill to list all agents with the provided arguments.
 
-## AI Maestro CLI Integration
+## What This Command Does
 
-This command uses the **aimaestro-agent.sh** CLI tool for listing agents. The CLI queries:
-1. AI Maestro agent registry via API
+This command lists all registered agents. The operation queries:
+1. Agent registry for registered agents
 2. tmux session status for online/offline detection
 3. Agent metadata (tags, working directory, task)
 
@@ -83,15 +81,9 @@ This command uses the **aimaestro-agent.sh** CLI tool for listing agents. The CL
 
 ## View Agent Details
 
-For detailed information about a specific agent:
-
-```bash
-# Show full agent details
-aimaestro-agent.sh show helper-python
-
-# JSON format for scripting
-aimaestro-agent.sh show helper-python --format json
-```
+For detailed information about a specific agent, use the `ai-maestro-agents-management` skill to show agent details:
+- **Name**: the agent to inspect
+- **Format**: `table` (default) or `json` for scripting
 
 ## Agent Details Output
 
@@ -127,4 +119,4 @@ aimaestro-agent.sh show helper-python --format json
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh list --help`
+Full documentation: `ai-maestro-agents-management` skill

@@ -2,7 +2,7 @@
 name: ecos-check-approval-status
 description: "Check status of pending approval requests from EAMA"
 argument-hint: "[--request-id <ID>] [--all] [--status <STATUS>] [--since <HOURS>]"
-allowed-tools: ["Bash(curl:*)", "Bash(aimaestro:*)", "Bash(jq:*)", "Read"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
 user-invocable: true
 ---
 
@@ -12,18 +12,10 @@ Check the status of pending, approved, or rejected approval requests from the As
 
 ## Usage
 
-```bash
-# Check specific request
-curl -s "http://localhost:23000/api/messages?agent=$ECOS_SESSION_NAME&action=list" | \
-  jq '.messages[] | select(.content.request_id == "'$REQUEST_ID'")'
-
-# List all pending approvals
-ls -la ~/.aimaestro/approvals/pending/
-
-# Check for responses from EAMA
-curl -s "http://localhost:23000/api/messages?agent=$ECOS_SESSION_NAME&action=list&status=unread" | \
-  jq '.messages[] | select(.content.type == "approval_response")'
-```
+Check approval status by:
+1. Using the `agent-messaging` skill to check for incoming approval response messages matching the request ID
+2. Checking local approval files in `~/.aimaestro/approvals/pending/`
+3. Using the `agent-messaging` skill to check for unread messages of type `approval_response`
 
 ## Arguments
 
@@ -152,15 +144,9 @@ curl -s "http://localhost:23000/api/messages?agent=$ECOS_SESSION_NAME&action=lis
 | Rejected | `~/.aimaestro/approvals/rejected/` |
 | Expired | `~/.aimaestro/approvals/expired/` |
 
-## Checking via AI Maestro Messages
+## Checking via Messages
 
-The command also checks AI Maestro messages for responses:
-
-```bash
-# Check for unread approval responses
-curl -s "http://localhost:23000/api/messages?agent=emasoft-chief-of-staff&action=list&status=unread" | \
-  jq '[.messages[] | select(.content.type == "approval_response")]'
-```
+The command also checks for incoming messages using the `agent-messaging` skill, filtering for messages of type `approval_response` in the unread inbox.
 
 ## Error Handling
 

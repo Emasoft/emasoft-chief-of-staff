@@ -2,7 +2,7 @@
 name: ecos-wake-agent
 description: "Wake a hibernated agent, restoring its previous state using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> [--attach]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)"]
+allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
 user-invocable: true
 ---
 
@@ -12,13 +12,11 @@ Wake a hibernated agent, restoring its previous state using the AI Maestro CLI.
 
 ## Usage
 
-```!
-aimaestro-agent.sh wake $ARGUMENTS
-```
+Use the `ai-maestro-agents-management` skill to wake the agent with the provided arguments.
 
-## AI Maestro CLI Integration
+## What This Command Does
 
-This command uses the **aimaestro-agent.sh** CLI tool for waking agents. The CLI:
+This command wakes a hibernated agent session. The operation:
 1. Retrieves agent state from storage
 2. Creates a new tmux session
 3. Launches Claude Code with restored context
@@ -33,11 +31,14 @@ This command uses the **aimaestro-agent.sh** CLI tool for waking agents. The CLI
 
 ## Required Claude Code Arguments
 
-**Note**: When waking agents, the AI Maestro CLI should be configured to pass the standard Claude Code arguments. If manually waking or the agent doesn't start correctly, ensure these arguments are used:
+**Note**: When waking agents, the standard Claude Code arguments should be passed automatically. If the agent doesn't start correctly, ensure these arguments are configured:
 
-```bash
--- continue --dangerously-skip-permissions --chrome --add-dir <TEMP_DIR>
-```
+| Argument | Purpose |
+|----------|---------|
+| `continue` | Resume previous session context |
+| `--dangerously-skip-permissions` | Skip permission dialogs for automation |
+| `--chrome` | Enable Chrome DevTools integration |
+| `--add-dir <TEMP_DIR>` | Add temp directory access |
 
 **Platform-specific temp directories:**
 - **macOS/Linux**: `/tmp`
@@ -60,7 +61,7 @@ This command uses the **aimaestro-agent.sh** CLI tool for waking agents. The CLI
 ## Wake Flow
 
 ```
-1. aimaestro-agent.sh wake <agent>
+1. Wake command issued for <agent>
    |
 2. Agent state retrieved from storage
    |
@@ -70,7 +71,7 @@ This command uses the **aimaestro-agent.sh** CLI tool for waking agents. The CLI
    |
 5. Registry updated: status = online
    |
-6. ✓ Agent is now ONLINE
+6. Agent is now ONLINE
    |
 7. (Optional) Attach to session with --attach
 ```
@@ -122,12 +123,7 @@ When woken, the agent:
 
 ## Restart Agent (After Plugin Install)
 
-After installing plugins or marketplaces, restart the agent:
-
-```bash
-# Restart = hibernate + wake (auto-applies plugin changes)
-aimaestro-agent.sh restart helper-python
-```
+After installing plugins or marketplaces, use the `ai-maestro-agents-management` skill to restart the agent. A restart is equivalent to hibernate followed by wake, which auto-applies plugin changes.
 
 ## Related Commands
 
@@ -138,4 +134,4 @@ aimaestro-agent.sh restart helper-python
 
 ## CLI Reference
 
-Full documentation: `ai-maestro-agents-management` skill or run `aimaestro-agent.sh wake --help`
+Full documentation: `ai-maestro-agents-management` skill
