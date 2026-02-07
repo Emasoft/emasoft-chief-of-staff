@@ -20,7 +20,9 @@ Trigger this operation when:
 
 ## Prerequisites
 
-- AI Maestro API is accessible at http://localhost:23000
+- AI Maestro is running
+- The `ai-maestro-agents-management` skill is available
+- The `agent-messaging` skill is available
 - Team roster exists with expected agents
 - Permission to query agent sessions
 - Understanding of expected team composition
@@ -29,29 +31,15 @@ Trigger this operation when:
 
 ### Step 1: Poll AI Maestro for Active Sessions
 
-```bash
-# Get all active sessions
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | {name: .name, status: .status, lastSeen: .lastSeen}'
-```
+Use the `ai-maestro-agents-management` skill to list all registered sessions. Note each session's name, status, and last seen timestamp.
 
 ### Step 2: Query Each Agent's Status
 
-For agents that need detailed status:
-
-```bash
-# Send status request to specific agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<agent-session-name>",
-    "subject": "Status Check",
-    "priority": "normal",
-    "content": {
-      "type": "status-request",
-      "message": "Please report your current status: task, progress, blockers."
-    }
-  }'
-```
+For agents that need detailed status, use the `agent-messaging` skill to send a status request:
+- **Recipient**: the target agent session name
+- **Subject**: `Status Check`
+- **Priority**: `normal`
+- **Content**: type `status-request`, message: "Please report your current status: task, progress, blockers."
 
 ### Step 3: Update Team Roster
 
@@ -64,22 +52,7 @@ Compile status information into team roster:
 
 ### Step 4: Identify Inactive Agents
 
-Compare expected team members against active sessions:
-
-```bash
-# Expected agents (example)
-EXPECTED=("code-impl-auth" "test-engineer-01" "docs-writer" "chief-of-staff")
-
-# Get active agents
-ACTIVE=$(curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[].name')
-
-# Find missing agents
-for agent in "${EXPECTED[@]}"; do
-  if ! echo "$ACTIVE" | grep -q "$agent"; then
-    echo "MISSING: $agent"
-  fi
-done
-```
+Compare expected team members against the active sessions returned by the `ai-maestro-agents-management` skill. For each expected agent that does not appear in the active list, flag it as MISSING.
 
 ### Step 5: Flag Issues
 
@@ -93,8 +66,8 @@ Document any anomalies:
 
 Copy this checklist and track your progress:
 
-- [ ] Polled AI Maestro for all active sessions
-- [ ] Sent status requests to key agents
+- [ ] Used `ai-maestro-agents-management` skill to poll all active sessions
+- [ ] Sent status requests to key agents via `agent-messaging` skill
 - [ ] Updated team roster with current information
 - [ ] Identified any inactive or missing agents
 - [ ] Flagged issues for follow-up
@@ -106,76 +79,41 @@ Copy this checklist and track your progress:
 
 **Scenario:** Chief of Staff starting a new coordination session.
 
-```bash
-# Step 1: Get all sessions
-echo "=== Active Sessions ==="
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | {name: .name, status: .status, lastSeen: .lastSeen}'
+1. Use the `ai-maestro-agents-management` skill to list all registered sessions. Note name, status, and last seen timestamp for each.
 
-# Step 2: Check unread messages for any pending issues
-echo "=== Unread Messages ==="
-curl -s "http://localhost:23000/api/messages?agent=chief-of-staff&action=list&status=unread" | jq '.messages[] | {from: .from, subject: .subject, priority: .priority}'
-```
+2. Use the `agent-messaging` skill to check for unread messages in the Chief of Staff inbox. Note any pending issues from other agents.
 
-**Expected Output:**
-```json
-{
-  "name": "code-impl-auth",
-  "status": "active",
-  "lastSeen": "2025-02-05T10:30:00Z"
-}
-{
-  "name": "test-engineer-01",
-  "status": "active",
-  "lastSeen": "2025-02-05T10:29:45Z"
-}
-```
+**Expected results:**
+- A list of all active agents with their current status
+- Any unread messages requiring attention
 
 ### Example: Pre-Task Assignment Check
 
-**Scenario:** Before assigning a task to code-impl-auth, verify availability.
+**Scenario:** Before assigning a task to `code-impl-auth`, verify availability.
 
-```bash
-# Check if agent is active
-STATUS=$(curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[] | select(.name == "code-impl-auth") | .status')
+1. Use the `ai-maestro-agents-management` skill to list agents and find `code-impl-auth`. Check its status.
 
-if [ "$STATUS" == "active" ]; then
-  echo "Agent is active, checking current workload..."
+2. If the agent is active, use the `agent-messaging` skill to send:
+   - **Recipient**: `code-impl-auth`
+   - **Subject**: `Availability Check`
+   - **Priority**: `normal`
+   - **Content**: type `status-request`, message: "Are you available for a new task? Please report current workload."
 
-  # Send status request
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d '{
-      "to": "code-impl-auth",
-      "subject": "Availability Check",
-      "priority": "normal",
-      "content": {
-        "type": "status-request",
-        "message": "Are you available for a new task? Please report current workload."
-      }
-    }'
-else
-  echo "WARNING: Agent is not active (status: $STATUS)"
-fi
-```
+3. If the agent is NOT active, log a warning and consider waking or spawning a replacement.
 
 ### Example: Team Status Report Generation
 
 **Scenario:** Generate a summary for the user.
 
-```bash
-# Collect all agent statuses
-echo "=== Team Status Report ==="
-echo "Generated: $(date)"
-echo ""
-
-curl -s "http://localhost:23000/api/sessions" | jq -r '.sessions[] | "Agent: \(.name)\n  Status: \(.status)\n  Last Seen: \(.lastSeen)\n"'
-```
+1. Use the `ai-maestro-agents-management` skill to list all sessions.
+2. For each session, record agent name, status, and last seen timestamp.
+3. Format as a team status report with all agent details.
 
 ## Error Handling
 
 | Error | Cause | Resolution |
 |-------|-------|------------|
-| AI Maestro API unreachable | Service not running | Run `curl -s "http://localhost:23000/api/health"` to diagnose; notify user if service is down |
+| AI Maestro unavailable | Service not running | Use the `ai-maestro-agents-management` skill to check service health; notify user if service is down |
 | Agent shows stale lastSeen | Agent hibernated or crashed | Attempt to wake agent; if no response, flag for user attention |
 | Status request times out | Agent busy or unresponsive | Wait 30 seconds, retry once; if still no response, mark as "unresponsive" |
 | Team roster mismatch | New agents not registered | Update expected team list; query for newly registered sessions |

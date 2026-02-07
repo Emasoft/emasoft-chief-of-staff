@@ -5,47 +5,39 @@
 ## Agent Spawned Successfully
 
 Verify ALL criteria met:
-- [ ] tmux session exists: `tmux has-session -t <agent-name> 2>/dev/null && echo "EXISTS"`
-- [ ] Agent registered in AI Maestro: `curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>")'`
+- [ ] Agent session exists and is running
+- [ ] Agent registered in AI Maestro
 - [ ] Agent responds to health check message within 30s
-- [ ] Agent's working directory exists and accessible
+- [ ] Agent's working directory exists and is accessible
 - [ ] Team registry updated (if assigned to team)
 - [ ] Lifecycle log entry written
 
 **Evidence Required:**
-- tmux session list output showing agent session
-- AI Maestro agents list showing agent registration
-- Health check message response with timestamp
+- Session exists (use the `ai-maestro-agents-management` skill to list agents and confirm the new agent appears)
+- Agent responds to a health check (use the `agent-messaging` skill to send a health check message and receive a response)
 - Directory existence verification
 - Team registry JSON showing agent in members array
 - Lifecycle log entry with spawn timestamp
 
-**Self-Check Commands:**
-```bash
-# Verify tmux session
-tmux has-session -t <agent-name> 2>/dev/null && echo "EXISTS" || echo "MISSING"
+**Verification Steps:**
 
-# Verify AI Maestro registration
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>")'
-
-# Verify working directory
-ls -ld <working-directory>
-
-# Send health check
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"to": "<agent-name>", "subject": "Health Check", "content": {"type": "system", "message": "ping"}}'
-
-# Check lifecycle log
-tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"
-```
+1. Use the `ai-maestro-agents-management` skill to list all agents and confirm the newly spawned agent appears with status `active` or `online`.
+2. Use the `agent-messaging` skill to send a health check message to the agent:
+   - **Recipient**: the new agent session name
+   - **Subject**: `Health Check`
+   - **Priority**: `normal`
+   - **Content**: type `system`, message: "ping"
+3. Verify the agent responds within 30 seconds.
+4. Check the working directory exists: `ls -ld <working-directory>`
+5. Check team registry (if applicable): `jq '.teams[].members[] | select(.name == "<agent-name>")' .emasoft/team-registry.json`
+6. Check lifecycle log: `tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"`
 
 ---
 
 ## Agent Terminated Cleanly
 
 Verify ALL criteria met:
-- [ ] tmux session removed: `tmux has-session -t <agent-name> 2>/dev/null || echo "REMOVED"`
+- [ ] Agent session no longer exists
 - [ ] Agent deregistered from AI Maestro
 - [ ] Agent removed from all team registries
 - [ ] No orphaned processes (check with `ps aux | grep <agent-name>`)
@@ -53,37 +45,25 @@ Verify ALL criteria met:
 - [ ] Lifecycle log entry written
 
 **Evidence Required:**
-- tmux session list showing agent session no longer exists
 - AI Maestro agents list showing agent not present
 - Team registries showing agent removed from all teams
 - Process list showing no processes matching agent name
 - Directory removal confirmation (if temporary)
 - Lifecycle log entry with termination timestamp
 
-**Self-Check Commands:**
-```bash
-# Verify tmux session removed
-tmux has-session -t <agent-name> 2>/dev/null && echo "STILL EXISTS" || echo "REMOVED"
+**Verification Steps:**
 
-# Verify AI Maestro deregistration
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>")' | grep -q . && echo "STILL REGISTERED" || echo "DEREGISTERED"
-
-# Check for orphaned processes
-ps aux | grep <agent-name> | grep -v grep
-
-# Check team registries
-find . -name "team-registry.json" -exec jq -r '.teams[].members[] | select(.name == "<agent-name>")' {} \;
-
-# Check lifecycle log
-tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"
-```
+1. Use the `ai-maestro-agents-management` skill to list all agents and confirm the terminated agent does NOT appear.
+2. Verify no orphaned processes: `ps aux | grep <agent-name> | grep -v grep`
+3. Check team registries: `find . -name "team-registry.json" -exec jq -r '.teams[].members[] | select(.name == "<agent-name>")' {} \;`
+4. Check lifecycle log: `tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"`
 
 ---
 
 ## Agent Hibernated Successfully
 
 Verify ALL criteria met:
-- [ ] tmux session still exists (not terminated)
+- [ ] Agent session still exists (not terminated)
 - [ ] Agent marked as `hibernated` in AI Maestro
 - [ ] Agent status in team registry updated to `hibernated`
 - [ ] Context saved to disk: `$CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
@@ -91,35 +71,19 @@ Verify ALL criteria met:
 - [ ] Lifecycle log entry written
 
 **Evidence Required:**
-- tmux session list showing agent session still exists
 - AI Maestro agents list showing agent status as `hibernated`
 - Team registry showing agent status as `hibernated`
 - Context JSON file with valid structure and timestamp
 - No response to health check message within 30s
 - Lifecycle log entry with hibernation timestamp
 
-**Self-Check Commands:**
-```bash
-# Verify tmux session exists
-tmux has-session -t <agent-name> 2>/dev/null && echo "EXISTS" || echo "TERMINATED"
+**Verification Steps:**
 
-# Verify hibernation status in AI Maestro
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>") | .status'
-
-# Verify context saved
-ls -l $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json
-
-# Verify context JSON valid
-jq . $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json
-
-# Send health check (should timeout)
-timeout 30 curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"to": "<agent-name>", "subject": "Health Check", "content": {"type": "system", "message": "ping"}}'
-
-# Check lifecycle log
-tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"
-```
+1. Use the `ai-maestro-agents-management` skill to get the agent's details and confirm status is `hibernated`.
+2. Verify context saved: `ls -l $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
+3. Validate context JSON: `jq . $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
+4. Use the `agent-messaging` skill to send a health check message. It should timeout after 30 seconds (agent is sleeping).
+5. Check lifecycle log: `tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"`
 
 ---
 
@@ -141,25 +105,18 @@ Verify ALL criteria met:
 - Agent acknowledges resuming from saved state
 - Lifecycle log entry with wake timestamp
 
-**Self-Check Commands:**
-```bash
-# Send health check
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{"to": "<agent-name>", "subject": "Health Check", "content": {"type": "system", "message": "ping"}}'
+**Verification Steps:**
 
-# Verify active status in AI Maestro
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>") | .status'
-
-# Verify team registry status
-jq -r '.teams[].members[] | select(.name == "<agent-name>") | .status' .emasoft/team-registry.json
-
-# Check lifecycle log
-tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"
-
-# Verify context file still exists (not deleted after restore)
-ls -l $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json
-```
+1. Use the `agent-messaging` skill to send a health check message:
+   - **Recipient**: the agent session name
+   - **Subject**: `Health Check`
+   - **Priority**: `normal`
+   - **Content**: type `system`, message: "ping"
+2. Confirm the agent responds within 30 seconds.
+3. Use the `ai-maestro-agents-management` skill to get the agent's details and confirm status is `active`.
+4. Check team registry: `jq -r '.teams[].members[] | select(.name == "<agent-name>") | .status' .emasoft/team-registry.json`
+5. Check lifecycle log: `tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"`
+6. Verify context file still exists: `ls -l $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
 
 ---
 
@@ -169,35 +126,26 @@ Verify ALL criteria met:
 - [ ] Team registry exists: `.emasoft/team-registry.json` in project directory
 - [ ] Agent listed in team's `members` array
 - [ ] Agent's role correctly specified in registry
-- [ ] Agent notified of team assignment via AI Maestro message
+- [ ] Agent notified of team assignment via messaging
 - [ ] EOA (if exists) notified of new team member
 - [ ] Team directory structure created (if new team)
 
 **Evidence Required:**
 - Team registry JSON file with valid structure
 - Agent entry in team's members array with correct role
-- AI Maestro message sent to agent confirming assignment
+- Message sent to agent confirming assignment
 - EOA notification message (if EOA exists)
 - Team directories created under `.emasoft/teams/<team-name>/`
 - Lifecycle log entry with team assignment timestamp
 
-**Self-Check Commands:**
-```bash
-# Verify team registry exists
-ls -l .emasoft/team-registry.json
+**Verification Steps:**
 
-# Verify agent in team
-jq -r '.teams[] | select(.name == "<team-name>") | .members[] | select(.name == "<agent-name>")' .emasoft/team-registry.json
-
-# Verify team structure
-ls -ld .emasoft/teams/<team-name>/
-
-# Check AI Maestro message log (if available)
-curl -s "http://localhost:23000/api/messages?agent=<agent-name>&status=unread" | jq '.messages[] | select(.subject | contains("Team Assignment"))'
-
-# Check lifecycle log
-tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"
-```
+1. Verify team registry exists: `ls -l .emasoft/team-registry.json`
+2. Verify agent in team: `jq -r '.teams[] | select(.name == "<team-name>") | .members[] | select(.name == "<agent-name>")' .emasoft/team-registry.json`
+3. Verify team structure: `ls -ld .emasoft/teams/<team-name>/`
+4. Use the `agent-messaging` skill to check inbox for the agent and confirm a team assignment message was delivered:
+   - Filter by subject containing "Team Assignment"
+5. Check lifecycle log: `tail -n 20 docs_dev/chief-of-staff/agent-lifecycle.log | grep "<agent-name>"`
 
 ---
 
@@ -212,27 +160,19 @@ Verify ALL criteria met:
 - [ ] Requester notified of approval
 
 **Evidence Required:**
-- AI Maestro message to EAMA with request details
+- Message to EAMA with request details
 - Request ID in approval log
 - Manager response message with decision
 - Decision is explicitly `approved`
 - Audit trail entry with request ID, operation, decision, timestamp
 - Confirmation message sent to requester
 
-**Self-Check Commands:**
-```bash
-# Check approval log
-grep "<request-id>" docs_dev/chief-of-staff/approval-requests.log
+**Verification Steps:**
 
-# Verify audit trail entry
-tail -n 50 docs_dev/chief-of-staff/approval-audit.log | grep "<request-id>"
-
-# Check AI Maestro messages (if available)
-curl -s "http://localhost:23000/api/messages?agent=eama-assistant-manager&status=read" | jq '.messages[] | select(.subject | contains("Approval Request"))'
-
-# Verify decision is approved
-grep "<request-id>" docs_dev/chief-of-staff/approval-audit.log | grep -o '"decision":"[^"]*"'
-```
+1. Check approval log: `grep "<request-id>" docs_dev/chief-of-staff/approval-requests.log`
+2. Verify audit trail entry: `tail -n 50 docs_dev/chief-of-staff/approval-audit.log | grep "<request-id>"`
+3. Use the `agent-messaging` skill to check inbox for messages from EAMA containing approval decisions related to the request ID.
+4. Verify decision is approved: `grep "<request-id>" docs_dev/chief-of-staff/approval-audit.log | grep -o '"decision":"[^"]*"'`
 
 ---
 
@@ -243,25 +183,16 @@ grep "<request-id>" docs_dev/chief-of-staff/approval-audit.log | grep -o '"decis
 **Symptom**: Health check message times out after 30s
 
 **Possible Causes**:
-1. Agent tmux session crashed
+1. Agent session crashed
 2. AI Maestro connection lost
 3. Agent is processing long-running task
 4. Agent is hibernated but status not updated
 
 **Verification Steps**:
-```bash
-# Check tmux session status
-tmux has-session -t <agent-name> 2>/dev/null && echo "EXISTS" || echo "CRASHED"
-
-# Check AI Maestro connection
-curl -s "http://localhost:23000/health" | jq .
-
-# Check agent's last activity
-curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "<agent-name>") | .lastSeen'
-
-# Attach to tmux session to see agent state
-tmux attach -t <agent-name>
-```
+1. Use the `ai-maestro-agents-management` skill to check if the agent is listed and its status.
+2. Use the `ai-maestro-agents-management` skill to perform a health check on the AI Maestro service itself.
+3. Check if the agent's session still exists by reviewing the agent list.
+4. If agent is listed as active but not responding, consider restarting the agent.
 
 ### Team Registry Not Updated
 
@@ -274,19 +205,10 @@ tmux attach -t <agent-name>
 4. Assignment operation failed silently
 
 **Verification Steps**:
-```bash
-# Verify registry file exists and readable
-ls -l .emasoft/team-registry.json
-
-# Validate JSON syntax
-jq . .emasoft/team-registry.json
-
-# Check for team existence
-jq -r '.teams[] | .name' .emasoft/team-registry.json
-
-# Check file permissions
-stat -f "%A %u %g" .emasoft/team-registry.json
-```
+1. Verify registry file exists and is readable: `ls -l .emasoft/team-registry.json`
+2. Validate JSON syntax: `jq . .emasoft/team-registry.json`
+3. Check for team existence: `jq -r '.teams[] | .name' .emasoft/team-registry.json`
+4. Check file permissions: `stat -f "%A %u %g" .emasoft/team-registry.json`
 
 ### Context Not Saved During Hibernation
 
@@ -299,22 +221,11 @@ stat -f "%A %u %g" .emasoft/team-registry.json
 4. Context serialization failed
 
 **Verification Steps**:
-```bash
-# Check directory permissions
-ls -ld $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/
-
-# Check disk space
-df -h $CLAUDE_PROJECT_DIR
-
-# Check file size
-ls -lh $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json
-
-# Validate JSON structure
-jq . $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json
-
-# Check for write errors in logs
-grep "hibernation" docs_dev/chief-of-staff/agent-lifecycle.log | grep -i error
-```
+1. Check directory permissions: `ls -ld $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/`
+2. Check disk space: `df -h $CLAUDE_PROJECT_DIR`
+3. Check file size: `ls -lh $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
+4. Validate JSON structure: `jq . $CLAUDE_PROJECT_DIR/.emasoft/hibernated-agents/<agent-name>/context.json`
+5. Check for write errors in logs: `grep "hibernation" docs_dev/chief-of-staff/agent-lifecycle.log | grep -i error`
 
 ---
 
@@ -322,7 +233,7 @@ grep "hibernation" docs_dev/chief-of-staff/agent-lifecycle.log | grep -i error
 
 **Operation is considered COMPLETE when:**
 1. All verification criteria checkboxes marked as complete
-2. All self-check commands return expected results
+2. All verification steps return expected results
 3. All evidence collected and logged
 4. No errors or warnings in lifecycle log
 5. Operation logged to audit trail (if applicable)
@@ -330,13 +241,13 @@ grep "hibernation" docs_dev/chief-of-staff/agent-lifecycle.log | grep -i error
 
 **Operation is considered FAILED when:**
 1. Any critical verification criteria fails
-2. Self-check commands return unexpected results
+2. Verification steps return unexpected results
 3. Timeout exceeded without completion
 4. Error messages in lifecycle log
 5. Rollback required
 
 **Partial Success (Requires Investigation):**
 1. Some verification criteria met, others failed
-2. Self-check commands return inconsistent results
+2. Verification steps return inconsistent results
 3. Operation completed but warnings logged
 4. Notifications sent but not acknowledged

@@ -11,7 +11,7 @@
 - 1.3 Pre-operation notification procedure - Step-by-step process
   - 1.3.1 Identify affected agents - Who needs to know
   - 1.3.2 Compose notification - What to tell them
-  - 1.3.3 Send notification - Using AI Maestro API
+  - 1.3.3 Send notification - Using the agent-messaging skill
   - 1.3.4 Track acknowledgments - Monitor responses
   - 1.3.5 Handle timeouts - When agents don't respond
 - 1.4 Notification message format - Standard message structure
@@ -117,22 +117,8 @@ Pre-operation notifications are the first step in the notification protocol flow
 **Steps:**
 1. Identify the operation being performed
 2. Determine which agents the operation affects
-3. Check agent status (only notify RUNNING agents)
-4. Build list of target agents
-
-**Example:**
-```bash
-# Get list of running agents
-RUNNING_AGENTS=$(curl -s "http://localhost:23000/api/agents?status=online" | jq -r '.agents[].name')
-
-# Filter to affected agents (example: agents with security-related tasks)
-AFFECTED_AGENTS=()
-for agent in $RUNNING_AGENTS; do
-  if [[ "$agent" == *"security"* ]] || [[ "$agent" == *"auth"* ]]; then
-    AFFECTED_AGENTS+=("$agent")
-  fi
-done
-```
+3. Use the `ai-maestro-agents-management` skill to list all agents and check their status (only notify RUNNING agents)
+4. Build list of target agents by filtering for relevant agents (by role, project, or name pattern)
 
 ### 1.3.2 Compose notification
 
@@ -145,81 +131,32 @@ done
 4. Request for acknowledgment (if required)
 5. Deadline for response
 
-**Template:**
-```json
-{
-  "subject": "[Operation Type] Pending",
-  "priority": "high",
-  "content": {
-    "type": "pre-operation",
-    "message": "I will [operation description]. This requires [impact description]. Please [action required] and reply with 'ok' when ready. I will wait up to 2 minutes.",
-    "operation": "[operation-type]",
-    "expected_downtime": "[duration]",
-    "requires_acknowledgment": true
-  }
-}
-```
+**Message fields:**
+- **Subject**: "[Operation Type] Pending"
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message describing the operation and requesting "ok" acknowledgment. Include fields: `operation` (the operation type), `expected_downtime` (duration string), `requires_acknowledgment` (true or false).
 
 ### 1.3.3 Send notification
 
-**Purpose:** Deliver the notification via AI Maestro API.
+**Purpose:** Deliver the notification using the `agent-messaging` skill.
 
-**API call:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "[agent-name]",
-    "subject": "[Subject]",
-    "priority": "high",
-    "content": {
-      "type": "pre-operation",
-      "message": "[Message text]",
-      "operation": "[operation-type]",
-      "expected_downtime": "[duration]",
-      "requires_acknowledgment": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send the pre-operation notification:
+- **Recipient**: the target agent session name
+- **Subject**: "[Operation Type] Pending"
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message: "I will [operation description]. This requires [impact description]. Please [action required] and reply with 'ok' when ready. I will wait up to 2 minutes." Include fields: `operation`, `expected_downtime`, `requires_acknowledgment` (true).
 
-**Capture response:**
-```bash
-RESPONSE=$(curl -s -X POST "http://localhost:23000/api/messages" ...)
-MESSAGE_ID=$(echo $RESPONSE | jq -r '.message_id')
-echo "Notification sent: $MESSAGE_ID"
-```
+Capture the message ID from the response for tracking.
 
 ### 1.3.4 Track acknowledgments
 
 **Purpose:** Monitor for agent responses to the notification.
 
-**Polling method:**
-```bash
-# Poll for responses every 10 seconds
-START_TIME=$(date +%s)
-TIMEOUT=120  # 2 minutes
+Use the `agent-messaging` skill to periodically check for unread messages from the target agent. Poll every 10 seconds.
 
-while true; do
-  CURRENT_TIME=$(date +%s)
-  ELAPSED=$((CURRENT_TIME - START_TIME))
+Look for messages from the target agent with type `acknowledgment` containing "ok".
 
-  if [ $ELAPSED -ge $TIMEOUT ]; then
-    echo "Timeout reached"
-    break
-  fi
-
-  # Check for acknowledgment
-  RESPONSE=$(curl -s "http://localhost:23000/api/messages?agent=chief-of-staff&action=list&status=unread")
-  ACK=$(echo $RESPONSE | jq -r ".messages[] | select(.from == \"$AGENT\" and .content.type == \"acknowledgment\")")
-
-  if [ -n "$ACK" ]; then
-    echo "Acknowledgment received from $AGENT"
-    break
-  fi
-
-  sleep 10
-done
-```
+If no response after 30 seconds, 60 seconds, and 90 seconds, send reminder messages (see [acknowledgment-protocol.md](acknowledgment-protocol.md) for reminder details).
 
 ### 1.3.5 Handle timeouts
 
@@ -232,64 +169,30 @@ done
 4. Send timeout notice to agent
 5. Include timeout in operation report
 
-**Timeout notice:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "[agent-name]",
-    "subject": "Proceeding Without Acknowledgment",
-    "priority": "high",
-    "content": {
-      "type": "timeout-notice",
-      "message": "No response received after 2 minutes. Proceeding with [operation] now.",
-      "operation": "[operation-type]",
-      "timeout_occurred": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a timeout notice:
+- **Recipient**: the target agent session name
+- **Subject**: `Proceeding Without Acknowledgment`
+- **Priority**: `high`
+- **Content**: type `timeout-notice`, message: "No response received after 2 minutes. Proceeding with [operation] now." Include fields: `operation`, `timeout_occurred` (true).
 
 ---
 
 ## 1.4 Notification message format
 
-**Standard pre-operation message structure:**
-
-```json
-{
-  "to": "agent-session-name",
-  "subject": "[Operation Type] Pending",
-  "priority": "high|normal|low",
-  "content": {
-    "type": "pre-operation",
-    "message": "Human-readable description of operation and request",
-    "operation": "skill-install|plugin-install|config-change|maintenance",
-    "operation_details": {
-      "skill_name": "skill-name (if applicable)",
-      "plugin_name": "plugin-name (if applicable)",
-      "config_key": "config-key (if applicable)"
-    },
-    "expected_downtime": "30 seconds|1 minute|5 minutes",
-    "requires_acknowledgment": true,
-    "acknowledgment_timeout": 120
-  }
-}
-```
-
-**Field descriptions:**
+**Standard pre-operation message fields:**
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| `to` | Yes | Target agent session name |
-| `subject` | Yes | Brief description of notification |
-| `priority` | Yes | Message priority level |
-| `content.type` | Yes | Always "pre-operation" |
-| `content.message` | Yes | Human-readable message |
-| `content.operation` | Yes | Operation type identifier |
-| `content.operation_details` | No | Additional operation context |
-| `content.expected_downtime` | Yes | How long operation will take |
-| `content.requires_acknowledgment` | Yes | Whether "ok" is required |
-| `content.acknowledgment_timeout` | No | Timeout in seconds (default 120) |
+| Recipient | Yes | Target agent session name |
+| Subject | Yes | "[Operation Type] Pending" |
+| Priority | Yes | `high`, `normal`, `low`, or `critical` |
+| Content type | Yes | `pre-operation` |
+| Content message | Yes | Human-readable description of operation and request |
+| Content operation | Yes | Operation type: `skill-install`, `plugin-install`, `config-change`, `maintenance` |
+| Content operation_details | No | Additional context (skill_name, plugin_name, etc.) |
+| Content expected_downtime | Yes | Duration string: "30 seconds", "1 minute", "5 minutes" |
+| Content requires_acknowledgment | Yes | true or false |
+| Content acknowledgment_timeout | No | Timeout in seconds (default 120) |
 
 ---
 
@@ -314,81 +217,27 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 ### Example 1: Skill Installation Pre-Operation
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Pending",
-    "priority": "high",
-    "content": {
-      "type": "pre-operation",
-      "message": "I will install the security-audit skill on your agent. This requires hibernating you for approximately 30 seconds. Please finish your current work and reply with \"ok\" when ready. I will wait up to 2 minutes.",
-      "operation": "skill-install",
-      "operation_details": {
-        "skill_name": "security-audit",
-        "skill_version": "1.0.0"
-      },
-      "expected_downtime": "30 seconds",
-      "requires_acknowledgment": true,
-      "acknowledgment_timeout": 120
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a pre-operation notification:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Pending`
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message: "I will install the security-audit skill on your agent. This requires hibernating you for approximately 30 seconds. Please finish your current work and reply with 'ok' when ready. I will wait up to 2 minutes." Include fields: `operation`: "skill-install", `operation_details`: { `skill_name`: "security-audit", `skill_version`: "1.0.0" }, `expected_downtime`: "30 seconds", `requires_acknowledgment`: true, `acknowledgment_timeout`: 120.
 
 ### Example 2: Plugin Installation Pre-Operation
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "test-engineer-01",
-    "subject": "Plugin Installation Pending",
-    "priority": "high",
-    "content": {
-      "type": "pre-operation",
-      "message": "I will install the test-framework-integration plugin. This requires a full restart of your agent. Your current context will NOT be preserved. Please checkpoint any important work and reply with \"ok\" when ready. I will wait up to 2 minutes.",
-      "operation": "plugin-install",
-      "operation_details": {
-        "plugin_name": "test-framework-integration",
-        "plugin_version": "2.1.0"
-      },
-      "expected_downtime": "90 seconds",
-      "requires_acknowledgment": true,
-      "acknowledgment_timeout": 120
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `test-engineer-01`
+- **Subject**: `Plugin Installation Pending`
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message: "I will install the test-framework-integration plugin. This requires a full restart of your agent. Your current context will NOT be preserved. Please checkpoint any important work and reply with 'ok' when ready. I will wait up to 2 minutes." Include fields: `operation`: "plugin-install", `operation_details`: { `plugin_name`: "test-framework-integration", `plugin_version`: "2.1.0" }, `expected_downtime`: "90 seconds", `requires_acknowledgment`: true, `acknowledgment_timeout`: 120.
 
 ### Example 3: Broadcast Maintenance Pre-Operation
 
-```bash
-AGENTS=("code-impl-auth" "test-engineer-01" "docs-writer" "devops-ci")
-BROADCAST_ID="maint-$(date +%Y%m%d%H%M%S)"
-
-for agent in "${AGENTS[@]}"; do
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"System Maintenance Scheduled\",
-      \"priority\": \"high\",
-      \"content\": {
-        \"type\": \"pre-operation\",
-        \"message\": \"System maintenance will begin in 5 minutes. All agents will be hibernated for approximately 10 minutes while database migrations run. Please save your work and reply with 'ok' when ready.\",
-        \"operation\": \"maintenance\",
-        \"operation_details\": {
-          \"maintenance_type\": \"database-migration\",
-          \"maintenance_window\": \"10 minutes\"
-        },
-        \"expected_downtime\": \"10 minutes\",
-        \"requires_acknowledgment\": true,
-        \"broadcast_id\": \"$BROADCAST_ID\",
-        \"total_recipients\": ${#AGENTS[@]}
-      }
-    }"
-done
-```
+For each agent in the team (`code-impl-auth`, `test-engineer-01`, `docs-writer`, `devops-ci`), use the `agent-messaging` skill to send:
+- **Recipient**: the agent session name
+- **Subject**: `System Maintenance Scheduled`
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message: "System maintenance will begin in 5 minutes. All agents will be hibernated for approximately 10 minutes while database migrations run. Please save your work and reply with 'ok' when ready." Include fields: `operation`: "maintenance", `operation_details`: { `maintenance_type`: "database-migration", `maintenance_window`: "10 minutes" }, `expected_downtime`: "10 minutes", `requires_acknowledgment`: true, `broadcast_id`: a unique ID for tracking this broadcast, `total_recipients`: the number of agents being notified.
 
 ---
 
@@ -399,9 +248,9 @@ done
 **Symptoms:** Agent reports no message received, message not in agent inbox.
 
 **Resolution:**
-1. Verify AI Maestro is running: `curl http://localhost:23000/health`
-2. Verify agent name is correct and online
-3. Check API response for errors
+1. Use the `ai-maestro-agents-management` skill to check if AI Maestro is running and healthy
+2. Verify agent name is correct and the agent is online
+3. Check the messaging skill response for errors
 4. Review AI Maestro logs for delivery failures
 5. Retry with correct agent session name
 
@@ -423,15 +272,15 @@ done
 1. Check polling interval (should be 10 seconds)
 2. Verify response message format matches expected
 3. Check for typos in agent name in filter
-4. Review AI Maestro message query syntax
-5. Manually check inbox for response
+4. Use the `agent-messaging` skill to manually check inbox for the response
+5. Review message query filters
 
 ### Issue: Priority not respected
 
 **Symptoms:** High-priority message not appearing prominently.
 
 **Resolution:**
-1. Verify priority field is set correctly
+1. Verify priority field is set correctly in the message
 2. Check AI Maestro configuration for priority handling
 3. Ensure agent has notifications enabled
 4. Consider using subject line prefix like "[URGENT]"

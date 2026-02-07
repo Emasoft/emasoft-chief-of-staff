@@ -56,39 +56,24 @@ Limits on message handling:
 
 ### Query AI Maestro Registry
 
-```bash
-# Get all registered sessions
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions'
+Use the `ai-maestro-agents-management` skill to list all registered sessions. The skill returns session details including name, status, and last seen timestamp.
 
-# Count total sessions
-session_count=$(curl -s "http://localhost:23000/api/sessions" | jq '.sessions | length')
-echo "Active sessions: $session_count"
-
-# Count by status
-active=$(curl -s "http://localhost:23000/api/sessions" | jq '[.sessions[] | select(.status == "active")] | length')
-idle=$(curl -s "http://localhost:23000/api/sessions" | jq '[.sessions[] | select(.status == "idle")] | length')
-echo "Active: $active, Idle: $idle"
-```
-
-### List Session Details
-
-```bash
-# Get session names and their status
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | {name: .name, status: .status, lastSeen: .lastSeen}'
-```
+From the results:
+- Count total sessions
+- Count sessions by status (active, idle, offline)
+- Note each session's last seen timestamp
 
 ### Session Categorization
 
-Categorize sessions by role or domain:
-
-```bash
-# Count sessions by domain
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[].name' | cut -d'-' -f1 | sort | uniq -c
-```
+Categorize sessions by role or domain by examining the session name prefixes:
+- `eoa-` prefix: Orchestrator agents
+- `eaa-` prefix: Architect agents
+- `eia-` prefix: Integrator agents
+- `epa-` or `<project>-programmer-` prefix: Programmer agents
 
 ### Session Count History
 
-Track session counts over time:
+Track session counts over time in a markdown file:
 
 ```markdown
 # design/memory/session-history.md
@@ -126,20 +111,14 @@ Track usage against Anthropic API limits:
 
 ### AI Maestro Throughput
 
-Monitor message throughput:
-
-```bash
-# Get message statistics (if available)
-curl -s "http://localhost:23000/api/stats/messages" | jq '.'
-
-# Count messages in last hour
-messages_hour=$(curl -s "http://localhost:23000/api/messages?since=1h" | jq '.count')
-echo "Messages in last hour: $messages_hour"
-```
+Use the `ai-maestro-agents-management` skill to get service statistics, including:
+- Total message count
+- Messages in the last hour
+- Pending message count
 
 ### Rate Limit Headers
 
-When making API calls, capture rate limit headers:
+When making external API calls, capture rate limit headers:
 
 ```bash
 # Example: Capture GitHub rate limit
@@ -322,56 +301,35 @@ Constraints:
 
 ### Example: Pre-Spawn Resource Check
 
-```bash
-#!/bin/bash
-# pre-spawn-check.sh
+Before spawning a new agent, perform a resource check:
 
-echo "Pre-spawn resource check"
+1. Use the `ai-maestro-agents-management` skill to list all agents and count the total sessions. Compare against the maximum session limit (default: 20).
 
-# Check session count
-sessions=$(curl -s "http://localhost:23000/api/sessions" | jq '.sessions | length')
-max_sessions=20
+2. Check system memory:
+   ```bash
+   # macOS
+   memory_pressure | head -5
 
-if [ "$sessions" -ge "$max_sessions" ]; then
-  echo "BLOCKED: Session limit reached ($sessions/$max_sessions)"
-  exit 1
-fi
+   # Linux
+   free -m | awk '/^Mem:/ {printf("%.0f%% used\n", $3/$2 * 100)}'
+   ```
 
-# Check memory
-mem_percent=$(free | awk '/^Mem:/ {printf("%.0f", $3/$2 * 100)}')
-max_mem=80
+3. If session count is at or above the limit, or memory usage exceeds 80%, do NOT spawn a new agent. Instead, consider hibernating idle agents first.
 
-if [ "$mem_percent" -ge "$max_mem" ]; then
-  echo "BLOCKED: Memory threshold exceeded (${mem_percent}%/${max_mem}%)"
-  exit 1
-fi
-
-echo "OK: Can spawn new agent"
-echo "  Sessions: $sessions/$max_sessions"
-echo "  Memory: ${mem_percent}%/${max_mem}%"
-exit 0
-```
+4. If resources are available, proceed with the spawn operation.
 
 ### Example: Rate Limit Monitoring
 
-```bash
-#!/bin/bash
-# rate-limit-status.sh
+Periodically check rate limits across services:
 
-echo "=== Rate Limit Status ==="
+1. Check GitHub API rate limit:
+   ```bash
+   curl -s -I https://api.github.com/user 2>/dev/null | grep -i "x-ratelimit"
+   ```
 
-# GitHub
-gh_remaining=$(curl -s -I https://api.github.com/user 2>/dev/null | grep -i "x-ratelimit-remaining" | awk '{print $2}' | tr -d '\r')
-gh_limit=$(curl -s -I https://api.github.com/user 2>/dev/null | grep -i "x-ratelimit-limit" | awk '{print $2}' | tr -d '\r')
+2. Use the `ai-maestro-agents-management` skill to get service statistics for AI Maestro message throughput.
 
-echo "GitHub API: $gh_remaining / $gh_limit remaining"
-
-# AI Maestro messages (estimated from recent history)
-msg_count=$(curl -s "http://localhost:23000/api/messages?since=1h" 2>/dev/null | jq '.count // 0')
-echo "AI Maestro (last hour): $msg_count messages"
-
-echo "=== Status Complete ==="
-```
+3. Record results in `design/memory/rate-limits.md`.
 
 ### Example: Scaling Decision Log
 
@@ -408,8 +366,8 @@ echo "=== Status Complete ==="
 - Sessions spawned without check
 
 **Resolution:**
-1. Identify stale sessions
-2. Force cleanup of inactive sessions
+1. Use the `ai-maestro-agents-management` skill to list all agents and identify stale sessions
+2. Force cleanup of inactive sessions using the skill
 3. Enforce pre-spawn checks
 4. Update session registry
 
@@ -453,9 +411,9 @@ echo "=== Status Complete ==="
 - Hidden resource constraint
 
 **Resolution:**
-1. Check for existing session with same name
+1. Check for existing session with same name using the `ai-maestro-agents-management` skill
 2. Use unique session name
-3. Check AI Maestro health
+3. Use the `ai-maestro-agents-management` skill to check service health
 4. Review all resource constraints
 
 ---
