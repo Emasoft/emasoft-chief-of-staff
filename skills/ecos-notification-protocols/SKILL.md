@@ -227,46 +227,25 @@ This example shows the full notification flow for installing a skill on an agent
 
 **Step 1: Send Pre-Operation Notification**
 
-```bash
-# Notify agent about upcoming skill installation
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Pending",
-    "priority": "high",
-    "content": {
-      "type": "pre-operation",
-      "message": "I will install the security-audit skill on your agent. This requires hibernating and waking you. Please finish your current work and reply with \"ok\" when ready. I will wait up to 2 minutes.",
-      "operation": "skill-install",
-      "skill_name": "security-audit",
-      "expected_downtime": "30 seconds",
-      "requires_acknowledgment": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Pending`
+- **Priority**: `high`
+- **Content**: type `pre-operation`, message explaining the upcoming skill installation, expected downtime of 30 seconds, and that acknowledgment is required
+
+**Verify**: confirm message delivery.
 
 **Step 2: Wait for Acknowledgment (with reminders)**
 
-```bash
-# Check for agent response
-curl -s "http://localhost:23000/api/messages?agent=chief-of-staff&action=list&status=unread" | jq '.messages[] | select(.from == "code-impl-auth")'
+Use the `agent-messaging` skill to check for unread messages from `code-impl-auth` with type `acknowledgment`.
 
-# If no response after 30 seconds, send reminder
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Reminder: Skill Installation Pending",
-    "priority": "high",
-    "content": {
-      "type": "reminder",
-      "message": "Reminder: Please reply \"ok\" when ready for skill installation. 90 seconds remaining.",
-      "original_subject": "Skill Installation Pending",
-      "time_remaining": "90 seconds"
-    }
-  }'
-```
+If no response after 30 seconds, use the `agent-messaging` skill to send a reminder:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Reminder: Skill Installation Pending`
+- **Priority**: `high`
+- **Content**: type `reminder`, noting 90 seconds remaining
+
+**Verify**: check for acknowledgment response.
 
 **Step 3: Receive Acknowledgment**
 
@@ -285,107 +264,54 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 **Step 4: Perform Installation**
 
-```bash
-# Hibernate agent, install skill, wake agent
-aimaestro-agent.sh hibernate code-impl-auth
-# ... install skill ...
-aimaestro-agent.sh wake code-impl-auth
-```
+Use the `ai-maestro-agents-management` skill to hibernate agent `code-impl-auth`, install the skill, then wake agent `code-impl-auth`.
+
+**Verify**: agent is back online after wake.
 
 **Step 5: Send Post-Operation Notification**
 
-```bash
-# Notify agent that installation is complete
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Complete",
-    "priority": "normal",
-    "content": {
-      "type": "post-operation",
-      "message": "The security-audit skill has been installed. Please verify the skill is active by checking your available skills. Reply with confirmation.",
-      "operation": "skill-install",
-      "skill_name": "security-audit",
-      "status": "success",
-      "verification_requested": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a message:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Complete`
+- **Priority**: `normal`
+- **Content**: type `post-operation`, confirming that the `security-audit` skill has been installed, requesting the agent to verify the skill is active
+
+**Verify**: confirm message delivery and await agent verification response.
 
 ### Example 2: Handling Acknowledgment Timeout
 
-```bash
-# After 2 minutes with no response, proceed anyway
-echo "[$(date)] WARNING: No acknowledgment from code-impl-auth after 2 minutes. Proceeding with skill installation."
+After 2 minutes with no response, proceed anyway:
 
-# Send final notice
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Proceeding Without Acknowledgment",
-    "priority": "high",
-    "content": {
-      "type": "timeout-notice",
-      "message": "No response received after 2 minutes. Proceeding with skill installation now. You will be hibernated and woken shortly.",
-      "operation": "skill-install",
-      "timeout_occurred": true
-    }
-  }'
+1. Log the timeout: `WARNING: No acknowledgment from code-impl-auth after 2 minutes.`
+2. Use the `agent-messaging` skill to send a final notice:
+   - **Recipient**: `code-impl-auth`
+   - **Subject**: `Proceeding Without Acknowledgment`
+   - **Priority**: `high`
+   - **Content**: type `timeout-notice`, explaining that no response was received and the operation will proceed
 
-# Proceed with installation
-aimaestro-agent.sh hibernate code-impl-auth
-```
+3. Use the `ai-maestro-agents-management` skill to hibernate agent `code-impl-auth` and proceed with installation.
+
+**Verify**: confirm final notice was delivered.
 
 ### Example 3: Failure Notification
 
-```bash
-# Skill installation failed - notify agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to install security-audit skill. Error: Skill validation failed - missing required SKILL.md file. You can continue your previous work. I will retry installation after fixing the skill package.",
-      "operation": "skill-install",
-      "skill_name": "security-audit",
-      "status": "failed",
-      "error_code": "SKILL_VALIDATION_FAILED",
-      "error_details": "Missing required SKILL.md file",
-      "recovery_action": "Skill package will be fixed and installation retried"
-    }
-  }'
-```
+When a skill installation fails, use the `agent-messaging` skill to send a failure notification:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, explaining the error (e.g., "Skill validation failed - missing required SKILL.md file"), advising the agent to continue previous work, and noting the recovery action (skill package will be fixed and installation retried)
+
+**Verify**: confirm message delivery.
 
 ### Example 4: Broadcast Notification to Multiple Agents
 
-```bash
-# Define target agents
-AGENTS=("code-impl-auth" "test-engineer-01" "docs-writer")
+For each target agent (`code-impl-auth`, `test-engineer-01`, `docs-writer`), use the `agent-messaging` skill to send a message:
+- **Recipient**: each agent in the list
+- **Subject**: `System Maintenance in 5 Minutes`
+- **Priority**: `high`
+- **Content**: type `broadcast`, explaining that system maintenance will begin in 5 minutes, all agents will be hibernated, and they should save their work and reply with "ok" when ready. Include the total recipient count and a broadcast ID for tracking.
 
-# Send broadcast notification about system maintenance
-for agent in "${AGENTS[@]}"; do
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$agent\",
-      \"subject\": \"System Maintenance in 5 Minutes\",
-      \"priority\": \"high\",
-      \"content\": {
-        \"type\": \"broadcast\",
-        \"message\": \"System maintenance will begin in 5 minutes. All agents will be hibernated. Please save your work and reply with 'ok' when ready.\",
-        \"operation\": \"system-maintenance\",
-        \"broadcast_id\": \"maint-$(date +%Y%m%d%H%M%S)\",
-        \"total_recipients\": ${#AGENTS[@]},
-        \"requires_acknowledgment\": true
-      }
-    }"
-done
-```
+**Verify**: confirm delivery to all recipients and track acknowledgments.
 
 ## Error Handling
 

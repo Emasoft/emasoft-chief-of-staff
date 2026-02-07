@@ -147,18 +147,11 @@ echo "CPU: ${cpu_usage}%, Memory Free: ${mem_free_mb}MB, Disk Free: ${disk_free}
 
 ### Example 2: Counting Active Agent Sessions
 
-```bash
-# Query AI Maestro for active sessions
-active_count=$(curl -s "http://localhost:23000/api/sessions" | jq '.sessions | length')
+Use the `ai-maestro-agents-management` skill to list all active sessions and count them.
 
-echo "Active agent sessions: $active_count"
+Compare the active session count against the configured maximum (e.g., 20 sessions). If the count exceeds the limit, log a warning: `WARNING: Exceeding recommended session limit`.
 
-# Check against limit
-max_sessions=20
-if [ "$active_count" -gt "$max_sessions" ]; then
-  echo "WARNING: Exceeding recommended session limit ($max_sessions)"
-fi
-```
+**Verify**: the active session count is within the configured limit.
 
 ### Example 3: Resource Alert Response
 

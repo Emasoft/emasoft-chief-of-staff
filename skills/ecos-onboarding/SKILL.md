@@ -133,20 +133,13 @@ Copy this checklist and track your progress:
 
 ### Example 1: Initiating Onboarding for New Developer
 
-```bash
-# Send onboarding initiation message
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "new-developer-agent",
-    "subject": "Welcome - Onboarding Session Starting",
-    "priority": "high",
-    "content": {
-      "type": "request",
-      "message": "Welcome to the team. I am the Chief of Staff and will conduct your onboarding. Please confirm you are ready to begin the onboarding process."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send an onboarding initiation message:
+- **Recipient**: `new-developer-agent`
+- **Subject**: `Welcome - Onboarding Session Starting`
+- **Priority**: `high`
+- **Content**: type `request`, welcoming the agent to the team, introducing yourself as Chief of Staff, and requesting confirmation that the agent is ready to begin onboarding
+
+**Verify**: confirm message delivery and await agent readiness confirmation.
 
 ### Example 2: Role Briefing Message
 
@@ -237,7 +230,7 @@ Before sending any handoff document to a new agent, validate using this checklis
 Before sending handoff:
 - [ ] All required fields present (from/to/type/UUID/task)
 - [ ] UUID is unique (check existing handoffs: `ls $CLAUDE_PROJECT_DIR/thoughts/shared/handoffs/`)
-- [ ] Target agent exists and is alive (`curl -s "http://localhost:23000/api/agents" | jq -r '.agents[].name'`)
+- [ ] Target agent exists and is alive (use the `ai-maestro-agents-management` skill to list agents and verify the target is online)
 - [ ] All referenced files exist (`test -f <path> && echo "EXISTS" || echo "MISSING"`)
 - [ ] No placeholder [TBD] markers (`grep -r "\[TBD\]" handoff.md`)
 - [ ] Document is valid markdown (no broken links, proper formatting)

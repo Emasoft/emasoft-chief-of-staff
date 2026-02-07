@@ -301,26 +301,13 @@ When external changes are detected:
 3. **Notify affected agents** - Send AI Maestro message about the change
 4. **Request acknowledgment** - Ensure agents are aware of new state
 
-```bash
-# Example: Notify agent of external card movement
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "AFFECTED_AGENT",
-    "subject": "[EXTERNAL CHANGE] GitHub Project card moved",
-    "priority": "high",
-    "content": {
-      "type": "external-change-notification",
-      "message": "Card \"TASK_TITLE\" was moved from IN_PROGRESS to REVIEW by external user. Please acknowledge this change.",
-      "change_type": "card_moved",
-      "task_id": "TASK_ID",
-      "old_status": "IN_PROGRESS",
-      "new_status": "REVIEW",
-      "changed_by": "external_user",
-      "detected_at": "ISO_TIMESTAMP"
-    }
-  }'
-```
+Use the `agent-messaging` skill to notify the affected agent:
+- **Recipient**: the affected agent session name
+- **Subject**: `[EXTERNAL CHANGE] GitHub Project card moved`
+- **Priority**: `high`
+- **Content**: type `external-change-notification`, describing what changed (card title, old status, new status, who changed it, detection timestamp), and requesting the agent to acknowledge the change
+
+**Verify**: confirm message delivery and await agent acknowledgment.
 
 ## Key Takeaways
 

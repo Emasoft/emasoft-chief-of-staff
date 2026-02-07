@@ -132,43 +132,28 @@ Copy this checklist and track your progress:
 
 ### Example 1: Assigning a Role to a New Agent
 
-```bash
-# Send role assignment via AI Maestro
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "Role Assignment: Code Reviewer",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "You are assigned the Code Reviewer role. Responsibilities: review PRs, enforce code standards, provide feedback."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send a role assignment message:
+- **Recipient**: `helper-agent-generic`
+- **Subject**: `Role Assignment: Code Reviewer`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, explaining that the agent is assigned the Code Reviewer role with responsibilities: review PRs, enforce code standards, provide feedback
+
+**Verify**: confirm message delivery and await role acceptance acknowledgment.
 
 ### Example 2: Broadcasting a Team Update
 
-```bash
-# Broadcast to all team members
-curl -X POST "http://localhost:23000/api/messages/broadcast" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "subject": "Sprint Planning Complete",
-    "priority": "normal",
-    "content": {
-      "type": "announcement",
-      "message": "Sprint 5 planning is complete. All tasks are assigned. Check your inbox for assignments."
-    }
-  }'
-```
+Use the `agent-messaging` skill to broadcast a message to all team members:
+- **Subject**: `Sprint Planning Complete`
+- **Priority**: `normal`
+- **Content**: type `announcement`, informing that Sprint 5 planning is complete and all tasks are assigned
+
+**Verify**: confirm delivery to all team members.
 
 ### Example 3: Checking Team Status
 
-```bash
-# Query all active sessions
-curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | {name: .name, status: .status, lastSeen: .lastSeen}'
-```
+Use the `ai-maestro-agents-management` skill to list all active sessions and their status, including each agent's name, status, and last seen timestamp.
+
+**Verify**: all expected team members appear in the list with correct status.
 
 ## Error Handling
 

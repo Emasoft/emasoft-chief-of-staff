@@ -404,7 +404,7 @@ Before sending any handoff document (regular or emergency), validate using this 
 Before sending handoff:
 - [ ] All required fields present (from/to/type/UUID/task)
 - [ ] UUID is unique (check existing handoffs: `ls $CLAUDE_PROJECT_DIR/thoughts/shared/handoffs/`)
-- [ ] Target agent exists and is alive (`curl -s "http://localhost:23000/api/agents" | jq -r '.agents[].name'`)
+- [ ] Target agent exists and is alive (use the `ai-maestro-agents-management` skill to list agents and verify the target is online)
 - [ ] All referenced files exist (`test -f <path> && echo "EXISTS" || echo "MISSING"`)
 - [ ] No placeholder [TBD] markers (`grep -r "\[TBD\]" handoff.md`)
 - [ ] Document is valid markdown (no broken links, proper formatting)

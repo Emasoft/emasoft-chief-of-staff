@@ -243,7 +243,7 @@ See [references/plugin-validation.md](references/plugin-validation.md) Section 3
 
 **When to use:** When installing, removing, or managing plugins for agents running in other tmux sessions.
 
-**Steps:** Use aimaestro-agent.sh plugin commands to manage plugins remotely.
+**Steps:** Use the `ai-maestro-agents-management` skill to manage plugins on remote agents.
 
 **Related documentation:**
 
@@ -263,33 +263,23 @@ See [references/plugin-validation.md](references/plugin-validation.md) Section 3
 
 ### Example 5: Install Plugin on Remote Agent
 
-```bash
-# Add marketplace to remote agent (auto-restarts agent)
-aimaestro-agent.sh plugin marketplace add backend-api github:Emasoft/emasoft-plugins
+Use the `ai-maestro-agents-management` skill for each step:
 
-# Install plugin from that marketplace (auto-restarts agent)
-aimaestro-agent.sh plugin install backend-api perfect-skill-suggester
+1. **Add marketplace** to remote agent `backend-api` with source `github:Emasoft/emasoft-plugins` (auto-restarts agent)
+2. **Install plugin** `perfect-skill-suggester` on agent `backend-api` (auto-restarts agent)
+3. **List plugins** on agent `backend-api` to verify installation
+4. **Uninstall plugin** `my-old-plugin` from agent `backend-api` if no longer needed
+5. **Clean plugin cache** on agent `backend-api` if installation is corrupt
 
-# List plugins on remote agent
-aimaestro-agent.sh plugin list backend-api
-
-# Uninstall plugin from remote agent
-aimaestro-agent.sh plugin uninstall backend-api my-old-plugin
-
-# Clean plugin cache on remote agent
-aimaestro-agent.sh plugin clean backend-api --dry-run
-```
+**Verify**: plugin appears in the agent's plugin list after installation.
 
 ### Example 6: Restart Agent After Plugin Changes
 
-```bash
-# After installing on current agent (self), manual restart required
-# For remote agents, restart is automatic. But if needed:
-aimaestro-agent.sh restart backend-api
+After installing on the current agent (self), a manual restart is required (exit and relaunch Claude Code).
 
-# With longer wait time for slow systems
-aimaestro-agent.sh restart backend-api --wait 5
-```
+For remote agents, restart is automatic after plugin operations. If a manual restart is needed, use the `ai-maestro-agents-management` skill to restart agent `backend-api`.
+
+**Verify**: agent comes back online with the new plugin active.
 
 ## Key Takeaways
 
@@ -298,25 +288,29 @@ aimaestro-agent.sh restart backend-api --wait 5
 3. **Validate before publishing** - Catch errors early
 4. **Components at root, not in .claude-plugin** - Common structure mistake
 5. **Scripts must be executable** - chmod +x for hook scripts
-6. **Remote agents auto-restart** - aimaestro-agent.sh handles restart for remote installs
+6. **Remote agents auto-restart** - the `ai-maestro-agents-management` skill handles restart for remote installs
 7. **Current agent needs manual restart** - Exit and relaunch claude for self-install
 
-## Remote Plugin Management CLI Reference
+## Remote Plugin Management Reference
 
-| Operation | Command |
-|-----------|---------|
-| List marketplaces | `aimaestro-agent.sh plugin marketplace list <agent>` |
-| Add marketplace | `aimaestro-agent.sh plugin marketplace add <agent> <url>` |
-| Update marketplace | `aimaestro-agent.sh plugin marketplace update <agent>` |
-| Remove marketplace | `aimaestro-agent.sh plugin marketplace remove <agent> <name>` |
-| Install plugin | `aimaestro-agent.sh plugin install <agent> <plugin>` |
-| Uninstall plugin | `aimaestro-agent.sh plugin uninstall <agent> <plugin>` |
-| List plugins | `aimaestro-agent.sh plugin list <agent>` |
-| Enable plugin | `aimaestro-agent.sh plugin enable <agent> <plugin>` |
-| Disable plugin | `aimaestro-agent.sh plugin disable <agent> <plugin>` |
-| Validate plugin | `aimaestro-agent.sh plugin validate <agent> <path>` |
-| Clean cache | `aimaestro-agent.sh plugin clean <agent>` |
-| Reinstall plugin | `aimaestro-agent.sh plugin reinstall <agent> <plugin>` |
+All remote plugin operations are performed using the `ai-maestro-agents-management` skill. Specify the target agent and the operation:
+
+| Operation | Description |
+|-----------|-------------|
+| List marketplaces | List registered marketplaces on a remote agent |
+| Add marketplace | Register a marketplace on a remote agent |
+| Update marketplace | Refresh marketplace cache on a remote agent |
+| Remove marketplace | Unregister a marketplace from a remote agent |
+| Install plugin | Install a plugin from a marketplace on a remote agent |
+| Uninstall plugin | Remove a plugin from a remote agent |
+| List plugins | List installed plugins on a remote agent |
+| Enable plugin | Enable a disabled plugin on a remote agent |
+| Disable plugin | Disable a plugin on a remote agent without uninstalling |
+| Validate plugin | Validate a plugin's structure on a remote agent |
+| Clean cache | Clear corrupt plugin cache on a remote agent |
+| Reinstall plugin | Uninstall and reinstall a plugin on a remote agent |
+
+**Verify**: after each operation, confirm the expected state using the list plugins operation.
 
 ## Next Steps
 
