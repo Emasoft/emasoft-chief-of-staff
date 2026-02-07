@@ -8,6 +8,8 @@ metadata:
   version: 1.0.0
 context: fork
 agent: ecos-main
+workflow-instruction: "Step 4"
+procedure: "proc-create-team"
 ---
 
 # Emasoft Chief of Staff Onboarding Skill

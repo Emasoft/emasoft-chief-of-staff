@@ -8,6 +8,8 @@ metadata:
   version: 1.0.0
 context: fork
 agent: ecos-main
+workflow-instruction: "Steps 2, 3"
+procedure: "proc-evaluate-project, proc-negotiate-team"
 ---
 
 # Emasoft Chief of Staff - Staff Planning Skill

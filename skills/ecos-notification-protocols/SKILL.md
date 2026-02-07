@@ -8,6 +8,8 @@ metadata:
   version: 1.0.0
 context: fork
 agent: ecos-main
+workflow-instruction: "Step 5"
+procedure: "proc-notify-team-ready"
 ---
 
 # Emasoft Chief of Staff - Notification Protocols Skill

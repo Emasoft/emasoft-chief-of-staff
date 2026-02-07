@@ -5,6 +5,8 @@ license: Apache-2.0
 compatibility: Requires AI Maestro installed.
 context: fork
 agent: ecos-main
+workflow-instruction: "support"
+procedure: "support-skill"
 ---
 
 # ECOS Failure Recovery Skill

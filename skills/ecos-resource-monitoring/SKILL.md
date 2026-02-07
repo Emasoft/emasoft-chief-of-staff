@@ -8,6 +8,8 @@ metadata:
   version: 1.0.0
 context: fork
 agent: ecos-main
+workflow-instruction: "support"
+procedure: "support-skill"
 ---
 
 # Emasoft Chief of Staff Resource Monitoring Skill

@@ -6,6 +6,8 @@ compatibility: Requires AI Maestro installed.
 version: 1.0.0
 metadata:
   author: Emasoft
+workflow-instruction: "support"
+procedure: "support-skill"
 ---
 
 # ECOS Label Taxonomy
