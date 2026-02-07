@@ -26,22 +26,12 @@
 
 **Solution**:
 1. Check if agent has AI Maestro hooks in `~/.claude/settings.json`
-2. Send a high-priority status inquiry
+2. Use the `agent-messaging` skill to send a high-priority status inquiry:
+   - **Recipient**: the unresponsive agent session name
+   - **Subject**: `[URGENT] Status inquiry`
+   - **Priority**: `urgent`
+   - **Content**: type `status-inquiry`, message: "Please acknowledge this message."
 3. If no response in 5 minutes, classify as recoverable and attempt restart
-
-**Verification command**:
-```bash
-# Send high-priority status inquiry
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_NAME",
-    "subject": "[URGENT] Status inquiry",
-    "priority": "urgent",
-    "content": {"type": "status-inquiry", "message": "Please acknowledge this message."}
-  }'
-```
 
 ---
 
@@ -58,16 +48,16 @@ curl -X POST "http://localhost:23000/api/messages" \
 **Decision process**:
 ```
 Unknown failure type?
-         │
-         ▼
+         |
+         v
 Classify as RECOVERABLE (conservative)
-         │
-         ▼
+         |
+         v
 Attempt recovery strategies 1-4 in order
-         │
-         ├─► Success? Done
-         │
-         └─► 3 failures? Escalate to TERMINAL
+         |
+         +-- Success? Done
+         |
+         +-- 3 failures? Escalate to TERMINAL
 ```
 
 ---
@@ -78,26 +68,13 @@ Attempt recovery strategies 1-4 in order
 
 **Solution**:
 1. Wait 15 minutes
-2. Send reminder with increased urgency
+2. Use the `agent-messaging` skill to send a reminder:
+   - **Recipient**: `eama-assistant-manager` (or the manager session name)
+   - **Subject**: `[REMINDER] Agent replacement still awaiting approval`
+   - **Priority**: `urgent`
+   - **Content**: type `reminder`, message: "Original request sent 15 minutes ago. Agent [agent-name] replacement requires approval." Include `original_subject`: "[APPROVAL REQUIRED] Agent replacement request".
 3. If user contact is configured, escalate to user
 4. Do NOT proceed with replacement without approval
-
-**Reminder message**:
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[REMINDER] Agent replacement still awaiting approval",
-    "priority": "urgent",
-    "content": {
-      "type": "reminder",
-      "message": "Original request sent 15 minutes ago. Agent AGENT_NAME replacement requires approval.",
-      "original_subject": "[APPROVAL REQUIRED] Agent replacement request"
-    }
-  }'
-```
 
 **CRITICAL**: Never proceed with replacement without manager approval.
 
@@ -108,22 +85,15 @@ curl -X POST "http://localhost:23000/api/messages" \
 **Symptom**: New Claude Code session started but AI Maestro shows no agent.
 
 **Solution**:
-1. Verify AI Maestro server is running: `curl http://localhost:23000/health`
+1. Use the `ai-maestro-agents-management` skill to check service health
 2. Verify hooks configured in new agent's environment
 3. Check for errors in Claude Code startup output
 4. Restart Claude Code session
 
-**Diagnostic commands**:
-```bash
-# Check AI Maestro health
-curl -s http://localhost:23000/health | jq .
-
-# List all registered agents
-curl -s "http://localhost:23000/api/agents" | jq '.agents[].name'
-
-# Check if specific agent is registered
-curl -s "http://localhost:23000/api/agents/NEW_AGENT_NAME/status" | jq .
-```
+**Diagnostic steps**:
+1. Use the `ai-maestro-agents-management` skill to check if AI Maestro is healthy
+2. Use the `ai-maestro-agents-management` skill to list all registered agents
+3. Use the `ai-maestro-agents-management` skill to check if the specific new agent session name appears
 
 **Common causes**:
 - AI Maestro server not running
@@ -171,20 +141,8 @@ curl -s "http://localhost:23000/api/agents/NEW_AGENT_NAME/status" | jq .
 2. _____________
 ```
 
-**Notify stakeholders**:
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[INCIDENT] Deadline missed - post-mortem required",
-    "priority": "high",
-    "content": {
-      "type": "incident-report",
-      "message": "Emergency handoff for AGENT_NAME did not prevent deadline miss. Post-mortem recommended.",
-      "deadline_missed": "YYYY-MM-DDTHH:MM:SSZ",
-      "work_completed_at": "YYYY-MM-DDTHH:MM:SSZ"
-    }
-  }'
-```
+**Notify stakeholders** using the `agent-messaging` skill:
+- **Recipient**: `eama-assistant-manager` (or the manager session name)
+- **Subject**: `[INCIDENT] Deadline missed - post-mortem required`
+- **Priority**: `high`
+- **Content**: type `incident-report`, message: "Emergency handoff for [agent-name] did not prevent deadline miss. Post-mortem recommended." Include `deadline_missed` timestamp and `work_completed_at` timestamp.

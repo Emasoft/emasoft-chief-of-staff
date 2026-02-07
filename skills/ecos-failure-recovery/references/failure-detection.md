@@ -16,7 +16,7 @@
   - 1.5.1 Monitoring task progress
   - 1.5.2 Detecting stalled tasks
   - 1.5.3 Distinguishing slow tasks from failed agents
-- 1.6 Agent status API queries
+- 1.6 Agent status queries
   - 1.6.1 Querying agent online status
   - 1.6.2 Interpreting status responses
 - 1.7 Failure detection decision flowchart
@@ -54,46 +54,17 @@ The Emasoft Chief of Staff (ECOS) uses four primary mechanisms to detect agent f
 
 ECOS sends periodic "ping" messages to agents and expects "pong" responses. The AI Maestro messaging system tracks message delivery and response.
 
-**Heartbeat request message format:**
+**Heartbeat request**: Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `[HEARTBEAT] Health check`
+- **Priority**: `low`
+- **Content**: type `heartbeat`, message: "ping". Include `timestamp` (current ISO timestamp) and `sequence` (incrementing number).
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "TARGET_AGENT_SESSION_NAME",
-    "subject": "[HEARTBEAT] Health check",
-    "priority": "low",
-    "content": {
-      "type": "heartbeat",
-      "message": "ping",
-      "timestamp": "2025-01-15T10:30:00Z",
-      "sequence": 42
-    }
-  }'
-```
-
-**Expected response from healthy agent:**
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "TARGET_AGENT_SESSION_NAME",
-    "to": "ecos-chief-of-staff",
-    "subject": "[HEARTBEAT] Response",
-    "priority": "low",
-    "content": {
-      "type": "heartbeat-response",
-      "message": "pong",
-      "original_timestamp": "2025-01-15T10:30:00Z",
-      "response_timestamp": "2025-01-15T10:30:05Z",
-      "sequence": 42,
-      "status": "healthy",
-      "current_task": "Implementing feature X"
-    }
-  }'
-```
+**Expected response from healthy agent**: The agent uses the `agent-messaging` skill to reply with:
+- **Recipient**: `ecos-chief-of-staff`
+- **Subject**: `[HEARTBEAT] Response`
+- **Priority**: `low`
+- **Content**: type `heartbeat-response`, message: "pong". Include `original_timestamp`, `response_timestamp`, `sequence`, `status` (healthy/busy/degraded), and `current_task` description.
 
 ### 1.3.2 Configuring Heartbeat Intervals
 
@@ -142,7 +113,7 @@ Example configuration:
 | `busy` | Agent working, may be slow to respond | Extend timeout |
 | `degraded` | Agent experiencing issues | Monitor closely |
 | `no response` | No response within timeout | Increment missed counter |
-| `delivery_failed` | Message could not be delivered | Check agent status API |
+| `delivery_failed` | Message could not be delivered | Check agent status |
 
 **IMPORTANT**: After incrementing the missed counter, check if it exceeds the threshold. If so, proceed to failure classification (see references/failure-classification.md).
 
@@ -152,23 +123,7 @@ Example configuration:
 
 ### 1.4.1 Detecting Undelivered Messages
 
-When AI Maestro cannot deliver a message, the API returns an error response. Check the response after sending any message:
-
-```bash
-# Send a message and capture response
-RESPONSE=$(curl -s -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "target-agent",
-    "subject": "Task assignment",
-    "priority": "normal",
-    "content": {"type": "task", "message": "Please complete X"}
-  }')
-
-# Check for delivery errors
-echo "$RESPONSE" | jq -e '.error' && echo "DELIVERY FAILED"
-```
+When using the `agent-messaging` skill to send a message, check the response for delivery errors. If the skill reports delivery failure, note the error type.
 
 **Common delivery failure reasons:**
 
@@ -182,11 +137,7 @@ echo "$RESPONSE" | jq -e '.error' && echo "DELIVERY FAILED"
 
 Even when delivery succeeds, the agent may not acknowledge receipt. ECOS tracks sent messages and monitors for acknowledgments.
 
-**Query unacknowledged messages:**
-
-```bash
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=sent&status=unacknowledged" | jq '.messages[]'
-```
+Use the `agent-messaging` skill to list sent messages filtered by status "unacknowledged" to identify messages that were delivered but not acknowledged.
 
 ### 1.4.3 Timeout Thresholds for Message Acknowledgment
 
@@ -237,41 +188,15 @@ A task is considered stalled when:
 2. Expected completion time has passed, AND
 3. Agent has not sent any messages explaining the delay
 
-**Stall detection query:**
-
-```bash
-# Check for stalled tasks
-CURRENT_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-jq --arg now "$CURRENT_TIME" '
-  .tasks[] |
-  select(.status == "in_progress") |
-  select(.expected_completion < $now) |
-  select(.last_progress_update < ($now | strptime("%Y-%m-%dT%H:%M:%SZ") | mktime - 1800 | strftime("%Y-%m-%dT%H:%M:%SZ")))
-' $CLAUDE_PROJECT_DIR/.ecos/agent-health/task-tracking.json
-```
-
 ### 1.5.3 Distinguishing Slow Tasks from Failed Agents
 
 **CRITICAL**: A stalled task does not necessarily mean a failed agent. Before escalating:
 
-1. **Send a status inquiry message:**
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "AGENT_SESSION_NAME",
-    "subject": "[STATUS CHECK] Task progress inquiry",
-    "priority": "high",
-    "content": {
-      "type": "status-inquiry",
-      "message": "Your task (task-20250115-001) appears stalled. Please provide a status update within 5 minutes.",
-      "task_id": "task-20250115-001",
-      "expected_response_by": "2025-01-15T11:05:00Z"
-    }
-  }'
-```
+1. **Send a status inquiry message** using the `agent-messaging` skill:
+   - **Recipient**: the agent session name
+   - **Subject**: `[STATUS CHECK] Task progress inquiry`
+   - **Priority**: `high`
+   - **Content**: type `status-inquiry`, message: "Your task ([task-id]) appears stalled. Please provide a status update within 5 minutes." Include `task_id` and `expected_response_by` timestamp.
 
 2. **Wait for response** (5 minutes for high priority)
 
@@ -284,16 +209,11 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 ---
 
-## 1.6 Agent Status API Queries
+## 1.6 Agent Status Queries
 
 ### 1.6.1 Querying Agent Online Status
 
-AI Maestro provides an API endpoint to check agent registration and online status:
-
-```bash
-# Check if agent is online
-curl -s "http://localhost:23000/api/agents/TARGET_AGENT_SESSION_NAME/status" | jq '.'
-```
+Use the `ai-maestro-agents-management` skill to get the agent's details by session name. The result includes status, last_seen timestamp, registered_at, host, and unread message count.
 
 Example response for online agent:
 
@@ -305,19 +225,6 @@ Example response for online agent:
   "registered_at": "2025-01-15T08:00:00Z",
   "host": "workstation-1",
   "unread_messages": 2
-}
-```
-
-Example response for offline agent:
-
-```json
-{
-  "session_name": "libs-svg-svgbbox",
-  "status": "offline",
-  "last_seen": "2025-01-15T09:45:00Z",
-  "registered_at": "2025-01-15T08:00:00Z",
-  "host": "workstation-1",
-  "offline_since": "2025-01-15T09:50:00Z"
 }
 ```
 
@@ -355,7 +262,7 @@ START: Routine health check
     |
     | Yes
     v
-[Check AI Maestro agent status API]
+[Check agent status via ai-maestro-agents-management skill]
     |
     v
 [Status == "offline"?]
@@ -392,7 +299,7 @@ After detecting a failure, proceed to **references/failure-classification.md** t
 
 **Solution**:
 1. Check if the agent has AI Maestro hooks configured in its `~/.claude/settings.json`
-2. Verify the AI Maestro server is running: `curl http://localhost:23000/health`
+2. Use the `ai-maestro-agents-management` skill to check service health
 3. Check agent's hook logs for errors
 
 ### False positives during long operations
@@ -406,13 +313,13 @@ After detecting a failure, proceed to **references/failure-classification.md** t
 2. Instruct agents to send "busy" status before starting long operations
 3. Use task-based monitoring instead of heartbeat-based for these agents
 
-### AI Maestro API returns connection refused
+### AI Maestro not responding
 
-**Symptom**: All status checks fail with "connection refused".
+**Symptom**: All status checks fail.
 
 **Cause**: AI Maestro server is not running.
 
 **Solution**:
-1. Start AI Maestro: `cd ~/ai-maestro && ./start.sh`
-2. Verify it's running: `curl http://localhost:23000/health`
+1. Use the `ai-maestro-agents-management` skill to check service health
+2. If the service is down, start AI Maestro: `cd ~/ai-maestro && ./start.sh`
 3. Check if the port is blocked by firewall or another process
