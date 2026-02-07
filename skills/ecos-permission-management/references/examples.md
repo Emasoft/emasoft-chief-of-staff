@@ -15,45 +15,15 @@
 
 ### Request Message
 
-```bash
-# ECOS sends approval request to EAMA via AI Maestro
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Spawn Agent: code-impl-auth",
-    "priority": "high",
-    "content": {
-      "type": "approval_request",
-      "message": "Requesting approval to spawn new agent",
-      "request_id": "spawn-req-2025-02-02-001",
-      "operation": "spawn",
-      "details": {
-        "agent_name": "code-impl-auth",
-        "agent_role": "code-implementer",
-        "task": "Implement user authentication module",
-        "working_directory": "{baseDir}/auth",
-        "expected_duration": "2 hours",
-        "resource_requirements": "standard"
-      },
-      "justification": "New authentication module required per design doc EAA-AUTH-001"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Spawn Agent: code-impl-auth`
+- **Priority**: `high`
+- **Content**: type `approval_request`, message: "Requesting approval to spawn new agent". Include `request_id`: "spawn-req-2025-02-02-001", `operation`: "spawn", `details`: { `agent_name`: "code-impl-auth", `agent_role`: "code-implementer", `task`: "Implement user authentication module", `working_directory`: "{baseDir}/auth", `expected_duration`: "2 hours", `resource_requirements`: "standard" }, `justification`: "New authentication module required per design doc EAA-AUTH-001".
 
 ### Expected Response (Approval)
 
-```json
-{
-  "type": "approval_response",
-  "request_id": "spawn-req-2025-02-02-001",
-  "decision": "approved",
-  "decided_at": "2025-02-02T10:05:30Z",
-  "modifications": null,
-  "notes": "Approved. Proceed with spawn."
-}
-```
+EAMA replies with type `approval_response`, `request_id`: "spawn-req-2025-02-02-001", `decision`: "approved", `decided_at`: timestamp, `notes`: "Approved. Proceed with spawn."
 
 ### Key Points
 
@@ -70,44 +40,15 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 ### Request Message
 
-```bash
-# ECOS sends termination approval request
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[APPROVAL REQUEST] Terminate Agent: data-processor-03",
-    "priority": "normal",
-    "content": {
-      "type": "approval_request",
-      "message": "Requesting approval to terminate agent",
-      "request_id": "term-req-2025-02-02-002",
-      "operation": "terminate",
-      "details": {
-        "agent_name": "data-processor-03",
-        "current_status": "idle",
-        "reason": "task_complete",
-        "final_report": "Processed 1500 records. All tasks complete.",
-        "pending_work": "none"
-      },
-      "justification": "Agent has completed all assigned data processing tasks"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[APPROVAL REQUEST] Terminate Agent: data-processor-03`
+- **Priority**: `normal`
+- **Content**: type `approval_request`, message: "Requesting approval to terminate agent". Include `request_id`: "term-req-2025-02-02-002", `operation`: "terminate", `details`: { `agent_name`: "data-processor-03", `current_status`: "idle", `reason`: "task_complete", `final_report`: "Processed 1500 records. All tasks complete.", `pending_work`: "none" }, `justification`: "Agent has completed all assigned data processing tasks".
 
 ### Expected Response (Rejection with Alternative)
 
-```json
-{
-  "type": "approval_response",
-  "request_id": "term-req-2025-02-02-002",
-  "decision": "rejected",
-  "decided_at": "2025-02-02T10:10:45Z",
-  "modifications": null,
-  "notes": "Hibernate instead. We may need this agent for batch 2."
-}
-```
+EAMA replies with type `approval_response`, `request_id`: "term-req-2025-02-02-002", `decision`: "rejected", `notes`: "Hibernate instead. We may need this agent for batch 2."
 
 ### Key Points
 
@@ -133,46 +74,19 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 ### Reminder Notification (T+60 seconds)
 
-```bash
-# ECOS sends reminder at T+60
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[REMINDER] Pending Approval: Spawn code-impl-auth",
-    "priority": "high",
-    "content": {
-      "type": "approval_reminder",
-      "message": "Reminder: approval request pending for 60 seconds",
-      "request_id": "spawn-req-2025-02-02-001",
-      "original_request_time": "2025-02-02T10:00:00Z",
-      "timeout_in_seconds": 60
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[REMINDER] Pending Approval: Spawn code-impl-auth`
+- **Priority**: `high`
+- **Content**: type `approval_reminder`, message: "Reminder: approval request pending for 60 seconds". Include `request_id`: "spawn-req-2025-02-02-001", `original_request_time`: "2025-02-02T10:00:00Z", `timeout_in_seconds`: 60.
 
 ### Urgent Notification (T+90 seconds)
 
-```bash
-# ECOS sends urgent notification at T+90
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[URGENT] Approval Required: Spawn code-impl-auth - Will proceed in 30s",
-    "priority": "urgent",
-    "content": {
-      "type": "approval_urgent",
-      "message": "URGENT: Will proceed without approval in 30 seconds",
-      "request_id": "spawn-req-2025-02-02-001",
-      "original_request_time": "2025-02-02T10:00:00Z",
-      "timeout_in_seconds": 30,
-      "action_on_timeout": "proceed"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[URGENT] Approval Required: Spawn code-impl-auth - Will proceed in 30s`
+- **Priority**: `urgent`
+- **Content**: type `approval_urgent`, message: "URGENT: Will proceed without approval in 30 seconds". Include `request_id`: "spawn-req-2025-02-02-001", `original_request_time`: "2025-02-02T10:00:00Z", `timeout_in_seconds`: 30, `action_on_timeout`: "proceed".
 
 ### Audit Trail Entry (T+120 seconds - No Response)
 
@@ -213,29 +127,11 @@ ECOS must have received an autonomous directive from EAMA:
 
 ### Post-Operation Notification
 
-```bash
-# ECOS notifies EAMA after spawning under autonomous directive
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[AUTONOMOUS] Agent Spawned: test-runner-04",
-    "priority": "normal",
-    "content": {
-      "type": "autonomous_notification",
-      "message": "Agent spawned under autonomous directive",
-      "operation": "spawn",
-      "details": {
-        "agent_name": "test-runner-04",
-        "agent_role": "test-engineer",
-        "task": "Run integration tests for auth module"
-      },
-      "directive_reference": "autonomous-directive-2025-02-02-001",
-      "completed_at": "2025-02-02T14:30:00Z"
-    }
-  }'
-```
+After executing under autonomous directive, use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[AUTONOMOUS] Agent Spawned: test-runner-04`
+- **Priority**: `normal`
+- **Content**: type `autonomous_notification`, message: "Agent spawned under autonomous directive". Include `operation`: "spawn", `details`: { `agent_name`: "test-runner-04", `agent_role`: "test-engineer", `task`: "Run integration tests for auth module" }, `directive_reference`: "autonomous-directive-2025-02-02-001", `completed_at`: "2025-02-02T14:30:00Z".
 
 ### Audit Trail Entry
 

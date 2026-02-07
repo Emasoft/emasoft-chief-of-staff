@@ -112,27 +112,11 @@ SENT        SENT            SENT             REACHED
 
 **Message format:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[REMINDER] Pending Approval: {operation} {target}",
-    "priority": "high",
-    "content": {
-      "type": "approval_reminder",
-      "message": "Reminder: approval request pending for 60 seconds",
-      "request_id": "{request_id}",
-      "original_request_time": "{submitted_at}",
-      "elapsed_seconds": 60,
-      "timeout_in_seconds": 60,
-      "original_operation": "{operation}",
-      "original_target": "{target}",
-      "original_justification": "{justification}"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[REMINDER] Pending Approval: {operation} {target}`
+- **Priority**: `high`
+- **Content**: type `approval_reminder`, message: "Reminder: approval request pending for 60 seconds". Include `request_id`, `original_request_time` (submitted_at), `elapsed_seconds`: 60, `timeout_in_seconds`: 60, `original_operation`, `original_target`, `original_justification`.
 
 ### 3.3.2 Urgent Notification - Second Follow-up
 
@@ -148,27 +132,11 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 **Message format:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[URGENT] Approval Required: {operation} {target} - Will {action} in 30s",
-    "priority": "urgent",
-    "content": {
-      "type": "approval_urgent",
-      "message": "URGENT: Will {action} without approval in 30 seconds if no response",
-      "request_id": "{request_id}",
-      "original_request_time": "{submitted_at}",
-      "elapsed_seconds": 90,
-      "timeout_in_seconds": 30,
-      "action_on_timeout": "{proceed|abort}",
-      "original_operation": "{operation}",
-      "original_target": "{target}"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[URGENT] Approval Required: {operation} {target} - Will {action} in 30s`
+- **Priority**: `urgent`
+- **Content**: type `approval_urgent`, message: "URGENT: Will {action} without approval in 30 seconds if no response". Include `request_id`, `original_request_time` (submitted_at), `elapsed_seconds`: 90, `timeout_in_seconds`: 30, `action_on_timeout` ("proceed" or "abort"), `original_operation`, `original_target`.
 
 ### 3.3.3 Proceed Decision - When to Continue Without Approval
 
@@ -188,26 +156,11 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 **Post-operation notification:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[TIMEOUT PROCEED] Completed: {operation} {target}",
-    "priority": "normal",
-    "content": {
-      "type": "timeout_notification",
-      "message": "Operation completed after approval timeout",
-      "request_id": "{request_id}",
-      "operation": "{operation}",
-      "target": "{target}",
-      "executed_at": "{ISO-8601}",
-      "escalation_count": 3,
-      "notes": "Proceeded after 3 notification attempts with no response. User can reverse if needed."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[TIMEOUT PROCEED] Completed: {operation} {target}`
+- **Priority**: `normal`
+- **Content**: type `timeout_notification`, message: "Operation completed after approval timeout". Include `request_id`, `operation`, `target`, `executed_at` (ISO-8601 timestamp), `escalation_count`: 3, `notes`: "Proceeded after 3 notification attempts with no response. User can reverse if needed."
 
 ### 3.3.4 Abort Decision - When to Cancel Operation
 
@@ -226,26 +179,11 @@ curl -X POST "http://localhost:23000/api/messages" \
 
 **Abort notification:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[TIMEOUT ABORT] Cancelled: {operation} {target}",
-    "priority": "high",
-    "content": {
-      "type": "timeout_notification",
-      "message": "Operation cancelled due to approval timeout",
-      "request_id": "{request_id}",
-      "operation": "{operation}",
-      "target": "{target}",
-      "cancelled_at": "{ISO-8601}",
-      "escalation_count": 3,
-      "notes": "Aborted after 3 notification attempts with no response. Please respond to proceed."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[TIMEOUT ABORT] Cancelled: {operation} {target}`
+- **Priority**: `high`
+- **Content**: type `timeout_notification`, message: "Operation cancelled due to approval timeout". Include `request_id`, `operation`, `target`, `cancelled_at` (ISO-8601 timestamp), `escalation_count`: 3, `notes`: "Aborted after 3 notification attempts with no response. Please respond to proceed."
 
 ### 3.3.5 Audit Logging - Recording Escalation
 
@@ -314,25 +252,11 @@ directive:
 
 **Post-operation notification (autonomous):**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[AUTONOMOUS] {operation}: {target}",
-    "priority": "normal",
-    "content": {
-      "type": "autonomous_notification",
-      "message": "Operation completed under autonomous directive",
-      "operation": "{operation}",
-      "target": "{target}",
-      "details": {details_object},
-      "directive_reference": "{directive_id}",
-      "completed_at": "{ISO-8601}"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[AUTONOMOUS] {operation}: {target}`
+- **Priority**: `normal`
+- **Content**: type `autonomous_notification`, message: "Operation completed under autonomous directive". Include `operation`, `target`, `details` (operation-specific details), `directive_reference` (the directive ID), `completed_at` (ISO-8601 timestamp).
 
 **Directive storage:**
 

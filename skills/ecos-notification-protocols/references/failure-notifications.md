@@ -11,7 +11,7 @@
 - 4.3 Failure notification procedure - Step-by-step process
   - 4.3.1 Capture error details - What went wrong
   - 4.3.2 Compose failure message - What to tell agents
-  - 4.3.3 Send notification - Using AI Maestro API
+  - 4.3.3 Send notification - Using the agent-messaging skill
   - 4.3.4 Provide recovery guidance - How to proceed
   - 4.3.5 Log failure - Record for analysis
 - 4.4 Failure message format - Standard error structure
@@ -230,35 +230,13 @@ EOF
 
 ### 4.3.3 Send notification
 
-**Purpose:** Deliver the failure notification via AI Maestro API.
+**Purpose:** Deliver the failure notification using the `agent-messaging` skill.
 
-**API call:**
-```bash
-send_failure_notification() {
-  local AGENT=$1
-  local OPERATION=$2
-  local ERROR_CODE=$3
-  local ERROR_MSG=$4
-  local RECOVERY=$5
-
-  curl -X POST "http://localhost:23000/api/messages" \
-    -H "Content-Type: application/json" \
-    -d "{
-      \"to\": \"$AGENT\",
-      \"subject\": \"$OPERATION Failed\",
-      \"priority\": \"high\",
-      \"content\": {
-        \"type\": \"failure\",
-        \"message\": \"The $OPERATION has failed. Error: $ERROR_MSG. $RECOVERY\",
-        \"operation\": \"$OPERATION\",
-        \"status\": \"failed\",
-        \"error_code\": \"$ERROR_CODE\",
-        \"error_details\": \"$ERROR_MSG\",
-        \"recovery_action\": \"$RECOVERY\"
-      }
-    }"
-}
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the affected agent session name
+- **Subject**: `[Operation] Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "The [operation] has failed. Error: [error_message]. [recovery_guidance]." Include `operation`, `status`: "failed", `error_code`, `error_details`, `recovery_action`.
 
 ### 4.3.4 Provide recovery guidance
 
@@ -425,126 +403,35 @@ echo "$LOG_ENTRY" >> $LOG_FILE
 
 ### Example 1: Skill Installation Failure
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to install security-audit skill. Error: Skill package validation failed - SKILL.md file is missing from the package. You can continue your previous work. I will fix the skill package and retry installation in 5 minutes.",
-      "operation": "skill-install",
-      "status": "failed",
-      "error_code": "SKILL_VALIDATION_FAILED",
-      "error_details": "Missing required SKILL.md file at /skills/security-audit/SKILL.md",
-      "error_context": {
-        "skill_name": "security-audit",
-        "skill_path": "/path/to/skills/security-audit",
-        "validation_step": "file_structure_check"
-      },
-      "severity": "error",
-      "recovery_action": "Skill package will be fixed and installation will be retried",
-      "agent_action": "Continue your previous work - no action required",
-      "retry_planned": true,
-      "retry_time": "2025-02-02T10:35:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Failed to install security-audit skill. Error: Skill package validation failed - SKILL.md file is missing from the package. You can continue your previous work. I will fix the skill package and retry installation in 5 minutes." Include `operation`: "skill-install", `status`: "failed", `error_code`: "SKILL_VALIDATION_FAILED", `error_details`: "Missing required SKILL.md file at /skills/security-audit/SKILL.md", `error_context`: { `skill_name`: "security-audit", `skill_path`: "/path/to/skills/security-audit", `validation_step`: "file_structure_check" }, `severity`: "error", `recovery_action`: "Skill package will be fixed and installation will be retried", `agent_action`: "Continue your previous work - no action required", `retry_planned`: true, `retry_time`: "2025-02-02T10:35:00Z".
 
 ### Example 2: Agent Restart Failure
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "Agent Restart Failed",
-    "priority": "critical",
-    "content": {
-      "type": "failure",
-      "message": "Failed to restart agent code-impl-auth after plugin installation. Error: Claude Code process exited with code 1 immediately after start. The agent is currently OFFLINE. Manual intervention may be required.",
-      "operation": "agent-restart",
-      "status": "failed",
-      "error_code": "PROCESS_START_FAILED",
-      "error_details": "Claude Code process exited with code 1. Stderr: Configuration file corrupted.",
-      "error_context": {
-        "agent_name": "code-impl-auth",
-        "restart_reason": "plugin-install",
-        "exit_code": 1,
-        "attempts": 3
-      },
-      "severity": "critical",
-      "recovery_action": "Investigating configuration. User has been notified.",
-      "agent_action": "Agent is offline - no action possible from agent",
-      "retry_planned": false,
-      "manual_intervention_required": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `Agent Restart Failed`
+- **Priority**: `critical`
+- **Content**: type `failure`, message: "Failed to restart agent code-impl-auth after plugin installation. Error: Claude Code process exited with code 1 immediately after start. The agent is currently OFFLINE. Manual intervention may be required." Include `operation`: "agent-restart", `status`: "failed", `error_code`: "PROCESS_START_FAILED", `error_details`: "Claude Code process exited with code 1. Stderr: Configuration file corrupted.", `error_context`: { `agent_name`: "code-impl-auth", `restart_reason`: "plugin-install", `exit_code`: 1, `attempts`: 3 }, `severity`: "critical", `recovery_action`: "Investigating configuration. User has been notified.", `agent_action`: "Agent is offline - no action possible from agent", `retry_planned`: false, `manual_intervention_required`: true.
 
 ### Example 3: Configuration Change Failure
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "devops-ci",
-    "subject": "Configuration Change Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to update deployment.timeout configuration. Error: Value 5000 exceeds maximum allowed value of 3600. Your current configuration remains unchanged (timeout=300). I will retry with a valid value.",
-      "operation": "config-change",
-      "status": "failed",
-      "error_code": "VALIDATION_FAILED",
-      "error_details": "Value 5000 exceeds maximum allowed (3600) for deployment.timeout",
-      "error_context": {
-        "config_key": "deployment.timeout",
-        "attempted_value": "5000",
-        "current_value": "300",
-        "valid_range": "60-3600"
-      },
-      "severity": "error",
-      "recovery_action": "Will retry with value 3600 (maximum allowed)",
-      "agent_action": "No action required - current settings remain active",
-      "retry_planned": true,
-      "retry_time": "2025-02-02T10:31:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `devops-ci`
+- **Subject**: `Configuration Change Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Failed to update deployment.timeout configuration. Error: Value 5000 exceeds maximum allowed value of 3600. Your current configuration remains unchanged (timeout=300). I will retry with a valid value." Include `operation`: "config-change", `status`: "failed", `error_code`: "VALIDATION_FAILED", `error_details`: "Value 5000 exceeds maximum allowed (3600) for deployment.timeout", `error_context`: { `config_key`: "deployment.timeout", `attempted_value`: "5000", `current_value`: "300", `valid_range`: "60-3600" }, `severity`: "error", `recovery_action`: "Will retry with value 3600 (maximum allowed)", `agent_action`: "No action required - current settings remain active", `retry_planned`: true, `retry_time`: "2025-02-02T10:31:00Z".
 
 ### Example 4: Operation Timeout Failure
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Operation Timeout",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Skill installation operation timed out after 300 seconds. The operation state is uncertain - hibernation completed but installation status is unknown. Please verify your current status when you fully resume. I will check skill availability and retry if needed.",
-      "operation": "skill-install",
-      "status": "failed",
-      "error_code": "OPERATION_TIMEOUT",
-      "error_details": "Operation exceeded 300 second timeout. Last known state: agent hibernated, skill copy in progress.",
-      "error_context": {
-        "skill_name": "security-audit",
-        "timeout_seconds": 300,
-        "last_known_state": "skill_copy_in_progress"
-      },
-      "severity": "error",
-      "recovery_action": "Checking operation state and will verify skill availability",
-      "agent_action": "Please verify your skill list and report if security-audit is present",
-      "state_uncertain": true,
-      "retry_planned": true,
-      "retry_time": "2025-02-02T10:35:00Z"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Operation Timeout`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Skill installation operation timed out after 300 seconds. The operation state is uncertain - hibernation completed but installation status is unknown. Please verify your current status when you fully resume. I will check skill availability and retry if needed." Include `operation`: "skill-install", `status`: "failed", `error_code`: "OPERATION_TIMEOUT", `error_details`: "Operation exceeded 300 second timeout. Last known state: agent hibernated, skill copy in progress.", `error_context`: { `skill_name`: "security-audit", `timeout_seconds`: 300, `last_known_state`: "skill_copy_in_progress" }, `severity`: "error", `recovery_action`: "Checking operation state and will verify skill availability", `agent_action`: "Please verify your skill list and report if security-audit is present", `state_uncertain`: true, `retry_planned`: true, `retry_time`: "2025-02-02T10:35:00Z".
 
 ---
 

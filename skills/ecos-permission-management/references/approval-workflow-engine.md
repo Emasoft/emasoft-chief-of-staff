@@ -285,34 +285,17 @@ jq --arg rid "AR-1706795200-abc123" \
 
 ### 4.1 AI Maestro message format for approval requests
 
-Send approval requests to EAMA using AI Maestro messaging:
+Use the `agent-messaging` skill to send the approval request to EAMA:
+- **Recipient**: `eama-main` (EAMA's session name)
+- **Subject**: `APPROVAL REQUIRED: [operation_type]`
+- **Priority**: `normal`, `high`, or `urgent` (matches request priority)
+- **Content**: type `approval_request`, message: the formatted human-readable request summary. Include `request_id` (unique request ID for tracking), `timeout_seconds`: 120 (standard timeout).
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "eama-main",
-    "subject": "APPROVAL REQUIRED: <operation_type>",
-    "priority": "<normal|high|urgent>",
-    "content": {
-      "type": "approval_request",
-      "message": "<formatted_request_summary>",
-      "request_id": "<request_id>",
-      "timeout_seconds": 120
-    }
-  }'
-```
-
-**Required fields**:
-- `from`: Your session name (ecos-approval-coordinator)
-- `to`: "eama-main" (EAMA's session name)
-- `subject`: "APPROVAL REQUIRED: <type>"
-- `priority`: normal/high/urgent (matches request priority)
-- `content.type`: "approval_request" (message type)
-- `content.message`: Human-readable summary
-- `content.request_id`: Unique request ID for tracking
-- `content.timeout_seconds`: 120 (standard timeout)
+**Required message fields**:
+- Recipient must be "eama-main"
+- Subject must start with "APPROVAL REQUIRED:"
+- Content type must be "approval_request"
+- Content must include human-readable summary, request_id, and timeout_seconds
 
 ### 4.2 Setting priority levels
 
@@ -362,25 +345,11 @@ All approval requests follow this escalation timeline:
 
 ### 5.2 Sending reminder messages at intervals
 
-Reminder message format:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "'${SESSION_NAME}'",
-    "to": "eama-main",
-    "subject": "REMINDER: Approval pending - <request_id>",
-    "priority": "high",
-    "content": {
-      "type": "approval_reminder",
-      "message": "<reminder_message>",
-      "request_id": "<request_id>",
-      "elapsed_seconds": <elapsed>,
-      "remaining_seconds": <remaining>
-    }
-  }'
-```
+Use the `agent-messaging` skill to send reminder messages:
+- **Recipient**: `eama-main`
+- **Subject**: `REMINDER: Approval pending - [request_id]`
+- **Priority**: `high`
+- **Content**: type `approval_reminder`, message: the reminder text. Include `request_id`, `elapsed_seconds`, `remaining_seconds`.
 
 **Reminder content examples**:
 
@@ -440,23 +409,11 @@ For type: `critical_operation`
 **Procedure**:
 1. Elevate priority to URGENT
 2. Extend timeout by 60 seconds
-3. Send escalation message to EAMA:
-   ```bash
-   curl -X POST "http://localhost:23000/api/messages" \
-     -H "Content-Type: application/json" \
-     -d '{
-       "from": "'${SESSION_NAME}'",
-       "to": "eama-main",
-       "subject": "URGENT ESCALATION: critical_operation timeout",
-       "priority": "urgent",
-       "content": {
-         "type": "approval_escalation",
-         "message": "CRITICAL: Approval request AR-xxx has TIMED OUT.\n\nOriginal request: <operation>\nRequester: <agent>\nRisk: CRITICAL\n\nThis request requires immediate attention. Extended timeout: 60 seconds.\n\nApprove or Reject IMMEDIATELY.",
-         "request_id": "<request_id>",
-         "timeout_seconds": 60
-       }
-     }'
-   ```
+3. Use the `agent-messaging` skill to send escalation message to EAMA:
+   - **Recipient**: `eama-main`
+   - **Subject**: `URGENT ESCALATION: critical_operation timeout`
+   - **Priority**: `urgent`
+   - **Content**: type `approval_escalation`, message: "CRITICAL: Approval request AR-xxx has TIMED OUT. Original request: [operation]. Requester: [agent]. Risk: CRITICAL. This request requires immediate attention. Extended timeout: 60 seconds. Approve or Reject IMMEDIATELY." Include `request_id`, `timeout_seconds`: 60.
 4. Log escalation to audit trail
 5. Wait additional 60 seconds
 6. If still no response → proceed to 6.4
@@ -481,12 +438,7 @@ If critical operation receives no response after extended timeout:
 
 ### 7.1 Decision message format from EAMA
 
-Check for approval decision messages:
-
-```bash
-curl -s "http://localhost:23000/api/messages?agent=${SESSION_NAME}&action=list&status=unread" | \
-  jq '.messages[] | select(.content.type == "approval_decision")'
-```
+Use the `agent-messaging` skill to check for unread messages. Filter for messages where the content type is `approval_decision`.
 
 Expected decision format:
 
@@ -564,13 +516,7 @@ Send execution command via AI Maestro message.
 
 ### 8.3 Monitoring execution progress
 
-Poll for execution completion message from delegated agent:
-
-```bash
-# Check for completion message
-curl -s "http://localhost:23000/api/messages?agent=${SESSION_NAME}&action=list&status=unread" | \
-  jq '.messages[] | select(.content.type == "execution_result" and .content.request_id == "AR-xxx")'
-```
+Use the `agent-messaging` skill to check for unread messages. Filter for messages where the content type is `execution_result` and the `request_id` matches the expected request ID (e.g., "AR-xxx").
 
 Expected result format:
 

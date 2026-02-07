@@ -21,7 +21,7 @@ version: 1.0.0
 
 - Agent is onboarded (basic checklist complete)
 - Role definition document exists
-- AI Maestro is running locally at `http://localhost:23000`
+- The `agent-messaging` skill is available
 - Reporting structure is defined
 
 ## Procedure
@@ -49,59 +49,27 @@ Structure the briefing with these sections:
 
 ### Step 3: Send Role Briefing
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Role Briefing: <Role Name>",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "# Role Briefing: <Role Name>\n\n## Your Assigned Role\nYou are assigned as a **<Role>** on the <Project> project.\n\n## Responsibilities\n1. <Responsibility 1>\n2. <Responsibility 2>\n3. <Responsibility 3>\n\n## Reporting Structure\n- Report to: <supervisor>\n- Coordinate with: <teammates>\n- Escalate to: <escalation contact>\n\n## Expectations\n- <Expectation 1>\n- <Expectation 2>\n\n## Resources\n- <Resource 1>\n- <Resource 2>\n\nPlease confirm you understand these responsibilities."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `Role Briefing: [Role Name]`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: A structured briefing containing: the assigned role and project name, numbered responsibilities, reporting structure (report to, coordinate with, escalate to), expectations, and available resources. End with "Please confirm you understand these responsibilities."
 
 ### Step 4: Handle Questions
 
-If agent asks clarifying questions:
-
-```bash
-# Answer questions directly
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "RE: Role Clarification",
-    "priority": "normal",
-    "content": {
-      "type": "request",
-      "message": "<Answer to specific question>"
-    }
-  }'
-```
+If the agent asks clarifying questions, use the `agent-messaging` skill to reply:
+- **Recipient**: the agent session name
+- **Subject**: `RE: Role Clarification`
+- **Priority**: `normal`
+- **Content**: type `request`, message: the answer to the specific question.
 
 ### Step 5: Confirm Understanding
 
-Request agent to acknowledge role understanding:
-
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "<agent-session-name>",
-    "subject": "Role Understanding Confirmation",
-    "priority": "high",
-    "content": {
-      "type": "request",
-      "message": "Please summarize your understanding of your role in 2-3 sentences to confirm you have understood the briefing correctly."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the agent session name
+- **Subject**: `Role Understanding Confirmation`
+- **Priority**: `high`
+- **Content**: type `request`, message: "Please summarize your understanding of your role in 2-3 sentences to confirm you have understood the briefing correctly."
 
 ### Step 6: Log Role Assignment
 
@@ -124,7 +92,7 @@ Copy this checklist and track your progress:
 
 - [ ] Retrieve role definition document
 - [ ] Compose role briefing with all sections
-- [ ] Send role briefing message
+- [ ] Send role briefing message via `agent-messaging` skill
 - [ ] Wait for initial acknowledgment
 - [ ] Answer any clarifying questions
 - [ ] Request understanding confirmation
@@ -136,43 +104,19 @@ Copy this checklist and track your progress:
 
 ### Example: Developer Role Briefing
 
-```bash
-AGENT="dev-backend-alice"
-PROJECT="backend-api"
-
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$AGENT"'",
-    "subject": "Role Briefing: Developer",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "# Role Briefing: Developer\n\n## Your Assigned Role\nYou are assigned as a **Developer** on the '"$PROJECT"' project.\n\n## Responsibilities\n1. Implement features from the backlog\n2. Write unit tests for all new code\n3. Update documentation for your changes\n4. Participate in code reviews when requested\n5. Report blockers promptly\n\n## Reporting Structure\n- **Report to:** eoa-backend-orchestrator (task assignments)\n- **Coordinate with:** dev-backend-bob (peer developer)\n- **Escalate to:** ecos-chief-of-staff (blockers, resource issues)\n\n## Expectations\n- Acknowledge task assignments promptly\n- Provide regular status updates during active work\n- Request clarification if requirements are unclear\n- Follow project coding conventions (see CLAUDE.md)\n- Complete tasks within estimated timeframes\n\n## Resources\n- CLAUDE.md - Project instructions and conventions\n- docs/API.md - API specifications\n- tests/ - Existing test examples\n- .github/ - CI/CD configuration\n\nPlease confirm you understand these responsibilities."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `dev-backend-alice`
+- **Subject**: `Role Briefing: Developer`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "Role Briefing: Developer. You are assigned as a Developer on the backend-api project. Responsibilities: (1) Implement features from the backlog, (2) Write unit tests for all new code, (3) Update documentation for your changes, (4) Participate in code reviews when requested, (5) Report blockers promptly. Reporting Structure: Report to eoa-backend-orchestrator for task assignments, coordinate with dev-backend-bob as peer developer, escalate to ecos-chief-of-staff for blockers and resource issues. Expectations: Acknowledge task assignments promptly, provide regular status updates, request clarification if requirements unclear, follow project coding conventions (see CLAUDE.md), complete tasks within estimated timeframes. Resources: CLAUDE.md (project instructions), docs/API.md (API specifications), tests/ (existing test examples), .github/ (CI/CD configuration). Please confirm you understand these responsibilities."
 
 ### Example: Orchestrator Role Briefing
 
-```bash
-AGENT="eoa-webapp-orchestrator"
-PROJECT="webapp"
-
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "'"$AGENT"'",
-    "subject": "Role Briefing: Orchestrator",
-    "priority": "high",
-    "content": {
-      "type": "role-assignment",
-      "message": "# Role Briefing: Orchestrator\n\n## Your Assigned Role\nYou are the **Orchestrator** for the '"$PROJECT"' project team.\n\n## Responsibilities\n1. Receive work from EAMA and break into tasks\n2. Assign tasks to team developers\n3. Track task progress and blockers\n4. Coordinate parallel work streams\n5. Report completion to EAMA\n\n## Reporting Structure\n- **Report to:** eama-assistant-manager (work assignments)\n- **Manage:** dev-frontend-bob, dev-backend-charlie (developers)\n- **Coordinate with:** eia-webapp-integrator (code reviews)\n- **Escalate to:** ecos-chief-of-staff (team issues)\n\n## Expectations\n- Maintain clear task backlog\n- Ensure developers are not blocked\n- Provide daily progress summaries\n- Identify risks early and escalate\n- Do NOT do implementation work yourself\n\n## Resources\n- Team registry at .emasoft/team-registry.json\n- Project backlog at docs/BACKLOG.md\n- GitHub Issues for task tracking\n\nPlease confirm you understand these responsibilities."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eoa-webapp-orchestrator`
+- **Subject**: `Role Briefing: Orchestrator`
+- **Priority**: `high`
+- **Content**: type `role-assignment`, message: "Role Briefing: Orchestrator. You are the Orchestrator for the webapp project team. Responsibilities: (1) Receive work from EAMA and break into tasks, (2) Assign tasks to team developers, (3) Track task progress and blockers, (4) Coordinate parallel work streams, (5) Report completion to EAMA. Reporting Structure: Report to eama-assistant-manager for work assignments, manage dev-frontend-bob and dev-backend-charlie as developers, coordinate with eia-webapp-integrator for code reviews, escalate to ecos-chief-of-staff for team issues. Expectations: Maintain clear task backlog, ensure developers are not blocked, provide daily progress summaries, identify risks early and escalate, do NOT do implementation work yourself. Resources: Team registry at .emasoft/team-registry.json, project backlog at docs/BACKLOG.md, GitHub Issues for task tracking. Please confirm you understand these responsibilities."
 
 ## Error Handling
 

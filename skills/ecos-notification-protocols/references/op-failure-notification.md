@@ -24,21 +24,17 @@ Trigger this operation when:
 - Error details are captured (error code, message, stack trace if available)
 - Affected agent(s) are identified
 - Recovery guidance is prepared
-- AI Maestro messaging is available
+- The `agent-messaging` skill is available
 
 ## Procedure
 
 ### Step 1: Capture Error Details
 
 Document what went wrong:
-
-```bash
-# Capture error from failed operation
-ERROR_CODE="<error-code>"
-ERROR_MESSAGE="<what went wrong>"
-ERROR_DETAILS="<additional diagnostic information>"
-OPERATION_TYPE="<skill-install|agent-restart|config-change|etc>"
-```
+- Error code
+- Error message describing what went wrong
+- Additional diagnostic information
+- Operation type (skill-install, agent-restart, config-change, etc.)
 
 ### Step 2: Compose Failure Message
 
@@ -51,24 +47,11 @@ Include these required elements:
 
 ### Step 3: Send Failure Notification
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<affected-agent>",
-    "subject": "<Operation Type> Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to <operation description>. Error: <error message>. You can <what agent can do>. I will <recovery action>.",
-      "operation": "<operation-type>",
-      "status": "failed",
-      "error_code": "<ERROR_CODE>",
-      "error_details": "<ERROR_DETAILS>",
-      "recovery_action": "<what will happen next>"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the affected agent session name
+- **Subject**: `[Operation Type] Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Failed to [operation description]. Error: [error message]. You can [what agent can do]. I will [recovery action]." Include `operation` (operation type), `status`: "failed", `error_code`, `error_details`, `recovery_action` (what will happen next).
 
 ### Step 4: Provide Recovery Guidance
 
@@ -94,7 +77,7 @@ Copy this checklist and track your progress:
 - [ ] Captured complete error details
 - [ ] Composed failure message with all required elements
 - [ ] Included clear recovery guidance
-- [ ] Sent failure notification via AI Maestro
+- [ ] Sent failure notification via `agent-messaging` skill
 - [ ] Logged failure for analysis
 - [ ] Initiated recovery action (if automated)
 - [ ] Escalated to user (if manual intervention needed)
@@ -105,96 +88,41 @@ Copy this checklist and track your progress:
 
 **Scenario:** security-audit skill installation failed due to validation error.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Skill Installation Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to install security-audit skill. Error: Skill validation failed - missing required SKILL.md file. You can continue your previous work normally. I will fix the skill package and retry installation.",
-      "operation": "skill-install",
-      "skill_name": "security-audit",
-      "status": "failed",
-      "error_code": "SKILL_VALIDATION_FAILED",
-      "error_details": "Missing required SKILL.md file in skill directory",
-      "recovery_action": "Skill package will be fixed and installation retried"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Skill Installation Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Failed to install security-audit skill. Error: Skill validation failed - missing required SKILL.md file. You can continue your previous work normally. I will fix the skill package and retry installation." Include `operation`: "skill-install", `skill_name`: "security-audit", `status`: "failed", `error_code`: "SKILL_VALIDATION_FAILED", `error_details`: "Missing required SKILL.md file in skill directory", `recovery_action`: "Skill package will be fixed and installation retried".
 
 ### Example 2: Agent Restart Failure
 
 **Scenario:** Agent did not come back online after restart.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "Agent Restart Failed: test-engineer-01",
-    "priority": "urgent",
-    "content": {
-      "type": "failure",
-      "message": "Failed to restart test-engineer-01. Error: Agent did not come online within 2 minute timeout. The agent session may need manual recovery. I am escalating to user for intervention.",
-      "operation": "agent-restart",
-      "target_agent": "test-engineer-01",
-      "status": "failed",
-      "error_code": "RESTART_TIMEOUT",
-      "error_details": "Agent session not detected after wake command",
-      "recovery_action": "Escalating to user for manual intervention"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `Agent Restart Failed: test-engineer-01`
+- **Priority**: `urgent`
+- **Content**: type `failure`, message: "Failed to restart test-engineer-01. Error: Agent did not come online within 2 minute timeout. The agent session may need manual recovery. I am escalating to user for intervention." Include `operation`: "agent-restart", `target_agent`: "test-engineer-01", `status`: "failed", `error_code`: "RESTART_TIMEOUT", `error_details`: "Agent session not detected after wake command", `recovery_action`: "Escalating to user for manual intervention".
 
 ### Example 3: Configuration Change Failure
 
 **Scenario:** Settings update did not apply correctly.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Configuration Update Failed",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "Failed to apply new logging configuration. Error: Permission denied when writing to config file. Your current configuration remains unchanged. I will request elevated permissions and retry.",
-      "operation": "config-change",
-      "config_type": "logging",
-      "status": "failed",
-      "error_code": "PERMISSION_DENIED",
-      "error_details": "Cannot write to /etc/claude/logging.conf - permission denied",
-      "recovery_action": "Requesting elevated permissions, will retry"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Configuration Update Failed`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "Failed to apply new logging configuration. Error: Permission denied when writing to config file. Your current configuration remains unchanged. I will request elevated permissions and retry." Include `operation`: "config-change", `config_type`: "logging", `status`: "failed", `error_code`: "PERMISSION_DENIED", `error_details`: "Cannot write to /etc/claude/logging.conf - permission denied", `recovery_action`: "Requesting elevated permissions, will retry".
 
 ### Example 4: Timeout Failure Notification
 
 **Scenario:** Operation did not complete within expected time.
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-auth",
-    "subject": "Operation Timed Out",
-    "priority": "high",
-    "content": {
-      "type": "failure",
-      "message": "The skill indexing operation timed out after 10 minutes. The partial results have been discarded. You may continue your work. I will investigate the timeout cause and attempt a more targeted reindex.",
-      "operation": "skill-reindex",
-      "status": "failed",
-      "error_code": "OPERATION_TIMEOUT",
-      "error_details": "Skill indexing exceeded 10 minute timeout limit",
-      "recovery_action": "Will attempt targeted reindex of changed skills only"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-auth`
+- **Subject**: `Operation Timed Out`
+- **Priority**: `high`
+- **Content**: type `failure`, message: "The skill indexing operation timed out after 10 minutes. The partial results have been discarded. You may continue your work. I will investigate the timeout cause and attempt a more targeted reindex." Include `operation`: "skill-reindex", `status`: "failed", `error_code`: "OPERATION_TIMEOUT", `error_details`: "Skill indexing exceeded 10 minute timeout limit", `recovery_action`: "Will attempt targeted reindex of changed skills only".
 
 ## Error Severity Levels
 
