@@ -74,10 +74,7 @@ Hibernate when:
 4. Last activity beyond threshold
 
 **Idle Check Command:**
-```bash
-curl -s "http://localhost:23000/api/messages?agent=code-impl-01&action=status"
-# Response should show: {"status": "IDLE", "last_activity": "..."}
-```
+Use the `agent-messaging` skill to check the agent's activity status. Expect a response showing `status: "IDLE"` and `last_activity` timestamp.
 
 ### 3.3.2 State capture
 

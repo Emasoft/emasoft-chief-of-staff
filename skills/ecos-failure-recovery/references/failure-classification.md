@@ -131,26 +131,11 @@ Recoverable failures should be resolved within **2 hours** with appropriate inte
 
 **Response action - notify and recover:**
 
-```bash
-# Notify manager about recoverable failure
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[AGENT FAILURE] Recoverable failure detected",
-    "priority": "high",
-    "content": {
-      "type": "failure-report",
-      "message": "Agent libs-svg-svgbbox has experienced a recoverable failure (session hibernated). Attempting wake recovery. Will report result in 10 minutes.",
-      "agent": "libs-svg-svgbbox",
-      "failure_type": "recoverable",
-      "failure_cause": "session_hibernated",
-      "planned_action": "wake_via_terminal",
-      "expected_recovery_time": "10 minutes"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[AGENT FAILURE] Recoverable failure detected`
+- **Priority**: `high`
+- **Content**: type `failure-report`, message: "Agent libs-svg-svgbbox has experienced a recoverable failure (session hibernated). Attempting wake recovery. Will report result in 10 minutes." Include `agent`: "libs-svg-svgbbox", `failure_type`: "recoverable", `failure_cause`: "session_hibernated", `planned_action`: "wake_via_terminal", `expected_recovery_time`: "10 minutes".
 
 ---
 
@@ -198,34 +183,11 @@ A **terminal failure** is a catastrophic disruption from which the agent cannot 
 
 **Response action - request replacement:**
 
-```bash
-# Request replacement approval from manager
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[CRITICAL] Terminal failure - replacement required",
-    "priority": "urgent",
-    "content": {
-      "type": "replacement-request",
-      "message": "Agent libs-svg-svgbbox has experienced a terminal failure and cannot be recovered. Host machine crashed and agent state is lost. Requesting approval to create replacement agent. Estimated replacement time: 30 minutes.",
-      "agent": "libs-svg-svgbbox",
-      "failure_type": "terminal",
-      "failure_cause": "host_machine_crash",
-      "recovery_attempts": 0,
-      "recoverable_artifacts": [
-        "git commits up to abc123",
-        "logs at /var/log/agent-libs-svg.log"
-      ],
-      "replacement_cost": {
-        "time_to_replace": "30 minutes",
-        "work_to_redo": "2-3 hours of uncommitted work"
-      },
-      "awaiting_approval": true
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[CRITICAL] Terminal failure - replacement required`
+- **Priority**: `urgent`
+- **Content**: type `replacement-request`, message: "Agent libs-svg-svgbbox has experienced a terminal failure and cannot be recovered. Host machine crashed and agent state is lost. Requesting approval to create replacement agent. Estimated replacement time: 30 minutes." Include `agent`: "libs-svg-svgbbox", `failure_type`: "terminal", `failure_cause`: "host_machine_crash", `recovery_attempts`: 0, `recoverable_artifacts`: ["git commits up to abc123", "logs at /var/log/agent-libs-svg.log"], `replacement_cost`: { `time_to_replace`: "30 minutes", `work_to_redo`: "2-3 hours of uncommitted work" }, `awaiting_approval`: true.
 
 ---
 
@@ -292,30 +254,11 @@ ECOS uses these thresholds to determine when to escalate to manager (EAMA):
 
 **Escalation message to manager:**
 
-```bash
-# General escalation template
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "[ESCALATION] Agent failure requires attention",
-    "priority": "PRIORITY_LEVEL",
-    "content": {
-      "type": "escalation",
-      "message": "DESCRIPTION OF SITUATION",
-      "agent": "AGENT_SESSION_NAME",
-      "failure_type": "transient|recoverable|terminal",
-      "failure_details": {
-        "first_detected": "ISO_TIMESTAMP",
-        "symptom": "WHAT_WAS_OBSERVED",
-        "diagnosis": "WHAT_ECOS_DETERMINED"
-      },
-      "recommended_action": "WHAT_ECOS_PROPOSES",
-      "awaiting_approval": true|false
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-assistant-manager`
+- **Subject**: `[ESCALATION] Agent failure requires attention`
+- **Priority**: appropriate level (`normal`, `high`, or `urgent`)
+- **Content**: type `escalation`, message: description of the situation. Include `agent` (session name), `failure_type` ("transient", "recoverable", or "terminal"), `failure_details` with `first_detected` (ISO timestamp), `symptom` (what was observed), `diagnosis` (what ECOS determined), `recommended_action` (what ECOS proposes), `awaiting_approval` (true/false).
 
 ---
 

@@ -2,7 +2,7 @@
 name: ecos-request-approval
 description: "Request approval from manager (EAMA) for agent operations via AI Maestro"
 argument-hint: "--type <TYPE> --agent <NAME> --reason <TEXT> [--urgent] [--timeout <SECONDS>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
+allowed-tools: ["Bash", "Task", "Read"]
 user-invocable: true
 ---
 

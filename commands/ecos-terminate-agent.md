@@ -2,7 +2,7 @@
 name: ecos-terminate-agent
 description: "Terminate a remote agent and clean up its session using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> --confirm [--keep-folder]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

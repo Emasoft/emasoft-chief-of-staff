@@ -2,7 +2,7 @@
 name: ecos-wake-agent
 description: "Wake a hibernated agent, restoring its previous state using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> [--attach]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

@@ -2,7 +2,7 @@
 name: ecos-wait-for-approval
 description: "Wait for approval response from EAMA with configurable timeout and polling"
 argument-hint: "--request-id <ID> [--timeout <SECONDS>] [--poll-interval <SECONDS>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Bash(sleep:*)"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 
@@ -52,7 +52,7 @@ Poll for an approval response from EAMA using the `agent-messaging` skill:
 
 # With conditional execution
 /ecos-wait-for-approval --request-id ECOS-20250202150000-a1b2c3d4 \
-  --on-approved "aimaestro-agent.sh delete helper-python --confirm" \
+  --on-approved "terminate helper-python" \
   --on-rejected "echo 'Termination denied by manager'"
 
 # Fast polling for urgent requests

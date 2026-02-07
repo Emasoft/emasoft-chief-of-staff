@@ -121,12 +121,11 @@ Use the `ai-maestro-agents-management` skill to get service statistics, includin
 When making external API calls, capture rate limit headers:
 
 ```bash
-# Example: Capture GitHub rate limit
-curl -s -I https://api.github.com/user | grep -i "x-ratelimit"
+# Example: Check GitHub rate limit using gh CLI
+gh api rate_limit --jq '.rate | {limit, remaining, reset}'
 
-# X-RateLimit-Limit: 5000
-# X-RateLimit-Remaining: 4987
-# X-RateLimit-Reset: 1706780400
+# Example output:
+# {"limit":5000,"remaining":4987,"reset":1706780400}
 ```
 
 ### Rate Limit Tracking File
@@ -324,7 +323,7 @@ Periodically check rate limits across services:
 
 1. Check GitHub API rate limit:
    ```bash
-   curl -s -I https://api.github.com/user 2>/dev/null | grep -i "x-ratelimit"
+   gh api rate_limit --jq '.rate | {limit, remaining, reset}' 2>/dev/null
    ```
 
 2. Use the `ai-maestro-agents-management` skill to get service statistics for AI Maestro message throughput.

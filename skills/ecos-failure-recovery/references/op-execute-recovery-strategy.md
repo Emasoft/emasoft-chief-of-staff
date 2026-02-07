@@ -37,24 +37,14 @@ Attempt to restore a failed agent to operational status using appropriate recove
 
 ### Strategy 2: Restart Agent (Soft)
 
-1. Send soft restart signal via AI Maestro
-   ```bash
-   curl -X POST "http://localhost:23000/api/agents/AGENT_NAME/restart" \
-     -H "Content-Type: application/json" \
-     -d '{"type": "soft"}'
-   ```
+1. Use the `ai-maestro-agents-management` skill to send a soft restart signal to the agent.
 2. Wait 2 minutes for restart
 3. Verify agent status
 4. If failed, attempt hard restart
 
 ### Strategy 3: Restart Agent (Hard)
 
-1. Request hard restart via AI Maestro
-   ```bash
-   curl -X POST "http://localhost:23000/api/agents/AGENT_NAME/restart" \
-     -H "Content-Type: application/json" \
-     -d '{"type": "hard"}'
-   ```
+1. Use the `ai-maestro-agents-management` skill to send a hard restart signal to the agent.
 2. Wait 5 minutes for full restart
 3. Verify agent status
 4. If failed, classify as terminal
@@ -62,10 +52,7 @@ Attempt to restore a failed agent to operational status using appropriate recove
 ### Strategy 4: Hibernate-Wake Cycle
 
 1. Check if agent is hibernated
-2. Send wake signal
-   ```bash
-   curl -X POST "http://localhost:23000/api/agents/AGENT_NAME/wake"
-   ```
+2. Use the `ai-maestro-agents-management` skill to send a wake signal to the agent.
 3. Wait 2 minutes
 4. Verify agent responsive
 

@@ -140,11 +140,7 @@ def register_request(request_id, operation, target, details, justification):
 
 **Check for responses:**
 
-```bash
-# Poll for unread messages
-curl -s "http://localhost:23000/api/messages?agent=ecos-chief-of-staff&action=list&status=unread" | \
-  jq '.messages[] | select(.content.type == "approval_response")'
-```
+Use the `agent-messaging` skill to check for unread messages with content type `approval_response`.
 
 **Match response to request:**
 

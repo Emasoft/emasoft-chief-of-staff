@@ -285,17 +285,11 @@ Alerts indicating a system-threatening condition.
 
 ### User Notification Format
 
-```bash
-# Send urgent user notification
-curl -X POST "http://localhost:23000/api/notifications/user" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "resource-alert",
-    "severity": "critical",
-    "title": "Memory Critical - Action Required",
-    "message": "Memory usage at 92%. Agents are being terminated. Please review."
-  }'
-```
+Use the `agent-messaging` skill to send an urgent user notification:
+- **Recipient**: user (via EAMA escalation)
+- **Subject**: `Memory Critical - Action Required`
+- **Priority**: `urgent`
+- **Content**: type `resource-alert`, severity `critical`, message: "Memory usage at 92%. Agents are being terminated. Please review."
 
 ---
 

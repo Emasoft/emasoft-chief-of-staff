@@ -2,7 +2,7 @@
 name: ecos-transfer-work
 description: "Transfer work from one agent to another by sending handoff documentation via AI Maestro messaging"
 argument-hint: "--from <AGENT> --to <AGENT> --handoff-file <PATH> [--priority urgent|high|normal]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
+allowed-tools: ["Bash", "Task", "Read"]
 user-invocable: true
 ---
 

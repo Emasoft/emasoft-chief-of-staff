@@ -128,7 +128,7 @@ uv run python scripts/ecos_generate_team_report.py --output "$CLAUDE_PROJECT_DIR
 [2026-02-04T10:29:30Z] [OP-1706795370-001] [ecos-chief-of-staff] agent_spawn STARTED target=worker-dev-auth-001
 [2026-02-04T10:29:35Z] [OP-1706795370-001] [ecos-chief-of-staff] approval_request SUBMITTED request_id=AR-1706795370-f3a2b1
 [2026-02-04T10:29:45Z] [OP-1706795370-001] [ecos-chief-of-staff] approval_received APPROVED by=manager
-[2026-02-04T10:29:50Z] [OP-1706795370-001] [ecos-chief-of-staff] spawn_execute STARTED command="aimaestro-agent.sh create worker-dev-auth-001..."
+[2026-02-04T10:29:50Z] [OP-1706795370-001] [ecos-chief-of-staff] spawn_execute STARTED agent=worker-dev-auth-001 via ai-maestro-agents-management skill
 [2026-02-04T10:30:00Z] [OP-1706795370-001] [ecos-chief-of-staff] spawn_execute SUCCESS duration=10s
 [2026-02-04T10:30:05Z] [OP-1706795370-001] [ecos-chief-of-staff] health_check SENT target=worker-dev-auth-001
 [2026-02-04T10:30:10Z] [OP-1706795370-001] [ecos-chief-of-staff] health_check RECEIVED response="OK"

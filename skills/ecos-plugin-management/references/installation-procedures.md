@@ -1034,29 +1034,18 @@ After configuring plugins for an agent, send a restart notification via AI Maest
 
 **Procedure:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<agent-session-name>",
-    "subject": "Plugin Configuration Changed - Restart Required",
-    "priority": "high",
-    "content": {
-      "type": "notification",
-      "message": "Plugin configuration updated. Please restart your Claude Code session to apply changes."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `Plugin Configuration Changed - Restart Required`
+- **Priority**: `high`
+- **Content**: type `notification`, message: "Plugin configuration updated. Please restart your Claude Code session to apply changes."
 
 **Example:**
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "helper-agent-generic",
-    "subject": "Plugin Configuration Changed - Restart Required",
-    "priority": "high",
+Use the `agent-messaging` skill to send:
+- **Recipient**: `helper-agent-generic`
+- **Subject**: `Plugin Configuration Changed - Restart Required`
+- **Priority**: `high`
     "content": {
       "type": "notification",
       "message": "perfect-skill-suggester plugin installed (v1.2.2). Please restart Claude Code session."

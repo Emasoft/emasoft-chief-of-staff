@@ -2,7 +2,7 @@
 name: ecos-install-skill-notify
 description: "Install skill with full notification protocol: notify, wait for ok, install, verify"
 argument-hint: "--agent <name> | --global --skill <name> | --marketplace <marketplace>/<skill> [--wait-for-ok]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 
@@ -68,7 +68,7 @@ Phase 2: ACKNOWLEDGMENT (if --wait-for-ok)
 
 Phase 3: INSTALLATION
 ----------------------------------------
-7. Execute: aimaestro-agent.sh plugin install <agent> <skill>
+7. Use the ai-maestro-agents-management skill to install plugin on agent
    (This automatically: hibernates -> installs -> wakes)
 
 Phase 4: POST-INSTALLATION VERIFICATION

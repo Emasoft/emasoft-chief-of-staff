@@ -99,22 +99,11 @@ gh issue create --repo $MAIN_PROJECT_REPO \
 
 ### Step 4: Sequence Work Execution
 
-```bash
-# Phase 1: Start Project A
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eoa-main",
-    "subject": "Start cross-project work: Project A",
-    "priority": "high",
-    "content": {
-      "type": "task-assignment",
-      "message": "Begin work on Project A component for Feature X. Notify ECOS when complete.",
-      "project": "project-a",
-      "issue": '$A_ISSUE'
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eoa-main`
+- **Subject**: `Start cross-project work: Project A`
+- **Priority**: `high`
+- **Content**: type `task-assignment`, message: "Begin work on Project A component for Feature X. Notify ECOS when complete." Include `project` and `issue` fields.
 
 ### Step 5: Monitor Checkpoints
 

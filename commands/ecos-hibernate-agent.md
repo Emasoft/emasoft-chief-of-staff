@@ -2,7 +2,7 @@
 name: ecos-hibernate-agent
 description: "Put a remote agent to sleep, preserving its state for later resumption using AI Maestro CLI"
 argument-hint: "<AGENT_NAME>"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

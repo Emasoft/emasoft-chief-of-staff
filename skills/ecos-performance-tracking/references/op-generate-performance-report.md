@@ -166,18 +166,10 @@ Save and distribute:
 REPORT_FILE="$CLAUDE_PROJECT_DIR/.ecos/reports/weekly-$(date +%Y%m%d).md"
 
 # Notify stakeholders
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "from": "ecos-chief-of-staff",
-    "to": "eama-assistant-manager",
-    "subject": "Weekly Performance Report",
-    "content": {
-      "type": "performance-report",
-      "message": "Weekly performance report is ready.",
-      "report_path": "'"$REPORT_FILE"'"
-    }
-  }'
+# Use the agent-messaging skill to notify the manager:
+# Recipient: eama-assistant-manager
+# Subject: "Weekly Performance Report"
+# Content: type "performance-report", report_path: $REPORT_FILE
 ```
 
 ## Checklist

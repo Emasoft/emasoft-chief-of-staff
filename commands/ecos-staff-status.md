@@ -2,7 +2,7 @@
 name: ecos-staff-status
 description: "View all remote agents with status, working directory, and tags using AI Maestro CLI"
 argument-hint: "[--status online|offline|hibernated|all] [--format table|json|names]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

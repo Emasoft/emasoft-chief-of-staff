@@ -2,7 +2,7 @@
 name: ecos-recovery-workflow
 description: "Execute recovery workflow for a failed or unhealthy agent with restart, hibernate-wake, or replace actions"
 argument-hint: "--agent <NAME> --action [restart|hibernate-wake|replace] [--timeout <SECONDS>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

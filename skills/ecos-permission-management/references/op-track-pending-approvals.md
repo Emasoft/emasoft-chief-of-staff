@@ -77,8 +77,8 @@ PENDING_IDS=$(jq -r '.pending | keys[]' $PENDING_FILE)
 
 for REQUEST_ID in $PENDING_IDS; do
   # Check AI Maestro inbox for response
-  RESPONSE=$(curl -s "http://localhost:23000/api/messages?agent=ecos-main&action=list" | \
-    jq '.messages[] | select(.content.request_id == "'"$REQUEST_ID"'" and .content.type == "approval-response")')
+  # Use the agent-messaging skill to check for unread messages matching the request ID
+  RESPONSE=$(check_messages_for_request_id "$REQUEST_ID" "approval-response")
 
   if [ -n "$RESPONSE" ]; then
     DECISION=$(echo $RESPONSE | jq -r '.content.decision')

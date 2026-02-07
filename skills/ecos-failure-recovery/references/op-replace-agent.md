@@ -36,10 +36,7 @@ Therefore:
 ### Phase 1: Confirm Failure and Preserve Artifacts
 
 1. **Confirm agent is unrecoverable**
-   ```bash
-   # Final status check
-   curl -s "http://localhost:23000/api/agents/AGENT_NAME" | jq '.status'
-   ```
+   Use the `ai-maestro-agents-management` skill to perform a final status check on the agent.
 
 2. **Preserve work artifacts**
    - Save any accessible output files
@@ -92,9 +89,7 @@ Therefore:
    - Assign same role/specialization
 
 3. **Verify new agent registration**
-   ```bash
-   curl -s "http://localhost:23000/api/agents" | jq '.agents[] | select(.name == "NEW_AGENT_NAME")'
-   ```
+   Use the `ai-maestro-agents-management` skill to list agents and verify the new agent appears in the registry.
 
 ### Phase 4: Notify Orchestrator
 

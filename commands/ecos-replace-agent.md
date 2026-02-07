@@ -2,7 +2,7 @@
 name: ecos-replace-agent
 description: "Replace a failed or terminated agent with a new one, including manager approval, handoff generation, and kanban update"
 argument-hint: "--failed-agent <NAME> --new-name <NAME> --role <ROLE> --project <PROJECT> --dir <PATH>"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Read", "Task"]
+allowed-tools: ["Bash", "Read", "Task"]
 user-invocable: true
 ---
 
@@ -29,7 +29,7 @@ Replace a failed, terminated, or unhealthy agent with a new one. This command or
 │     └─> Wait for approval/rejection                         │
 │                                                             │
 │  2. CREATE NEW AGENT (if approved)                          │
-│     └─> Run aimaestro-agent.sh create                       │
+│     └─> Use ai-maestro-agents-management skill to create     │
 │     └─> Configure same role/project as failed agent         │
 │                                                             │
 │  3. GENERATE HANDOFF                                        │

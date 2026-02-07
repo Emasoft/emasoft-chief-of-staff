@@ -2,7 +2,7 @@
 name: ecos-spawn-agent
 description: "Create and launch a new remote agent in a tmux session using AI Maestro CLI"
 argument-hint: "<AGENT_NAME> --dir <PATH> [--task <DESCRIPTION>] [--tags <TAGS>] [--no-session]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task"]
+allowed-tools: ["Bash", "Task"]
 user-invocable: true
 ---
 

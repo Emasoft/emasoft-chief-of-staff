@@ -163,11 +163,8 @@ mkdir -p "$(dirname "$PLUGIN_DEST")"
 cp -r "$PLUGIN_SOURCE" "$PLUGIN_DEST"
 
 # Spawn agent with copied plugin
-aimaestro-agent.sh create $SESSION_NAME \
-  --dir ~/agents/$SESSION_NAME \
-  --task "Test orchestration" \
-  -- --plugin-dir $PLUGIN_DEST \
-  --agent eoa-orchestrator-main-agent
+# Use the ai-maestro-agents-management skill to create the agent
+# with the specified session name, working directory, task, and plugin directory
 ```
 
 ## Error Handling

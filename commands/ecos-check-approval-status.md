@@ -2,7 +2,7 @@
 name: ecos-check-approval-status
 description: "Check status of pending approval requests from EAMA"
 argument-hint: "[--request-id <ID>] [--all] [--status <STATUS>] [--since <HOURS>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
+allowed-tools: ["Bash", "Task", "Read"]
 user-invocable: true
 ---
 

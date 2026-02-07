@@ -217,61 +217,29 @@ Cannot run both test suites simultaneously
 
 When a project phase completes, notify dependent projects.
 
-```bash
-# CPV agent notifies PSS agent
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-pss",
-    "subject": "Dependency Ready",
-    "content": {
-      "type": "dependency-ready",
-      "message": "CPV validation library updated",
-      "project": "claude-plugins-validation",
-      "version": "1.3.0"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-pss`
+- **Subject**: `Dependency Ready`
+- **Content**: type `dependency-ready`, message: "CPV validation library updated". Include `project`: "claude-plugins-validation", `version`: "1.3.0".
 
 ### Pattern 2: Blocking Request
 
 When a project needs to block another for resource.
 
-```bash
-# PSS agent requests test-engineer
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "chief-of-staff",
-    "subject": "Resource Request",
-    "content": {
-      "type": "resource-request",
-      "message": "Need test-engineer-01 for PSS tests",
-      "resource": "test-engineer-01",
-      "duration": "30 minutes",
-      "priority": "high"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `chief-of-staff`
+- **Subject**: `Resource Request`
+- **Priority**: `high`
+- **Content**: type `resource-request`, message: "Need test-engineer-01 for PSS tests". Include `resource`: "test-engineer-01", `duration`: "30 minutes".
 
 ### Pattern 3: State Sync Request
 
 When a project needs another to sync shared state.
 
-```bash
-# EPM agent requests submodule update
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "code-impl-pss",
-    "subject": "Sync Request",
-    "content": {
-      "type": "sync-request",
-      "message": "Please push PSS changes for submodule update",
-      "sync_type": "git-push"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `code-impl-pss`
+- **Subject**: `Sync Request`
+- **Content**: type `sync-request`, message: "Please push PSS changes for submodule update". Include `sync_type`: "git-push".
 
 ---
 

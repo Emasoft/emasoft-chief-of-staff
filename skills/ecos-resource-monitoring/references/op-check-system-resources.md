@@ -75,7 +75,7 @@ echo "Disk Free: ${disk_free} (${disk_percent}% used)"
 
 ```bash
 # Check AI Maestro connectivity
-aimaestro_status=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:23000/health")
+aimaestro_status=$(check_aimaestro_health)  # Use ai-maestro-agents-management skill to check health
 
 if [ "$aimaestro_status" = "200" ]; then
   echo "AI Maestro: Connected"
@@ -138,7 +138,7 @@ mem_free_mb=$((mem_free_mb * 4096 / 1024 / 1024))
 disk_percent=$(df -h / | tail -1 | awk '{print $5}' | sed 's/%//')
 
 # AI Maestro
-aimaestro=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:23000/health" 2>/dev/null || echo "000")
+aimaestro=$(check_aimaestro_health 2>/dev/null || echo "000")  # Use ai-maestro-agents-management skill
 
 echo "{\"timestamp\": \"$TIMESTAMP\", \"cpu\": $cpu, \"memory_free_mb\": $mem_free_mb, \"disk_percent\": $disk_percent, \"aimaestro\": $aimaestro}"
 ```

@@ -391,19 +391,11 @@ Reports must reach the right audience to be effective.
 ### Distribution Methods
 
 **Via AI Maestro Message:**
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "orchestrator-master",
-    "subject": "Weekly Performance Review - Week 5",
-    "priority": "normal",
-    "content": {
-      "type": "report",
-      "message": "Weekly performance review attached. See design/memory/reports/weekly-W05.md"
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `orchestrator-master`
+- **Subject**: `Weekly Performance Review - Week 5`
+- **Priority**: `normal`
+- **Content**: type `report`, message: "Weekly performance review attached. See design/memory/reports/weekly-W05.md"
 
 **Via File Storage:**
 Save reports to shared location:
@@ -416,15 +408,11 @@ design/memory/reports/
 
 **Via User Notification:**
 For critical issues or user-requested reports:
-```bash
-curl -X POST "http://localhost:23000/api/notifications/user" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "report",
-    "title": "Weekly Performance Report Available",
-    "message": "See design/memory/reports/weekly-W05.md"
-  }'
-```
+Use the `agent-messaging` skill to send a user notification via EAMA:
+- **Recipient**: `eama-assistant-manager` (for user escalation)
+- **Subject**: `Weekly Performance Report Available`
+- **Priority**: `normal`
+- **Content**: type `report`, message: "See design/memory/reports/weekly-W05.md"
 
 ### Report Retention
 

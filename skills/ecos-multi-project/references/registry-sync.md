@@ -488,19 +488,11 @@ agent_assignments:
 
 3. Communicate the schedule to the agent via AI Maestro:
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "<agent-name>",
-    "subject": "Multi-Project Schedule",
-    "priority": "normal",
-    "content": {
-      "type": "schedule",
-      "message": "Primary focus: <project-a> (60%). Secondary: <project-b> (40%, batched work on Mondays/Wednesdays)."
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: the target agent session name
+- **Subject**: `Multi-Project Schedule`
+- **Priority**: `normal`
+- **Content**: type `schedule`, message: "Primary focus: [project-a] (60%). Secondary: [project-b] (40%, batched work on Mondays/Wednesdays)."
 
 **Expected result**: Agent has clear guidance on how to allocate time across projects.
 

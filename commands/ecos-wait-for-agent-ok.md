@@ -2,7 +2,7 @@
 name: ecos-wait-for-agent-ok
 description: "Wait for an agent to acknowledge readiness with polling and reminders"
 argument-hint: "--agent <name> [--timeout <seconds>] [--remind-interval <seconds>]"
-allowed-tools: ["Bash(aimaestro-agent.sh:*)", "Task", "Read"]
+allowed-tools: ["Bash", "Task", "Read"]
 user-invocable: true
 ---
 

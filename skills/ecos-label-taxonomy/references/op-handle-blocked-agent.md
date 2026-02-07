@@ -55,20 +55,11 @@ gh issue edit $ISSUE_NUMBER --add-label "assign:human"
 
 ### Step 5: Notify via AI Maestro
 
-```bash
-curl -X POST "http://localhost:23000/api/messages" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "to": "eama-main",
-    "subject": "Agent blocked on issue #'$ISSUE_NUMBER'",
-    "priority": "high",
-    "content": {
-      "type": "blocker-escalation",
-      "message": "Agent is blocked: '$BLOCKER_REASON'. Human intervention required.",
-      "issue_number": '$ISSUE_NUMBER'
-    }
-  }'
-```
+Use the `agent-messaging` skill to send:
+- **Recipient**: `eama-main`
+- **Subject**: `Agent blocked on issue #[ISSUE_NUMBER]`
+- **Priority**: `high`
+- **Content**: type `blocker-escalation`, message: "Agent is blocked: [BLOCKER_REASON]. Human intervention required." Include `issue_number`.
 
 ### Step 6: Verify Labels
 

@@ -49,17 +49,12 @@ HANDOFF_PATH="docs_dev/handoffs/handoff-${SESSION_UUID}-ecos-to-${ROLE}.md"
 
 ### Step 3: Register Agent in Tracking
 
-```bash
-# Register agent with AI Maestro (if available)
-curl -X POST "http://localhost:23000/api/agents" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "session_name": "'${SESSION_NAME}'",
-    "role": "'${ROLE}'",
-    "project": "'${PROJECT_NAME}'",
-    "status": "starting",
-    "handoff": "'${HANDOFF_PATH}'"
-  }'
+Use the `ai-maestro-agents-management` skill to register the agent with the following details:
+- **Session name**: the agent's session name
+- **Role**: the agent's assigned role
+- **Project**: the project name
+- **Status**: "starting"
+- **Handoff**: path to the handoff document (if applicable)
 ```
 
 ### Step 4: Spawn Agent Process

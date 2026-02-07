@@ -175,7 +175,7 @@ Copy this checklist and track your progress:
 
 ## Examples
 
-For complete examples with curl commands and expected responses, see [references/examples.md](references/examples.md):
+For complete examples with expected responses, see [references/examples.md](references/examples.md):
 
 - Example 1: Requesting approval to spawn an agent
 - Example 2: Requesting approval to terminate an agent

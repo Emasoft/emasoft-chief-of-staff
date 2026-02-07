@@ -22,14 +22,10 @@ Detect when an agent becomes unresponsive, crashes, or terminates unexpectedly u
 ## Steps
 
 1. **Check heartbeat status**
-   ```bash
-   curl -s "http://localhost:23000/api/agents" | jq -r '.agents[] | select(.name == "AGENT_NAME") | .status'
-   ```
+   Use the `ai-maestro-agents-management` skill to query the agent's heartbeat status by name.
 
 2. **Query AI Maestro for agent status**
-   ```bash
-   curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | select(.name == "AGENT_NAME")'
-   ```
+   Use the `ai-maestro-agents-management` skill to query the agent's session details and current status.
 
 3. **Verify message delivery**
    - Send a test ping message
