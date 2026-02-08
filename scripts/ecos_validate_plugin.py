@@ -177,6 +177,26 @@ def validate_plugin_json(
                 if not agent_path.startswith("./"):
                     result.add_warning(f"agent path should start with ./: {agent_path}")
 
+    # Validate manifest schema — Claude Code rejects unknown keys
+    known_manifest_fields = {
+        "name", "version", "description", "author", "homepage",
+        "repository", "license", "keywords", "commands", "agents",
+        "skills", "hooks", "mcpServers", "outputStyles", "lspServers",
+    }
+    for key in manifest.keys():
+        if key not in known_manifest_fields:
+            result.add_error(
+                f"Unrecognized manifest field '{key}' — Claude Code rejects "
+                f"unknown keys and plugin installation will fail"
+            )
+
+    # Validate repository field type — must be string URL, not object
+    if "repository" in manifest and not isinstance(manifest["repository"], str):
+        result.add_error(
+            "Field 'repository' must be a string URL, not an object. "
+            "Use \"https://github.com/user/repo\" format."
+        )
+
     return cast(dict[str, Any], manifest)
 
 
