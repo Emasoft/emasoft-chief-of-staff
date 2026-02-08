@@ -6,14 +6,8 @@
     "name": "Emasoft",
     "email": "713559+Emasoft@users.noreply.github.com"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Emasoft/emasoft-chief-of-staff"
-  },
+  "repository": "https://github.com/Emasoft/emasoft-chief-of-staff",
   "license": "MIT",
-  "engines": {
-    "claude-code": ">=1.0.0"
-  },
   "agents": [
     "./agents/ecos-chief-of-staff-main-agent.md",
     "./agents/ecos-staff-planner.md",
