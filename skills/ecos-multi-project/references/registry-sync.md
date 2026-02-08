@@ -539,8 +539,8 @@ shared_resources:
 |--------------------|-----------------|-------------|
 | Backlog | `backlog` | Items not yet prioritized for work |
 | Todo | `todo` | Items prioritized and ready to start |
-| In Progress | `in_progress` | Items currently being worked on |
-| In Review | `in_review` | Items completed and awaiting review |
+| In Progress | `in-progress` | Items currently being worked on |
+| AI Review | `ai-review` | Items completed and awaiting review |
 | Done | `done` | Items fully completed and closed |
 
 **Custom column handling**:
@@ -552,8 +552,8 @@ github_status_mappings:
   project-id: "skill-factory"
   mappings:
     "Planned": "todo"
-    "Active": "in_progress"
-    "Code Review": "in_review"
+    "Active": "in-progress"
+    "Code Review": "ai-review"
     "Deployed": "done"
 ```
 

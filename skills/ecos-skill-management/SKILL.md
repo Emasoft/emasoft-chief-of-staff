@@ -1,6 +1,7 @@
 ---
 name: ecos-skill-management
 description: Use when validating skill directory structure, reindexing skills for Perfect Skill Suggester, or managing skill activation and discovery. Trigger with skill validation, indexing, or update requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires access to skill directories, skills-ref validator, and Perfect Skill Suggester (PSS) if using reindexing features. Requires AI Maestro installed.
 metadata:

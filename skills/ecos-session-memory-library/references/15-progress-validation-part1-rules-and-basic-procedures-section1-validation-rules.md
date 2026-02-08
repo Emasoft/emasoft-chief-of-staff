@@ -130,7 +130,7 @@ def validate_timestamps(progress_md):
 **Rule:** Overall progress must be consistent with individual task states.
 
 **Valid:**
-- Total tasks = pending + in_progress + completed + blocked + cancelled
+- Total tasks = pending + in-progress + completed + blocked + cancelled
 - Percentage complete = (completed / total) * 100
 - Blocked count matches number of tasks with blockers
 
@@ -144,7 +144,7 @@ def validate_timestamps(progress_md):
 def validate_progress_consistency(progress_md):
     counts = count_tasks_by_status(progress_md)
 
-    total = counts['pending'] + counts['in_progress'] + counts['completed'] + counts['blocked'] + counts['cancelled']
+    total = counts['pending'] + counts['in-progress'] + counts['completed'] + counts['blocked'] + counts['cancelled']
 
     if counts['total'] != total:
         print(f"ERROR: Total tasks ({counts['total']}) != sum of states ({total})")

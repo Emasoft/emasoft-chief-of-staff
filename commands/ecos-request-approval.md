@@ -79,6 +79,8 @@ Example: `ECOS-20250202150000-a1b2c3d4`
 
 The approval request is sent as a structured AI Maestro message:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "from": "emasoft-chief-of-staff",

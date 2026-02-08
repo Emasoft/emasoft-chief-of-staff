@@ -1,6 +1,7 @@
 ---
 name: ecos-notification-protocols
 description: Use when notifying agents about upcoming operations, requesting acknowledgments before proceeding, or sending failure notifications after operation errors. Trigger with notification or alert events.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires access to AI Maestro messaging system and understanding of agent coordination protocols. Requires AI Maestro installed.
 metadata:
@@ -248,6 +249,8 @@ If no response after 30 seconds, use the `agent-messaging` skill to send a remin
 **Verify**: check for acknowledgment response.
 
 **Step 3: Receive Acknowledgment**
+
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 
 ```json
 {

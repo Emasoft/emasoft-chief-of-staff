@@ -184,7 +184,7 @@ progress:
   tasks_pending:
     - id: "T4"
       description: "Implement login validation"
-      status: "in_progress"
+      status: "in-progress"
     - id: "T5"
       description: "Add error handling"
       status: "not_started"

@@ -163,6 +163,8 @@ Notifying: helper-python
 
 Agents should respond with:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "to": "<orchestrator>",

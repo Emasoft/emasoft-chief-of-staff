@@ -57,6 +57,8 @@ Therefore:
 ### Phase 2: Request Manager Approval
 
 1. **Notify EAMA (Assistant Manager)**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",
@@ -94,6 +96,8 @@ Therefore:
 ### Phase 4: Notify Orchestrator
 
 1. **Send notification to EOA**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",
@@ -117,6 +121,8 @@ Therefore:
 1. **Receive handoff docs from EOA**
 
 2. **Send handoff to new agent**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",

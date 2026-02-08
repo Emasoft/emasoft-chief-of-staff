@@ -90,7 +90,7 @@ def load_all_teams() -> dict[str, Any]:
     """Load the master list of all teams."""
     ECOS_STATE_DIR.mkdir(parents=True, exist_ok=True)
     if TEAMS_REGISTRY_FILE.exists():
-        with open(TEAMS_REGISTRY_FILE) as f:
+        with open(TEAMS_REGISTRY_FILE, encoding="utf-8") as f:
             return cast(dict[str, Any], json.load(f))
     return {"teams": {}, "last_updated": get_timestamp()}
 
@@ -98,7 +98,7 @@ def load_all_teams() -> dict[str, Any]:
 def save_all_teams(data: dict[str, Any]) -> None:
     """Save the master list of all teams."""
     data["last_updated"] = get_timestamp()
-    with open(TEAMS_REGISTRY_FILE, "w") as f:
+    with open(TEAMS_REGISTRY_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
 
@@ -331,7 +331,7 @@ def publish_registry_to_repo(registry: dict[str, Any], repo_path: str) -> str:
 
     registry_file = emasoft_dir / "team-registry.json"
 
-    with open(registry_file, "w") as f:
+    with open(registry_file, "w", encoding="utf-8") as f:
         json.dump(registry, f, indent=2)
 
     # Git add and commit
@@ -524,13 +524,13 @@ Examples:
                 args.project_board
             )
             output = args.output or f"{args.team}-registry.json"
-            with open(output, "w") as f:
+            with open(output, "w", encoding="utf-8") as f:
                 json.dump(registry, f, indent=2)
             print(f"Created team registry: {output}")
             return 0
 
         elif args.command == "add-agent":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
 
             registry = add_agent_to_registry(
@@ -542,41 +542,41 @@ Examples:
                 args.address
             )
 
-            with open(args.registry_file, "w") as f:
+            with open(args.registry_file, "w", encoding="utf-8") as f:
                 json.dump(registry, f, indent=2)
             print(f"Added agent {args.agent_name} to team")
             return 0
 
         elif args.command == "remove-agent":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
 
             registry = remove_agent_from_registry(registry, args.agent_name)
 
-            with open(args.registry_file, "w") as f:
+            with open(args.registry_file, "w", encoding="utf-8") as f:
                 json.dump(registry, f, indent=2)
             print(f"Removed agent {args.agent_name} from team")
             return 0
 
         elif args.command == "update-status":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
 
             registry = update_agent_status(registry, args.agent_name, args.status)
 
-            with open(args.registry_file, "w") as f:
+            with open(args.registry_file, "w", encoding="utf-8") as f:
                 json.dump(registry, f, indent=2)
             print(f"Updated {args.agent_name} status to {args.status}")
             return 0
 
         elif args.command == "list":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
             print(list_team_agents(registry))
             return 0
 
         elif args.command == "validate":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
 
             errors = validate_registry(registry)
@@ -590,7 +590,7 @@ Examples:
                 return 0
 
         elif args.command == "publish":
-            with open(args.registry_file) as f:
+            with open(args.registry_file, encoding="utf-8") as f:
                 registry = json.load(f)
 
             result = publish_registry_to_repo(registry, args.repo_path)

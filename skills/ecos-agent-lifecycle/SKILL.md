@@ -1,6 +1,7 @@
 ---
 name: ecos-agent-lifecycle
 description: Use when spawning, terminating, hibernating, or waking agents. Trigger with agent spawn, termination, or hibernation requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires access to agent registry, AI Maestro messaging system, and understanding of agent state management. Requires AI Maestro installed.
 metadata:

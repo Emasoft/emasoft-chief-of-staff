@@ -94,6 +94,7 @@ Duration: [how long has this been occurring]
 
 For WARNING and CRITICAL alerts:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "from": "ecos-chief-of-staff",

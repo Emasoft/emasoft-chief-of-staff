@@ -113,6 +113,8 @@ Assigned agents have been notified of removal.
 
 When `--force` is used, agents receive this AI Maestro message:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "to": "libs-svg-svgbbox",

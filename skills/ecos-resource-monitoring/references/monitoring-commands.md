@@ -414,6 +414,7 @@ done
 6. **Continue** until memory drops below 80%
 
 **Hibernate message format**:
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "to": "agent-name",
@@ -441,6 +442,7 @@ done
 5. **Report to Chief of Staff** for investigation
 
 **Throttle message format**:
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "to": "agent-name",

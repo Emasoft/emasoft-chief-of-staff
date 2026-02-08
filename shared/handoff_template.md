@@ -83,7 +83,7 @@ reason: "context_limit" | "user_request" | "scheduled" | "error_recovery"
 
 | Issue | Assigned To | Status | Blocker |
 |-------|-------------|--------|---------|
-| #123 | eaa-project-abc123 | in_progress | none |
+| #123 | eaa-project-abc123 | in-progress | none |
 | #124 | eoa-project-def456 | blocked | needs_approval |
 
 ### User Preferences

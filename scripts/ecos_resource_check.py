@@ -61,7 +61,7 @@ def get_cpu_usage() -> float | None:
                             return 100.0 - idle
         else:
             # Linux: use /proc/stat
-            with open("/proc/stat") as f:
+            with open("/proc/stat", encoding="utf-8") as f:
                 line = f.readline()
                 if line.startswith("cpu "):
                     parts = line.split()
@@ -123,7 +123,7 @@ def get_memory_usage() -> float | None:
                     return (used / total_mem) * 100.0
         else:
             # Linux: use /proc/meminfo
-            with open("/proc/meminfo") as f:
+            with open("/proc/meminfo", encoding="utf-8") as f:
                 meminfo: dict[str, int] = {}
                 for line in f:
                     if ":" in line:

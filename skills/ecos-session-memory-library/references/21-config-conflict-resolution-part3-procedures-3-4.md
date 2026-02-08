@@ -106,6 +106,7 @@ def restart_task_with_new_config():
 
 ### Step 7: Report to orchestrator
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "to": "orchestrator-master",
@@ -217,6 +218,7 @@ options = [
 
 ### Step 5: Report to orchestrator
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "to": "orchestrator-master",

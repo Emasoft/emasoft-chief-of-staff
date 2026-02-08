@@ -1,6 +1,7 @@
 ---
 name: ecos-plugin-management
 description: Use when installing, configuring, or validating Claude Code plugins. Trigger with plugin install, update, or validation requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires access to Claude Code CLI, plugin directories, and understanding of plugin manifest format and hooks configuration. Requires AI Maestro installed.
 metadata:

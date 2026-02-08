@@ -333,7 +333,7 @@ All UUIDs are registered in: `$CLAUDE_PROJECT_DIR/docs_dev/.uuid-registry.json`
     "mod-dsgn-a1b2c3-m7n8": {
       "design_uuid": "dsgn-skillf-x4y5z6",
       "name": "component-a",
-      "status": "in_progress"
+      "status": "in-progress"
     }
   }
 }

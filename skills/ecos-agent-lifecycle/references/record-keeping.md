@@ -314,7 +314,7 @@ All logs stored in `$CLAUDE_PROJECT_DIR/docs_dev/chief-of-staff/` are:
       {
         "task_id": "TASK-123",
         "description": "Implement token validation",
-        "status": "in_progress",
+        "status": "in-progress",
         "progress": 75
       }
     ]

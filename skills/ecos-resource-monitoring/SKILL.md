@@ -1,6 +1,7 @@
 ---
 name: ecos-resource-monitoring
 description: Use when monitoring system resources, tracking instance limits, managing resource alerts, and ensuring team capacity is maintained. Trigger with resource checks or limit alerts.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires system access for resource checks, AI Maestro for agent monitoring, and alerting capabilities. Requires AI Maestro installed.
 metadata:

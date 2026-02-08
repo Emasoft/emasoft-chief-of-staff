@@ -62,6 +62,9 @@ When AI Maestro is unavailable:
    ```
 
 2. **Queue ALL outgoing messages**:
+
+   > **Note**: This offline fallback is ONLY for when AI Maestro is completely unreachable. Under normal conditions, always use the `agent-messaging` skill to send messages.
+
    ```bash
    mkdir -p .claude/queue/outbox
    # Queue for each role

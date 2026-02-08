@@ -1,6 +1,8 @@
 ---
 name: ecos-label-taxonomy
 description: "Use when applying or checking GitHub labels for agent assignment and status tracking. GitHub label taxonomy reference for the Chief of Staff Agent. Trigger with `/ecos-label-taxonomy`."
+context: fork
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires AI Maestro installed.
 version: 1.0.0
@@ -56,7 +58,7 @@ Copy this checklist and track your progress:
 | Label Applied | Label successfully added to issue | `assign:eoa-svgbbox-orchestrator` |
 | Label Removed | Old label removed before new one | `status:pending` removed |
 | Status Updated | Issue status changed via label | `status:in-progress` applied |
-| Verification | Confirmation of label state | Labels: assign:implementer-1, status:ready, priority:high |
+| Verification | Confirmation of label state | Labels: assign:implementer-1, status:todo, priority:high |
 | Registry Synced | Team registry updated to match labels | `current_issues: [42, 43]` in team-registry.json |
 
 ---
@@ -85,14 +87,14 @@ Copy this checklist and track your progress:
 gh issue edit 42 --add-label "assign:implementer-1"
 
 # Step 2: Update status from backlog to ready
-gh issue edit 42 --remove-label "status:backlog" --add-label "status:ready"
+gh issue edit 42 --remove-label "status:backlog" --add-label "status:todo"
 
 # Step 3: Update team registry
 jq '.agents["implementer-1"].current_issues += [42]' .emasoft/team-registry.json > temp.json && mv temp.json .emasoft/team-registry.json
 
 # Step 4: Verify
 gh issue view 42 --json labels --jq '.labels[].name'
-# Output: assign:implementer-1, status:ready
+# Output: assign:implementer-1, status:todo
 ```
 
 ### Example 2: Terminating Agent and Clearing Assignments
@@ -155,13 +157,33 @@ gh issue view 43 --json labels --jq '.labels[].name'
 - Reassign when agent becomes unavailable
 - Clear assignments when agents are terminated
 
+### Kanban Columns (Canonical 8-Column System)
+
+The full workflow uses these 8 status columns:
+
+| # | Column Code | Display Name | Label | Description |
+|---|-------------|-------------|-------|-------------|
+| 1 | `backlog` | Backlog | `status:backlog` | Entry point for new tasks |
+| 2 | `todo` | Todo | `status:todo` | Ready to start |
+| 3 | `in-progress` | In Progress | `status:in-progress` | Active work |
+| 4 | `ai-review` | AI Review | `status:ai-review` | Integrator agent reviews ALL tasks |
+| 5 | `human-review` | Human Review | `status:human-review` | User reviews BIG tasks only (via EAMA) |
+| 6 | `merge-release` | Merge/Release | `status:merge-release` | Ready to merge |
+| 7 | `done` | Done | `status:done` | Completed |
+| 8 | `blocked` | Blocked | `status:blocked` | Blocked at any stage |
+
+**Task Routing Rules:**
+- **Small tasks**: In Progress -> AI Review -> Merge/Release -> Done
+- **Big tasks**: In Progress -> AI Review -> Human Review -> Merge/Release -> Done
+- **Human Review** is requested via EAMA (Assistant Manager asks user to test/review)
+- Not all tasks go through Human Review -- only significant changes requiring human judgment
+
 ### Status Labels ECOS Updates
 
 | Label | When ECOS Sets It |
 |-------|------------------|
-| `status:on-hold` | When pausing work (resource constraints) |
-| `status:blocked` | When agent reports blocker |
-| `status:ready` | When blocker resolved |
+| `status:blocked` | When pausing work (resource constraints) or agent reports blocker |
+| `status:todo` | When blocker resolved and task is ready to resume |
 
 ---
 
@@ -180,7 +202,9 @@ ECOS uses priority for resource allocation:
 ECOS monitors all status changes:
 - `status:blocked` - May need to reassign or escalate
 - `status:in-progress` - Track for timeout/health monitoring
-- `status:needs-review` - Route to EIA if not already
+- `status:ai-review` - Route to EIA if not already
+- `status:human-review` - Escalated for user review via EAMA
+- `status:merge-release` - Ready to merge/release
 
 ---
 
@@ -191,7 +215,7 @@ ECOS monitors all status changes:
 ```bash
 # Assign new agent to issue
 gh issue edit $ISSUE_NUMBER --add-label "assign:$NEW_AGENT_NAME"
-gh issue edit $ISSUE_NUMBER --remove-label "status:backlog" --add-label "status:ready"
+gh issue edit $ISSUE_NUMBER --remove-label "status:backlog" --add-label "status:todo"
 ```
 
 ### When Agent Terminated
@@ -256,12 +280,12 @@ REGISTERED=$(jq -r '.agents["implementer-1"].current_issues | sort | .[]' .emaso
 
 | Action | Labels Involved |
 |--------|-----------------|
-| Spawn agent | Add `assign:<agent>`, update `status:ready` |
+| Spawn agent | Add `assign:<agent>`, update `status:todo` |
 | Terminate agent | Remove `assign:<agent>`, set `status:backlog` |
 | Agent blocked | Update to `status:blocked` |
-| Resolve blocker | Update to `status:ready` or `status:in-progress` |
+| Resolve blocker | Update to `status:todo` or `status:in-progress` |
 | Escalate to human | Add `assign:human` |
-| Put on hold | Add `status:on-hold` |
+| Block work | Add `status:blocked` |
 
 ### Labels ECOS Never Sets
 

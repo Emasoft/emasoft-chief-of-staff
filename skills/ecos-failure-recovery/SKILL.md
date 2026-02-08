@@ -1,6 +1,7 @@
 ---
 name: ecos-failure-recovery
 description: Use when recovering from agent failures or coordinating agent replacements. Trigger with failure events.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires AI Maestro installed.
 context: fork
@@ -287,6 +288,8 @@ A task blocker occurs when work cannot proceed due to missing information, acces
    - Permission or access issue within ECOS authority → ECOS handles directly
    - User decision or input needed → Route to EAMA
 2. If routing to EAMA, use this template:
+
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 
 ```json
 {

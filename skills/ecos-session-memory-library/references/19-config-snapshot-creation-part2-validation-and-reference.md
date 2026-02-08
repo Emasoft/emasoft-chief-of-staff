@@ -57,6 +57,7 @@
    ```
 
 5. **Notify orchestrator if required**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
    ```json
    {
      "to": "orchestrator-master",

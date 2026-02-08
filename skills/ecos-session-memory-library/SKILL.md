@@ -1,6 +1,7 @@
 ---
 name: ecos-session-memory-library
 description: Use when managing session memory persistence across multiple interactions, surviving context window compaction, and recovering from interruptions. Trigger with shared configuration or pattern lookups.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires file system access to design/memory/ directory, Markdown parsing capabilities, and understanding of session lifecycle (initialization, execution, termination). Requires AI Maestro installed.
 metadata:

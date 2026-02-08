@@ -1,6 +1,7 @@
 ---
 name: ecos-onboarding
 description: Use when onboarding new agents to the team, providing role briefings, conducting project handoffs, and ensuring agents are ready to contribute effectively. Trigger with new agent or new project setup.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires AI Maestro messaging API access, project documentation access, and role definition documents. Requires AI Maestro installed.
 metadata:

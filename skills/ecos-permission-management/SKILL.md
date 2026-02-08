@@ -1,6 +1,7 @@
 ---
 name: ecos-permission-management
 description: Use when requesting EAMA approval for agent lifecycle ops (spawn, terminate, hibernate, wake, plugin install). Trigger with permission requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires AI Maestro messaging system and Assistant Manager (EAMA) to be online for approval handling. Requires AI Maestro installed.
 metadata:

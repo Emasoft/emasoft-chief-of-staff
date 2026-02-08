@@ -57,6 +57,8 @@ If blocker is agent reassignment or permission within ECOS authority:
 ### Step 2B: Route to EAMA (If User Decision Needed)
 
 1. **Compose blocker-escalation message**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",
@@ -94,6 +96,8 @@ If blocker is agent reassignment or permission within ECOS authority:
    - Verify it includes user's exact decision (RULE 14)
 
 2. **Route to EOA**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",

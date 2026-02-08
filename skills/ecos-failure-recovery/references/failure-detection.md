@@ -179,7 +179,7 @@ Example entry:
   "expected_completion": "2025-01-15T12:00:00Z",
   "last_progress_update": "2025-01-15T10:30:00Z",
   "progress_percentage": 60,
-  "status": "in_progress"
+  "status": "in-progress"
 }
 ```
 

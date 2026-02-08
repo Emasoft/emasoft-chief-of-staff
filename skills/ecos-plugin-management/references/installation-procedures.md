@@ -1055,6 +1055,7 @@ Use the `agent-messaging` skill to send:
 
 **Message Content Template:**
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 ```json
 {
   "to": "<agent-name>",

@@ -300,6 +300,8 @@ echo "$LOG_ENTRY" >> $LOG_FILE
 
 **Standard failure notification structure:**
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "to": "agent-session-name",

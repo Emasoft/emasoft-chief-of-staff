@@ -39,7 +39,7 @@
    ```python
    counts = {
        'pending': count_tasks_in_section(progress_md, 'Todo List'),
-       'in_progress': count_tasks_in_section(progress_md, 'In Progress'),
+       'in-progress': count_tasks_in_section(progress_md, 'In Progress'),
        'completed': count_tasks_in_section(progress_md, 'Completed Tasks'),
        'blocked': count_tasks_in_section(progress_md, 'Blocked Tasks'),
        'cancelled': count_tasks_in_section(progress_md, 'Cancelled Tasks')

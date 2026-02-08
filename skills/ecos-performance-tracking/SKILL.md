@@ -1,6 +1,7 @@
 ---
 name: ecos-performance-tracking
 description: Use when tracking team performance, analyzing agent strengths and weaknesses, collecting metrics, and generating performance reports. Trigger with performance review or metrics requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires AI Maestro for agent metrics, session memory for historical data, and reporting capabilities. Requires AI Maestro installed.
 metadata:

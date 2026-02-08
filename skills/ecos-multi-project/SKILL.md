@@ -1,6 +1,7 @@
 ---
 name: ecos-multi-project
 description: Use when managing multiple projects simultaneously, tracking project states, syncing with GitHub Projects, or coordinating cross-project dependencies. Trigger with multi-project coordination requests.
+user-invocable: false
 license: Apache-2.0
 compatibility: Requires access to project registry, GitHub API via gh CLI, and understanding of project lifecycle and inter-project relationships. Requires AI Maestro installed.
 metadata:

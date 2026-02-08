@@ -143,6 +143,8 @@ This command implements a polling loop:
 
 Agents should respond with this message format:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "to": "<orchestrator-session>",

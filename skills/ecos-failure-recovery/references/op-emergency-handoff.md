@@ -51,6 +51,8 @@ Transfer critical work immediately when deadlines cannot wait for the full agent
 ### Step 2: Notify Orchestrator
 
 1. **Send urgent notification to EOA**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",
@@ -103,6 +105,8 @@ Transfer critical work immediately when deadlines cannot wait for the full agent
 1. **Wait for EOA to assign available agent**
 
 2. **Send emergency handoff to receiving agent**
+   > **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
    ```json
    {
      "from": "ecos-chief-of-staff",

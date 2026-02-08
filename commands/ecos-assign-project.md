@@ -103,6 +103,8 @@ No changes made. Use /ecos-list-projects to view assignments.
 
 The assigned agent receives this AI Maestro message:
 
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
+
 ```json
 {
   "to": "libs-svg-svgbbox",
@@ -174,6 +176,8 @@ Agent session names follow the domain hierarchy format:
 ## Agent Status Response
 
 The assigned agent should acknowledge with:
+
+> **Note**: Use the `agent-messaging` skill to send messages. The JSON structure below shows the message content.
 
 ```json
 {
