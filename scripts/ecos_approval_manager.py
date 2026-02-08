@@ -11,18 +11,14 @@ Part of the emasoft-chief-of-staff plugin.
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
-import urllib.request
-import urllib.error
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional, cast
-import uuid
+from typing import Any, Optional
 
-
-# Configuration
-AIMAESTRO_API = os.environ.get("AIMAESTRO_API", "http://localhost:23000")
 APPROVALS_DIR = ".claude/approvals"
 PENDING_DIR = f"{APPROVALS_DIR}/pending"
 COMPLETED_DIR = f"{APPROVALS_DIR}/completed"
@@ -254,40 +250,48 @@ def load_approval_request(request_id: str) -> Optional[dict[str, Any]]:
 
 def send_aimaestro_message(
     to: str, subject: str, content: dict[str, Any], priority: str = "normal"
-) -> dict[str, Any]:
-    """Send a message via AI Maestro API."""
-    url = f"{AIMAESTRO_API}/api/messages"
-
-    payload = {"to": to, "subject": subject, "priority": priority, "content": content}
-
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=data, headers={"Content-Type": "application/json"}, method="POST"
+) -> bool:
+    """Send a message via AMP CLI (amp-send)."""
+    msg_type = "request"
+    if isinstance(content, dict):
+        msg_type = content.get("type", "request")
+    message = (
+        content.get("message", json.dumps(content))
+        if isinstance(content, dict)
+        else str(content)
     )
 
     try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            return cast(dict[str, Any], json.loads(response.read().decode("utf-8")))
-    except urllib.error.URLError as e:
-        return {"error": str(e), "success": False}
-    except Exception as e:
-        return {"error": str(e), "success": False}
+        result = subprocess.run(
+            [
+                "amp-send",
+                to,
+                subject,
+                message,
+                "--priority",
+                priority,
+                "--type",
+                str(msg_type),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return False
 
 
 def get_aimaestro_messages(agent: str, status: str = "unread") -> list[dict[str, Any]]:
-    """Get messages from AI Maestro API."""
-    url = f"{AIMAESTRO_API}/api/messages?agent={agent}&action=list&status={status}"
+    """Get messages from AI Maestro via amp-send CLI.
 
-    req = urllib.request.Request(url, method="GET")
-
-    try:
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            return cast(list[dict[str, Any]], data.get("messages", []))
-    except urllib.error.URLError:
-        return []
-    except Exception:
-        return []
+    Note: amp-send is a send-only CLI. Message retrieval relies on
+    file-based polling in wait_for_approval. This function returns an
+    empty list as the AMP CLI does not support reading messages.
+    """
+    _ = agent
+    _ = status
+    return []
 
 
 def create_approval_request(
@@ -344,7 +348,7 @@ def create_approval_request(
     }
 
     # Send to EAMA for approval routing
-    send_result = send_aimaestro_message(
+    message_sent = send_aimaestro_message(
         to="emasoft-assistant-manager-agent",
         subject=f"[APPROVAL] {operation_type}: {agent_name}",
         content=message_content,
@@ -356,7 +360,7 @@ def create_approval_request(
         "request_id": request_id,
         "status": "pending",
         "filepath": str(filepath),
-        "message_sent": "error" not in send_result,
+        "message_sent": message_sent,
     }
 
 
@@ -513,7 +517,7 @@ def respond_to_approval(
     }
 
     # Try to send to requester (may fail if requester is not a valid agent)
-    send_result = send_aimaestro_message(
+    notification_sent = send_aimaestro_message(
         to=requester,
         subject=f"[APPROVAL {decision.upper()}] {operation_type}: {agent_name}",
         content=message_content,
@@ -527,7 +531,7 @@ def respond_to_approval(
         "comment": comment,
         "decided_by": decided_by,
         "filepath": str(completed_path),
-        "notification_sent": "error" not in send_result,
+        "notification_sent": notification_sent,
     }
 
 
@@ -615,7 +619,7 @@ def wait_for_approval(request_id: str, timeout_seconds: int = 120) -> dict[str, 
         time.sleep(poll_interval)
 
 
-def main():
+def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description="ECOS Approval Manager - Manage approval requests",

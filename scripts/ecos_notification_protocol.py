@@ -2,7 +2,7 @@
 """
 Emasoft Chief of Staff - Notification Protocol Script
 
-Implements notification protocols for agent communication via AI Maestro API.
+Implements notification protocols for agent communication via AMP CLI (amp-send).
 
 Features:
 - Send notifications to multiple agents with optional acknowledgment
@@ -26,53 +26,11 @@ import subprocess
 import sys
 import time
 from datetime import datetime, timezone
-from typing import Any, cast
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
-
-
-# AI Maestro API base URL
-AIMAESTRO_API = os.getenv("AIMAESTRO_API", "http://localhost:23000")
 
 # Default timeouts and intervals
 DEFAULT_TIMEOUT = 120
 DEFAULT_REMIND_INTERVAL = 30
 DEFAULT_POLL_INTERVAL = 5
-
-
-def _make_request(endpoint: str, method: str = "GET", data: dict | None = None) -> dict:
-    """
-    Make an HTTP request to the AI Maestro API.
-
-    Args:
-        endpoint: API endpoint (e.g., "/api/messages")
-        method: HTTP method (GET, POST)
-        data: JSON payload for POST requests
-
-    Returns:
-        Parsed JSON response as dict
-
-    Raises:
-        RuntimeError: If the request fails
-    """
-    url = f"{AIMAESTRO_API}{endpoint}"
-    headers = {"Content-Type": "application/json"}
-
-    request_data = None
-    if data is not None:
-        request_data = json.dumps(data).encode("utf-8")
-
-    req = Request(url, data=request_data, headers=headers, method=method)
-
-    try:
-        with urlopen(req, timeout=10) as response:
-            return cast(dict[str, Any], json.loads(response.read().decode("utf-8")))
-    except HTTPError as e:
-        raise RuntimeError(f"HTTP error {e.code}: {e.reason}")
-    except URLError as e:
-        raise RuntimeError(f"URL error: {e.reason}")
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Invalid JSON response: {e}")
 
 
 def _send_message(
@@ -82,9 +40,9 @@ def _send_message(
     priority: str = "normal",
     msg_type: str = "notification",
     require_ack: bool = False,
-) -> dict:
+) -> bool:
     """
-    Send a single message via AI Maestro API.
+    Send a single message via AMP CLI (amp-send).
 
     Args:
         to: Target agent session name
@@ -95,24 +53,37 @@ def _send_message(
         require_ack: Whether to request acknowledgment
 
     Returns:
-        API response dict
+        True if message was sent successfully, False otherwise
     """
-    # Build message content with optional ack request
-    content = {"type": msg_type, "message": message}
+    # Build the full message body including ack instructions when requested
+    full_message = message
     if require_ack:
-        content["require_acknowledgment"] = "true"
-        content["ack_instructions"] = (
+        full_message += (
+            "\n\n[ACKNOWLEDGMENT REQUIRED] "
             "Please acknowledge this message by sending a reply with type='acknowledgment'"
         )
 
-    payload = {"to": to, "subject": subject, "priority": priority, "content": content}
+    result = subprocess.run(
+        [
+            "amp-send",
+            to,
+            subject,
+            full_message,
+            "--priority",
+            priority,
+            "--type",
+            msg_type,
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    return result.returncode == 0
 
-    return _make_request("/api/messages", method="POST", data=payload)
 
-
-def _get_messages(agent: str, status: str = "unread") -> list[dict]:
+def _get_messages(agent: str, status: str = "unread") -> list[dict[str, object]]:
     """
-    Get messages for an agent from AI Maestro API.
+    Get messages for an agent using check-aimaestro-messages.sh script.
 
     Args:
         agent: Agent session name
@@ -121,12 +92,28 @@ def _get_messages(agent: str, status: str = "unread") -> list[dict]:
     Returns:
         List of message dicts
     """
-    endpoint = f"/api/messages?agent={agent}&action=list&status={status}"
-    response = _make_request(endpoint)
-    return cast(list[dict[str, Any]], response.get("messages", []))
+    script_path = os.path.expanduser("~/.local/bin/check-aimaestro-messages.sh")
+
+    try:
+        result = subprocess.run(
+            [script_path, "--agent", agent, "--status", status, "--json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            data = json.loads(result.stdout)
+            messages_val: object = data.get("messages", [])
+            if isinstance(messages_val, list):
+                return messages_val
+            return []
+    except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
+        pass
+
+    return []
 
 
-def _list_agents_via_script() -> list[dict]:
+def _list_agents_via_script() -> list[dict[str, object]]:
     """
     List agents using aimaestro-agent.sh script.
 
@@ -135,21 +122,19 @@ def _list_agents_via_script() -> list[dict]:
     """
     script_path = os.path.expanduser("~/.local/bin/aimaestro-agent.sh")
 
-    if not os.path.exists(script_path):
-        # Fallback: try to get agents from API directly
-        try:
-            response = _make_request("/api/agents")
-            return cast(list[dict[str, Any]], response.get("agents", []))
-        except RuntimeError:
-            return []
-
     try:
         result = subprocess.run(
-            [script_path, "list", "--json"], capture_output=True, text=True, timeout=10
+            [script_path, "list", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0 and result.stdout.strip():
             data = json.loads(result.stdout)
-            return cast(list[dict[str, Any]], data.get("agents", []))
+            agents_val: object = data.get("agents", [])
+            if isinstance(agents_val, list):
+                return agents_val
+            return []
     except (subprocess.TimeoutExpired, json.JSONDecodeError, FileNotFoundError):
         pass
 
@@ -158,9 +143,9 @@ def _list_agents_via_script() -> list[dict]:
 
 def notify_agents(
     agents: list[str], operation: str, message: str, require_ack: bool = False
-) -> dict:
+) -> dict[str, object]:
     """
-    Send notification to each agent via AI Maestro.
+    Send notification to each agent via AMP CLI.
 
     Sends a notification message to multiple agents about an operation.
     If require_ack is True, the message includes acknowledgment request instructions.
@@ -175,32 +160,26 @@ def notify_agents(
         Dict mapping agent names to status:
         {
             "agent1": "sent",
-            "agent2": "sent",
-            "agent3": "error: connection refused"
+            "agent2": "error: amp-send failed"
         }
     """
-    results = {}
+    results: dict[str, object] = {}
     subject = f"[{operation.upper()}] Notification"
 
     for agent in agents:
-        try:
-            response = _send_message(
-                to=agent,
-                subject=subject,
-                message=message,
-                priority="normal",
-                msg_type="notification",
-                require_ack=require_ack,
-            )
+        success = _send_message(
+            to=agent,
+            subject=subject,
+            message=message,
+            priority="normal",
+            msg_type="notification",
+            require_ack=require_ack,
+        )
 
-            if response.get("success", False):
-                results[agent] = "sent"
-            else:
-                error = response.get("error", "unknown error")
-                results[agent] = f"error: {error}"
-
-        except RuntimeError as e:
-            results[agent] = f"error: {e}"
+        if success:
+            results[agent] = "sent"
+        else:
+            results[agent] = "error: amp-send failed"
 
     return results
 
@@ -211,7 +190,7 @@ def wait_for_acknowledgment(
     remind_interval: int = DEFAULT_REMIND_INTERVAL,
 ) -> bool:
     """
-    Poll AI Maestro for acknowledgment message from agent.
+    Poll for acknowledgment message from agent.
 
     Continuously polls for an acknowledgment message from the specified agent.
     Sends reminder messages at the specified interval if no ack received.
@@ -238,40 +217,35 @@ def wait_for_acknowledgment(
             return False
 
         # Poll for messages from the target agent
-        try:
-            messages = _get_messages(our_session, status="unread")
+        messages = _get_messages(our_session, status="unread")
 
-            for msg in messages:
-                # Check if this is an acknowledgment from our target agent
-                sender = msg.get("from", "")
-                content = msg.get("content", {})
+        for msg in messages:
+            # Check if this is an acknowledgment from our target agent
+            sender = msg.get("from", "")
+            content = msg.get("content", {})
+            if isinstance(content, dict):
                 msg_type = content.get("type", "")
+            else:
+                msg_type = ""
 
-                if sender == agent and msg_type == "acknowledgment":
-                    return True
-
-        except RuntimeError:
-            # API error, continue waiting
-            pass
+            if sender == agent and msg_type == "acknowledgment":
+                return True
 
         # Send reminder if interval elapsed
         since_remind = time.time() - last_remind_time
         if since_remind >= remind_interval:
-            try:
-                _send_message(
-                    to=agent,
-                    subject="[REMINDER] Acknowledgment Required",
-                    message=(
-                        f"Reminder: Please acknowledge the previous notification. "
-                        f"Waiting for {int(elapsed)} seconds. "
-                        f"Timeout in {int(timeout - elapsed)} seconds."
-                    ),
-                    priority="high",
-                    msg_type="reminder",
-                )
-                last_remind_time = time.time()
-            except RuntimeError:
-                pass
+            _send_message(
+                to=agent,
+                subject="[REMINDER] Acknowledgment Required",
+                message=(
+                    f"Reminder: Please acknowledge the previous notification. "
+                    f"Waiting for {int(elapsed)} seconds. "
+                    f"Timeout in {int(timeout - elapsed)} seconds."
+                ),
+                priority="high",
+                msg_type="reminder",
+            )
+            last_remind_time = time.time()
 
         # Wait before next poll
         time.sleep(DEFAULT_POLL_INTERVAL)
@@ -284,7 +258,7 @@ def broadcast_notification(
     agents: list[str] | None = None,
     role: str | None = None,
     project: str | None = None,
-) -> dict:
+) -> dict[str, object]:
     """
     Broadcast notification to agents matching criteria.
 
@@ -308,7 +282,7 @@ def broadcast_notification(
             "results": {"agent1": "sent", "agent2": "error: ..."}
         }
     """
-    target_agents = []
+    target_agents: list[str] = []
 
     if agents:
         # Use explicit agent list
@@ -318,45 +292,40 @@ def broadcast_notification(
         all_agents = _list_agents_via_script()
 
         for agent_info in all_agents:
-            session = agent_info.get("session_name", "")
+            session_val = agent_info.get("session_name", "")
+            session = str(session_val) if session_val else ""
             if not session:
                 continue
 
             # Filter by role if specified
-            if role and agent_info.get("role", "") != role:
+            if role and str(agent_info.get("role", "")) != role:
                 continue
 
             # Filter by project if specified
-            if project and agent_info.get("project", "") != project:
+            if project and str(agent_info.get("project", "")) != project:
                 continue
 
             target_agents.append(session)
 
     # Send to all target agents
-    results = {}
+    results: dict[str, str] = {}
     sent_count = 0
     failed_count = 0
 
-    for agent in target_agents:
-        try:
-            response = _send_message(
-                to=agent,
-                subject=subject,
-                message=message,
-                priority=priority,
-                msg_type="broadcast",
-            )
+    for agent_name in target_agents:
+        success = _send_message(
+            to=agent_name,
+            subject=subject,
+            message=message,
+            priority=priority,
+            msg_type="broadcast",
+        )
 
-            if response.get("success", False):
-                results[agent] = "sent"
-                sent_count += 1
-            else:
-                error = response.get("error", "unknown error")
-                results[agent] = f"error: {error}"
-                failed_count += 1
-
-        except RuntimeError as e:
-            results[agent] = f"error: {e}"
+        if success:
+            results[agent_name] = "sent"
+            sent_count += 1
+        else:
+            results[agent_name] = "error: amp-send failed"
             failed_count += 1
 
     return {
@@ -369,7 +338,7 @@ def broadcast_notification(
 
 def skill_install_with_notification(
     agent: str, skill: str, marketplace: str | None = None, wait_for_ok: bool = True
-) -> dict:
+) -> dict[str, object]:
     """
     Install skill with multi-phase notification workflow.
 
@@ -398,38 +367,37 @@ def skill_install_with_notification(
             "warnings": []
         }
     """
-    phases: list[dict] = []
+    phases: list[dict[str, object]] = []
     warnings: list[str] = []
     overall_success = True
 
     skill_ref = f"{skill}@{marketplace}" if marketplace else skill
 
     # Phase 1: Notify agent about upcoming install
-    phase1_result = {"phase": 1, "name": "notify", "status": "pending"}
-    try:
-        response = _send_message(
-            to=agent,
-            subject=f"[SKILL INSTALL] Preparing to install: {skill_ref}",
-            message=(
-                f"Chief of Staff is preparing to install skill '{skill_ref}' for your session.\n\n"
-                f"This may require a Claude Code restart to take effect.\n"
-                f"Please save any pending work and acknowledge when ready."
-            ),
-            priority="high",
-            msg_type="skill_install_notification",
-            require_ack=wait_for_ok,
-        )
+    phase1_result: dict[str, object] = {
+        "phase": 1,
+        "name": "notify",
+        "status": "pending",
+    }
 
-        if response.get("success", False):
-            phase1_result["status"] = "success"
-        else:
-            phase1_result["status"] = "failed"
-            phase1_result["error"] = response.get("error", "unknown")
-            overall_success = False
+    success = _send_message(
+        to=agent,
+        subject=f"[SKILL INSTALL] Preparing to install: {skill_ref}",
+        message=(
+            f"Chief of Staff is preparing to install skill '{skill_ref}' for your session.\n\n"
+            f"This may require a Claude Code restart to take effect.\n"
+            f"Please save any pending work and acknowledge when ready."
+        ),
+        priority="high",
+        msg_type="skill_install_notification",
+        require_ack=wait_for_ok,
+    )
 
-    except RuntimeError as e:
+    if success:
+        phase1_result["status"] = "success"
+    else:
         phase1_result["status"] = "failed"
-        phase1_result["error"] = str(e)
+        phase1_result["error"] = "amp-send failed"
         overall_success = False
 
     phases.append(phase1_result)
@@ -444,7 +412,11 @@ def skill_install_with_notification(
         }
 
     # Phase 2: Wait for acknowledgment (if required)
-    phase2_result = {"phase": 2, "name": "wait_ack", "status": "skipped"}
+    phase2_result: dict[str, object] = {
+        "phase": 2,
+        "name": "wait_ack",
+        "status": "skipped",
+    }
 
     if wait_for_ok:
         phase2_result["status"] = "pending"
@@ -466,7 +438,11 @@ def skill_install_with_notification(
     phases.append(phase2_result)
 
     # Phase 3: Execute skill installation
-    phase3_result = {"phase": 3, "name": "install", "status": "pending"}
+    phase3_result: dict[str, object] = {
+        "phase": 3,
+        "name": "install",
+        "status": "pending",
+    }
 
     script_path = os.path.expanduser("~/.local/bin/aimaestro-agent.sh")
 
@@ -511,32 +487,30 @@ def skill_install_with_notification(
     phases.append(phase3_result)
 
     # Phase 4: Notify agent to verify skill is active
-    phase4_result = {"phase": 4, "name": "verify_notify", "status": "pending"}
+    phase4_result: dict[str, object] = {
+        "phase": 4,
+        "name": "verify_notify",
+        "status": "pending",
+    }
 
     if phase3_result["status"] == "success":
-        try:
-            response = _send_message(
-                to=agent,
-                subject=f"[SKILL INSTALLED] Please verify: {skill_ref}",
-                message=(
-                    f"Skill '{skill_ref}' has been installed.\n\n"
-                    f"IMPORTANT: You may need to restart your Claude Code session for the skill to activate.\n\n"
-                    f"After restart, verify the skill is active by checking /skills or running a skill-specific command."
-                ),
-                priority="high",
-                msg_type="skill_verify_notification",
-            )
+        verify_success = _send_message(
+            to=agent,
+            subject=f"[SKILL INSTALLED] Please verify: {skill_ref}",
+            message=(
+                f"Skill '{skill_ref}' has been installed.\n\n"
+                f"IMPORTANT: You may need to restart your Claude Code session for the skill to activate.\n\n"
+                f"After restart, verify the skill is active by checking /skills or running a skill-specific command."
+            ),
+            priority="high",
+            msg_type="skill_verify_notification",
+        )
 
-            if response.get("success", False):
-                phase4_result["status"] = "success"
-            else:
-                phase4_result["status"] = "failed"
-                phase4_result["error"] = response.get("error", "unknown")
-                warnings.append("Failed to send verification notification")
-
-        except RuntimeError as e:
+        if verify_success:
+            phase4_result["status"] = "success"
+        else:
             phase4_result["status"] = "failed"
-            phase4_result["error"] = str(e)
+            phase4_result["error"] = "amp-send failed"
             warnings.append("Failed to send verification notification")
     else:
         phase4_result["status"] = "skipped"
@@ -547,7 +521,7 @@ def skill_install_with_notification(
     return {"phases": phases, "success": overall_success, "warnings": warnings}
 
 
-def _cmd_notify(args: argparse.Namespace) -> dict:
+def _cmd_notify(args: argparse.Namespace) -> dict[str, object]:
     """Handle 'notify' subcommand."""
     agents = [a.strip() for a in args.agents.split(",") if a.strip()]
 
@@ -562,7 +536,7 @@ def _cmd_notify(args: argparse.Namespace) -> dict:
     )
 
 
-def _cmd_wait_ack(args: argparse.Namespace) -> dict:
+def _cmd_wait_ack(args: argparse.Namespace) -> dict[str, object]:
     """Handle 'wait-ack' subcommand."""
     start = datetime.now(timezone.utc).isoformat()
 
@@ -582,7 +556,7 @@ def _cmd_wait_ack(args: argparse.Namespace) -> dict:
     }
 
 
-def _cmd_broadcast(args: argparse.Namespace) -> dict:
+def _cmd_broadcast(args: argparse.Namespace) -> dict[str, object]:
     """Handle 'broadcast' subcommand."""
     agents = None
     if args.agents:
@@ -598,7 +572,7 @@ def _cmd_broadcast(args: argparse.Namespace) -> dict:
     )
 
 
-def _cmd_install_skill(args: argparse.Namespace) -> dict:
+def _cmd_install_skill(args: argparse.Namespace) -> dict[str, object]:
     """Handle 'install-skill' subcommand."""
     return skill_install_with_notification(
         agent=args.agent,

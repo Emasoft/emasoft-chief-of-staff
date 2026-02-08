@@ -23,7 +23,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -77,7 +76,13 @@ def check_active_agents(content: str) -> tuple[int, list[str]]:
                         role = parts[1]
                         status = parts[2].lower()
                         # Check if agent has incomplete work
-                        if status not in ("done", "completed", "idle", "session_ended", "-"):
+                        if status not in (
+                            "done",
+                            "completed",
+                            "idle",
+                            "session_ended",
+                            "-",
+                        ):
                             incomplete.append(f"{name} ({role}): {status}")
 
     return len(incomplete), incomplete
@@ -113,27 +118,13 @@ def check_pending_tasks(content: str) -> tuple[int, list[str]]:
 def check_ai_maestro_inbox() -> tuple[int, list[str]]:
     """Check AI Maestro inbox for unread messages.
 
+    Note: amp-send is a send-only CLI. Message retrieval is not supported
+    by the AMP CLI, so this function returns an empty result. Inbox
+    checking relies on file-based state or external polling.
+
     Returns:
         Tuple of (unread_count, list of message subjects)
     """
-    api_url = os.environ.get("AIMAESTRO_API", "http://localhost:23000")
-    agent_name = os.environ.get("SESSION_NAME", "chief-of-staff")
-
-    try:
-        result = subprocess.run(
-            ["curl", "-s", "-m", "3",
-             f"{api_url}/api/messages?agent={agent_name}&action=list&status=unread"],
-            capture_output=True,
-            text=True,
-            timeout=5
-        )
-        if result.returncode == 0 and result.stdout.strip():
-            data = json.loads(result.stdout)
-            messages = data.get("messages", [])
-            subjects = [msg.get("subject", "No subject")[:60] for msg in messages]
-            return len(messages), subjects
-    except (subprocess.TimeoutExpired, json.JSONDecodeError, subprocess.SubprocessError):
-        pass
     return 0, []
 
 
@@ -154,7 +145,10 @@ def check_handoffs(cwd: str) -> tuple[int, list[str]]:
             try:
                 content = handoff_file.read_text(encoding="utf-8")
                 content_lower = content.lower()
-                if "status: pending" in content_lower or "acknowledged: false" in content_lower:
+                if (
+                    "status: pending" in content_lower
+                    or "acknowledged: false" in content_lower
+                ):
                     pending.append(f"Handoff: {handoff_file.stem}")
             except (OSError, UnicodeDecodeError):
                 pass
@@ -205,8 +199,8 @@ def build_blocking_response(issues: dict[str, Any]) -> dict[str, Any]:
         "hookSpecificOutput": {
             "hookEventName": "Stop",
             "permissionDecision": "deny",
-            "permissionDecisionReason": "Incomplete coordination work"
-        }
+            "permissionDecisionReason": "Incomplete coordination work",
+        },
     }
 
 

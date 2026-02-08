@@ -3,7 +3,7 @@
 ecos_failure_recovery.py - Failure detection and recovery for AI Maestro agents.
 
 Detects agent failures, classifies them, and executes appropriate recovery strategies.
-Uses AI Maestro API (http://localhost:23000) and aimaestro-agent.sh CLI.
+Uses AMP CLI (amp-send) for messaging and aimaestro-agent.sh for agent management.
 
 Dependencies: Python 3.8+ stdlib only
 
@@ -29,20 +29,14 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, cast
-from urllib.error import URLError
-from urllib.request import Request, urlopen
-
-# AI Maestro API base URL
-AIMAESTRO_API = os.environ.get("AIMAESTRO_API", "http://localhost:23000")
 
 # aimaestro-agent.sh CLI path
 AIMAESTRO_CLI = os.environ.get(
-    "AIMAESTRO_CLI",
-    os.path.expanduser("~/.local/bin/aimaestro-agent.sh")
+    "AIMAESTRO_CLI", os.path.expanduser("~/.local/bin/aimaestro-agent.sh")
 )
 
 # Failure classification thresholds (seconds)
-TRANSIENT_THRESHOLD = 300     # 5 minutes
+TRANSIENT_THRESHOLD = 300  # 5 minutes
 RECOVERABLE_THRESHOLD = 1800  # 30 minutes
 
 # Ping timeout (seconds)
@@ -54,47 +48,48 @@ def iso_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
-def api_request(
-    endpoint: str,
-    method: str = "GET",
-    data: dict[str, Any] | None = None,
-    timeout: int = 30
-) -> dict[str, Any]:
-    """Make a request to the AI Maestro API.
+def _amp_send(
+    recipient: str,
+    subject: str,
+    message: str,
+    priority: str = "normal",
+    msg_type: str = "request",
+) -> bool:
+    """Send a message via AMP CLI (amp-send).
 
     Args:
-        endpoint: API endpoint (e.g., '/api/agents')
-        method: HTTP method
-        data: Request body data (for POST/PUT)
-        timeout: Request timeout in seconds
+        recipient: Target agent session name
+        subject: Message subject
+        message: Message body text
+        priority: Message priority ('low', 'normal', 'high', 'urgent')
+        msg_type: Message type ('request', 'notification', 'handoff', etc.)
 
     Returns:
-        Parsed JSON response
-
-    Raises:
-        URLError: If request fails
-        json.JSONDecodeError: If response is not valid JSON
+        True if the message was sent successfully, False otherwise
     """
-    url = f"{AIMAESTRO_API}{endpoint}"
-    headers = {"Content-Type": "application/json"}
-
-    body = None
-    if data is not None:
-        body = json.dumps(data).encode("utf-8")
-
-    request = Request(url, data=body, headers=headers, method=method)
-
-    with urlopen(request, timeout=timeout) as response:
-        response_data = response.read().decode("utf-8")
-        if response_data:
-            return cast(dict[str, Any], json.loads(response_data))
-        return {}
+    try:
+        result = subprocess.run(
+            [
+                "amp-send",
+                recipient,
+                subject,
+                message,
+                "--priority",
+                priority,
+                "--type",
+                msg_type,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        return result.returncode == 0
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return False
 
 
 def run_cli(
-    *args: str,
-    timeout: int = 60,
-    capture_output: bool = True
+    *args: str, timeout: int = 60, capture_output: bool = True
 ) -> tuple[int, str, str]:
     """Run aimaestro-agent.sh CLI command.
 
@@ -110,10 +105,7 @@ def run_cli(
 
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=capture_output,
-            text=True,
-            timeout=timeout
+            cmd, capture_output=capture_output, text=True, timeout=timeout
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
@@ -146,7 +138,7 @@ def get_agent_status_from_cli(agent: str) -> dict[str, Any] | None:
 
 
 def get_agent_messages(agent: str, status: str = "unread") -> list[dict[str, Any]]:
-    """Get messages for an agent from AI Maestro API.
+    """Get messages for an agent via aimaestro-agent.sh CLI.
 
     Args:
         agent: Agent session name
@@ -155,47 +147,43 @@ def get_agent_messages(agent: str, status: str = "unread") -> list[dict[str, Any
     Returns:
         List of messages
     """
+    code, stdout, _stderr = run_cli("messages", agent, "--status", status, "--json")
+    if code != 0:
+        return []
     try:
-        endpoint = f"/api/messages?agent={agent}&action=list&status={status}"
-        response = api_request(endpoint)
-        return cast(list[dict[str, Any]], response.get("messages", []))
-    except (URLError, json.JSONDecodeError):
+        data = json.loads(stdout)
+        messages = data.get("messages", data) if isinstance(data, dict) else data
+        return cast(
+            list[dict[str, Any]], messages if isinstance(messages, list) else []
+        )
+    except (json.JSONDecodeError, TypeError):
         return []
 
 
-def send_ping_message(agent: str) -> str | None:
-    """Send a ping message to an agent and return message ID.
+def send_ping_message(agent: str) -> bool:
+    """Send a ping message to an agent via AMP CLI.
 
     Args:
         agent: Agent session name
 
     Returns:
-        Message ID or None if failed
+        True if the ping was sent successfully, False otherwise
     """
-    try:
-        data = {
-            "to": agent,
-            "subject": "Health check ping",
-            "priority": "high",
-            "content": {
-                "type": "ping",
-                "message": "Health check ping - please respond",
-                "timestamp": iso_now()
-            }
-        }
-        response = api_request("/api/messages", method="POST", data=data)
-        return response.get("id")
-    except (URLError, json.JSONDecodeError):
-        return None
+    return _amp_send(
+        recipient=agent,
+        subject="Health check ping",
+        message=f"Health check ping - please respond. Timestamp: {iso_now()}",
+        priority="high",
+        msg_type="ping",
+    )
 
 
 def check_agent_health(agent: str) -> dict[str, Any]:
-    """Check agent health using CLI status and AI Maestro API.
+    """Check agent health using CLI status and AMP ping.
 
     Checks:
     1. Agent status via aimaestro-agent.sh show
-    2. Last heartbeat from AI Maestro
-    3. Agent responsiveness via ping message
+    2. Agent responsiveness via AMP ping message
 
     Args:
         agent: Agent session name
@@ -215,7 +203,7 @@ def check_agent_health(agent: str) -> dict[str, Any]:
         "last_seen": None,
         "responsive": False,
         "checked_at": iso_now(),
-        "details": {}
+        "details": {},
     }
 
     # 1. Check CLI status
@@ -243,44 +231,12 @@ def check_agent_health(agent: str) -> dict[str, Any]:
         if last_heartbeat:
             result["last_seen"] = last_heartbeat
 
-    # 2. Check AI Maestro heartbeat via API
-    try:
-        endpoint = f"/api/agents?session={agent}"
-        api_status = api_request(endpoint, timeout=10)
-
-        if api_status:
-            result["details"]["api_status"] = api_status
-
-            # Update last_seen from API if available
-            api_heartbeat = api_status.get("last_heartbeat")
-            if api_heartbeat:
-                # Use the most recent timestamp
-                if result["last_seen"] is None:
-                    result["last_seen"] = api_heartbeat
-                else:
-                    # Compare timestamps and use most recent
-                    try:
-                        current = datetime.fromisoformat(
-                            result["last_seen"].replace("Z", "+00:00")
-                        )
-                        api_ts = datetime.fromisoformat(
-                            api_heartbeat.replace("Z", "+00:00")
-                        )
-                        if api_ts > current:
-                            result["last_seen"] = api_heartbeat
-                    except (ValueError, AttributeError):
-                        pass
-
-    except (URLError, json.JSONDecodeError) as e:
-        result["details"]["api_error"] = str(e)
-
-    # 3. Check responsiveness via ping (only if agent appears online)
+    # 2. Check responsiveness via AMP ping (only if agent appears online)
     if result["status"] == "online":
-        ping_id = send_ping_message(agent)
-        if ping_id:
-            result["details"]["ping_sent"] = ping_id
-            # Note: actual response check would require async/polling
-            # For now, we mark as responsive if ping was sent successfully
+        ping_ok = send_ping_message(agent)
+        if ping_ok:
+            result["details"]["ping_sent"] = True
+            # Mark as responsive if ping was sent successfully
             result["responsive"] = True
         else:
             result["responsive"] = False
@@ -374,7 +330,7 @@ def execute_recovery(agent: str, strategy: str) -> dict[str, Any]:
         "success": False,
         "action_taken": "",
         "details": "",
-        "timestamp": iso_now()
+        "timestamp": iso_now(),
     }
 
     if strategy == "restart":
@@ -400,6 +356,7 @@ def execute_recovery(agent: str, strategy: str) -> dict[str, Any]:
 
         # Wait a moment then wake
         import time
+
         time.sleep(2)
 
         w_code, w_stdout, w_stderr = run_cli("wake", agent)
@@ -428,11 +385,7 @@ def execute_recovery(agent: str, strategy: str) -> dict[str, Any]:
 
 
 def replace_agent(
-    failed_agent: str,
-    new_name: str,
-    role: str,
-    project: str,
-    work_dir: str
+    failed_agent: str, new_name: str, role: str, project: str, work_dir: str
 ) -> dict[str, Any]:
     """Replace a failed agent with a new one.
 
@@ -465,7 +418,7 @@ def replace_agent(
         "success": False,
         "handoff_sent": False,
         "timestamp": iso_now(),
-        "details": {}
+        "details": {},
     }
 
     # 1. Request approval from EAMA
@@ -480,14 +433,18 @@ def replace_agent(
                     sys.executable,
                     str(approval_script),
                     "request",
-                    "--type", "agent_replacement",
-                    "--agent", failed_agent,
-                    "--replacement", new_name,
-                    "--reason", f"Replacing failed agent {failed_agent}"
+                    "--type",
+                    "agent_replacement",
+                    "--agent",
+                    failed_agent,
+                    "--replacement",
+                    new_name,
+                    "--reason",
+                    f"Replacing failed agent {failed_agent}",
                 ],
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
             if approval_result.returncode != 0:
@@ -534,79 +491,58 @@ def replace_agent(
 
     result["details"]["agent_created"] = True
 
-    # 3. Notify EOA to generate handoff
-    try:
-        handoff_request = {
-            "to": "orchestrator-master",  # EOA session name
-            "subject": f"Handoff request: {failed_agent} -> {new_name}",
-            "priority": "high",
-            "content": {
-                "type": "handoff_request",
-                "message": (
-                    f"Please generate handoff document for agent replacement. "
-                    f"Failed agent: {failed_agent}, New agent: {new_name}, "
-                    f"Role: {role}, Project: {project}"
-                ),
-                "failed_agent": failed_agent,
-                "new_agent": new_name,
-                "role": role,
-                "project": project
-            }
-        }
-        api_request("/api/messages", method="POST", data=handoff_request)
+    # 3. Notify EOA to generate handoff via AMP CLI
+    handoff_msg = (
+        f"Please generate handoff document for agent replacement. "
+        f"Failed agent: {failed_agent}, New agent: {new_name}, "
+        f"Role: {role}, Project: {project}"
+    )
+    if _amp_send(
+        recipient="orchestrator-master",
+        subject=f"Handoff request: {failed_agent} -> {new_name}",
+        message=handoff_msg,
+        priority="high",
+        msg_type="handoff_request",
+    ):
         result["details"]["eoa_handoff_notified"] = True
-    except (URLError, json.JSONDecodeError) as e:
-        result["details"]["eoa_handoff_error"] = str(e)
+    else:
+        result["details"]["eoa_handoff_error"] = "amp-send failed"
 
-    # 4. Notify EOA to update GitHub Project kanban
-    try:
-        kanban_request = {
-            "to": "orchestrator-master",
-            "subject": f"Kanban update: agent replacement {new_name}",
-            "priority": "normal",
-            "content": {
-                "type": "kanban_update",
-                "message": (
-                    f"Update GitHub Project kanban for agent replacement. "
-                    f"Mark {failed_agent} as failed, assign tasks to {new_name}"
-                ),
-                "failed_agent": failed_agent,
-                "new_agent": new_name,
-                "project": project
-            }
-        }
-        api_request("/api/messages", method="POST", data=kanban_request)
+    # 4. Notify EOA to update GitHub Project kanban via AMP CLI
+    kanban_msg = (
+        f"Update GitHub Project kanban for agent replacement. "
+        f"Mark {failed_agent} as failed, assign tasks to {new_name}"
+    )
+    if _amp_send(
+        recipient="orchestrator-master",
+        subject=f"Kanban update: agent replacement {new_name}",
+        message=kanban_msg,
+        priority="normal",
+        msg_type="kanban_update",
+    ):
         result["details"]["eoa_kanban_notified"] = True
-    except (URLError, json.JSONDecodeError) as e:
-        result["details"]["eoa_kanban_error"] = str(e)
+    else:
+        result["details"]["eoa_kanban_error"] = "amp-send failed"
 
-    # 5. Send message to new agent with handoff instructions
-    try:
-        handoff_path = Path(work_dir) / "thoughts" / "shared" / "handoffs" / failed_agent
-        handoff_file = handoff_path / "current.md"
+    # 5. Send message to new agent with handoff instructions via AMP CLI
+    handoff_path = Path(work_dir) / "thoughts" / "shared" / "handoffs" / failed_agent
+    handoff_file = handoff_path / "current.md"
 
-        instructions = {
-            "to": new_name,
-            "subject": f"Handoff from {failed_agent}",
-            "priority": "high",
-            "content": {
-                "type": "handoff",
-                "message": (
-                    f"You are replacing agent {failed_agent}. "
-                    f"Your role is: {role}. Project: {project}. "
-                    f"Check for handoff document at: {handoff_file}"
-                ),
-                "handoff_location": str(handoff_file),
-                "role": role,
-                "project": project,
-                "work_dir": work_dir
-            }
-        }
-        response = api_request("/api/messages", method="POST", data=instructions)
+    handoff_instructions = (
+        f"You are replacing agent {failed_agent}. "
+        f"Your role is: {role}. Project: {project}. "
+        f"Check for handoff document at: {handoff_file}"
+    )
+    if _amp_send(
+        recipient=new_name,
+        subject=f"Handoff from {failed_agent}",
+        message=handoff_instructions,
+        priority="high",
+        msg_type="handoff",
+    ):
         result["handoff_sent"] = True
-        result["details"]["handoff_message_id"] = response.get("id")
-    except (URLError, json.JSONDecodeError) as e:
-        result["details"]["handoff_error"] = str(e)
+    else:
+        result["details"]["handoff_error"] = "amp-send failed"
 
     # Success if agent was created and at least handoff was sent
     result["success"] = result["details"].get("agent_created", False)
@@ -614,11 +550,7 @@ def replace_agent(
     return result
 
 
-def transfer_work(
-    from_agent: str,
-    to_agent: str,
-    handoff_file: str
-) -> dict[str, Any]:
+def transfer_work(from_agent: str, to_agent: str, handoff_file: str) -> dict[str, Any]:
     """Transfer work from one agent to another via handoff file.
 
     Args:
@@ -630,7 +562,6 @@ def transfer_work(
         Transfer result:
         {
             success: bool,
-            message_id: str or None,
             details: {...}
         }
     """
@@ -639,9 +570,8 @@ def transfer_work(
         "to_agent": to_agent,
         "handoff_file": handoff_file,
         "success": False,
-        "message_id": None,
         "timestamp": iso_now(),
-        "details": {}
+        "details": {},
     }
 
     # Read handoff file
@@ -658,31 +588,23 @@ def transfer_work(
         result["details"]["error"] = f"Failed to read handoff file: {e}"
         return result
 
-    # Send handoff to target agent
-    try:
-        message_data = {
-            "to": to_agent,
-            "subject": f"Work transfer from {from_agent}",
-            "priority": "high",
-            "content": {
-                "type": "handoff",
-                "message": (
-                    f"Work transfer from {from_agent}. "
-                    f"Please review the handoff document and continue the work."
-                ),
-                "from_agent": from_agent,
-                "handoff_content": handoff_content,
-                "handoff_file": handoff_file
-            }
-        }
-        response = api_request("/api/messages", method="POST", data=message_data)
-
+    # Send handoff to target agent via AMP CLI
+    transfer_msg = (
+        f"Work transfer from {from_agent}. "
+        f"Please review the handoff document and continue the work. "
+        f"Handoff file: {handoff_file}"
+    )
+    if _amp_send(
+        recipient=to_agent,
+        subject=f"Work transfer from {from_agent}",
+        message=transfer_msg,
+        priority="high",
+        msg_type="handoff",
+    ):
         result["success"] = True
-        result["message_id"] = response.get("id")
         result["details"]["message_sent"] = True
-
-    except (URLError, json.JSONDecodeError) as e:
-        result["details"]["error"] = f"Failed to send message: {e}"
+    else:
+        result["details"]["error"] = "Failed to send message via amp-send"
 
     return result
 
@@ -703,7 +625,7 @@ def cmd_classify(args: argparse.Namespace) -> int:
         "agent": args.agent,
         "classification": classification,
         "health": health,
-        "timestamp": iso_now()
+        "timestamp": iso_now(),
     }
     print(json.dumps(result, indent=2))
     return 0
@@ -723,7 +645,7 @@ def cmd_replace(args: argparse.Namespace) -> int:
         new_name=args.new,
         role=args.role,
         project=args.project,
-        work_dir=args.dir
+        work_dir=args.dir,
     )
     print(json.dumps(result, indent=2))
     return 0 if result["success"] else 1
@@ -732,9 +654,7 @@ def cmd_replace(args: argparse.Namespace) -> int:
 def cmd_transfer(args: argparse.Namespace) -> int:
     """Handle 'transfer' command."""
     result = transfer_work(
-        from_agent=getattr(args, "from"),
-        to_agent=args.to,
-        handoff_file=args.handoff
+        from_agent=getattr(args, "from"), to_agent=args.to, handoff_file=args.handoff
     )
     print(json.dumps(result, indent=2))
     return 0 if result["success"] else 1
@@ -770,105 +690,69 @@ Examples:
     # Transfer work to another agent
     python ecos_failure_recovery.py transfer --from dev-agent-01 --to dev-agent-02 \\
         --handoff /path/to/handoff.md
-        """
+        """,
     )
 
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # health command
-    health_parser = subparsers.add_parser(
-        "health",
-        help="Check agent health status"
-    )
+    health_parser = subparsers.add_parser("health", help="Check agent health status")
     health_parser.add_argument(
-        "--agent",
-        required=True,
-        help="Agent session name to check"
+        "--agent", required=True, help="Agent session name to check"
     )
     health_parser.set_defaults(func=cmd_health)
 
     # classify command
     classify_parser = subparsers.add_parser(
-        "classify",
-        help="Classify agent failure type"
+        "classify", help="Classify agent failure type"
     )
     classify_parser.add_argument(
-        "--agent",
-        required=True,
-        help="Agent session name to classify"
+        "--agent", required=True, help="Agent session name to classify"
     )
     classify_parser.set_defaults(func=cmd_classify)
 
     # recover command
-    recover_parser = subparsers.add_parser(
-        "recover",
-        help="Execute recovery strategy"
-    )
+    recover_parser = subparsers.add_parser("recover", help="Execute recovery strategy")
     recover_parser.add_argument(
-        "--agent",
-        required=True,
-        help="Agent session name to recover"
+        "--agent", required=True, help="Agent session name to recover"
     )
     recover_parser.add_argument(
         "--strategy",
         required=True,
         choices=["restart", "hibernate_wake", "replace"],
-        help="Recovery strategy to execute"
+        help="Recovery strategy to execute",
     )
     recover_parser.set_defaults(func=cmd_recover)
 
     # replace command
     replace_parser = subparsers.add_parser(
-        "replace",
-        help="Replace a failed agent with a new one"
+        "replace", help="Replace a failed agent with a new one"
     )
     replace_parser.add_argument(
-        "--failed",
-        required=True,
-        help="Name of the failed agent"
+        "--failed", required=True, help="Name of the failed agent"
     )
     replace_parser.add_argument(
-        "--new",
-        required=True,
-        help="Name for the replacement agent"
+        "--new", required=True, help="Name for the replacement agent"
     )
+    replace_parser.add_argument("--role", required=True, help="Role for the new agent")
+    replace_parser.add_argument("--project", required=True, help="Project ID to assign")
     replace_parser.add_argument(
-        "--role",
-        required=True,
-        help="Role for the new agent"
-    )
-    replace_parser.add_argument(
-        "--project",
-        required=True,
-        help="Project ID to assign"
-    )
-    replace_parser.add_argument(
-        "--dir",
-        required=True,
-        help="Working directory for the new agent"
+        "--dir", required=True, help="Working directory for the new agent"
     )
     replace_parser.set_defaults(func=cmd_replace)
 
     # transfer command
     transfer_parser = subparsers.add_parser(
-        "transfer",
-        help="Transfer work between agents"
+        "transfer", help="Transfer work between agents"
     )
     transfer_parser.add_argument(
-        "--from",
-        required=True,
-        dest="from",
-        help="Source agent session name"
+        "--from", required=True, dest="from", help="Source agent session name"
     )
     transfer_parser.add_argument(
-        "--to",
-        required=True,
-        help="Target agent session name"
+        "--to", required=True, help="Target agent session name"
     )
     transfer_parser.add_argument(
-        "--handoff",
-        required=True,
-        help="Path to handoff document"
+        "--handoff", required=True, help="Path to handoff document"
     )
     transfer_parser.set_defaults(func=cmd_transfer)
 

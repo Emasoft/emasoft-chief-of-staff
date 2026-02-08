@@ -28,7 +28,6 @@ TODO:
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -42,7 +41,7 @@ def send_ai_maestro_message(
     msg_type: str = "command",
 ) -> tuple[bool, str]:
     """
-    Send a message via AI Maestro API.
+    Send a message via AMP CLI (amp-send).
 
     Args:
         to_session: Target session name
@@ -55,76 +54,49 @@ def send_ai_maestro_message(
         Tuple of (success, response_or_error)
     """
     try:
-        payload = {
-            "to": to_session,
-            "subject": subject,
-            "priority": priority,
-            "content": {"type": msg_type, "message": message},
-        }
-
-        api_url = os.getenv("AIMAESTRO_API", "http://localhost:23000")
-
         result = subprocess.run(
             [
-                "curl",
-                "-s",
-                "-X",
-                "POST",
-                f"{api_url}/api/messages",
-                "-H",
-                "Content-Type: application/json",
-                "-d",
-                json.dumps(payload),
+                "amp-send",
+                to_session,
+                subject,
+                message,
+                "--priority",
+                priority,
+                "--type",
+                msg_type,
             ],
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=30,
         )
-
         if result.returncode == 0:
-            try:
-                response = json.loads(result.stdout)
-                if response.get("success"):
-                    return True, response.get("message_id", "unknown")
-                else:
-                    return False, response.get("error", "Unknown error")
-            except json.JSONDecodeError:
-                return False, f"Invalid JSON response: {result.stdout}"
+            return True, result.stdout.strip() or "sent"
         else:
-            return False, result.stderr or "curl command failed"
+            return False, result.stderr.strip() or "amp-send command failed"
 
     except subprocess.TimeoutExpired:
         return False, "Request timed out"
     except FileNotFoundError:
-        return False, "curl not found in PATH"
+        return False, "amp-send not found in PATH"
     except Exception as e:
         return False, str(e)
 
 
 def check_ai_maestro_available() -> bool:
     """
-    Check if AI Maestro API is available.
+    Check if AMP CLI (amp-send) is available.
 
     Returns:
-        True if API is reachable, False otherwise
+        True if amp-send is reachable, False otherwise
     """
     try:
-        api_url = os.getenv("AIMAESTRO_API", "http://localhost:23000")
         result = subprocess.run(
-            [
-                "curl",
-                "-s",
-                "-o",
-                "/dev/null",
-                "-w",
-                "%{http_code}",
-                f"{api_url}/api/health",
-            ],
+            ["amp-send", "--help"],
             capture_output=True,
             text=True,
             timeout=5,
         )
-        return result.returncode == 0 and result.stdout.strip() == "200"
+        return result.returncode == 0
     except Exception:
         return False
 
@@ -174,7 +146,7 @@ Note:
     if args.force:
         command += " --force"
 
-    result: dict = {
+    result: dict[str, object] = {
         "session": args.session_name,
         "command": command,
         "timestamp": timestamp,
@@ -192,15 +164,15 @@ Note:
         print(json.dumps(result, indent=2))
         return 0
 
-    # Check if AI Maestro is available
+    # Check if AMP CLI is available
     if not check_ai_maestro_available():
         result.update(
             {
                 "success": False,
                 "status": "stub",
-                "message": "AI Maestro API not available. This is a STUB implementation.",
+                "message": "AMP CLI (amp-send) not available. This is a STUB implementation.",
                 "todo": [
-                    "Implement AI Maestro command forwarding",
+                    "Install AMP CLI (amp-send)",
                     "Add support for /pss-reindex-skills command via message",
                     "Add status tracking for reindex completion",
                 ],
