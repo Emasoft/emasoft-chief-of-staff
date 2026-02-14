@@ -1,5 +1,20 @@
 # Success Criteria for Agent Lifecycle Operations
 
+
+## Contents
+
+- [Agent Spawned Successfully](#agent-spawned-successfully)
+- [Agent Terminated Cleanly](#agent-terminated-cleanly)
+- [Agent Hibernated Successfully](#agent-hibernated-successfully)
+- [Agent Woken Successfully](#agent-woken-successfully)
+- [Team Assignment Complete](#team-assignment-complete)
+- [Approval Obtained](#approval-obtained)
+- [Common Self-Check Failures and Solutions](#common-self-check-failures-and-solutions)
+  - [Agent Does Not Respond to Health Check](#agent-does-not-respond-to-health-check)
+  - [Team Registry Not Updated](#team-registry-not-updated)
+  - [Context Not Saved During Hibernation](#context-not-saved-during-hibernation)
+- [Completion Criteria Summary](#completion-criteria-summary)
+
 **How to verify each operation completed successfully:**
 
 ## Agent Spawned Successfully

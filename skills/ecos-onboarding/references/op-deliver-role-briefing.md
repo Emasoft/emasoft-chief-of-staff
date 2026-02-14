@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Deliver Role Briefing
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Retrieve Role Definition](#step-1-retrieve-role-definition)
+  - [Step 2: Compose Role Briefing Message](#step-2-compose-role-briefing-message)
+  - [Step 3: Send Role Briefing](#step-3-send-role-briefing)
+  - [Step 4: Handle Questions](#step-4-handle-questions)
+  - [Step 5: Confirm Understanding](#step-5-confirm-understanding)
+  - [Step 6: Log Role Assignment](#step-6-log-role-assignment)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Developer Role Briefing](#example-developer-role-briefing)
+  - [Example: Orchestrator Role Briefing](#example-orchestrator-role-briefing)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - After initial onboarding checklist

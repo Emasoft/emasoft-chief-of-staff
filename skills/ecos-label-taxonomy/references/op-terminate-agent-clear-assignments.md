@@ -7,6 +7,22 @@ procedure: "support-skill"
 
 # Operation: Terminate Agent and Clear Assignments
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Find All Issues Assigned to Agent](#step-1-find-all-issues-assigned-to-agent)
+  - [Step 2: Remove Assignment and Update Status for Each Issue](#step-2-remove-assignment-and-update-status-for-each-issue)
+  - [Step 3: Remove Agent from Team Registry](#step-3-remove-agent-from-team-registry)
+  - [Step 4: Verify No Issues Remain Assigned](#step-4-verify-no-issues-remain-assigned)
+  - [Step 5: Log Termination](#step-5-log-termination)
+- [Example](#example)
+- [Error Handling](#error-handling)
+- [Considerations](#considerations)
+
 ## Purpose
 
 When an agent is being terminated, clear all its issue assignments and return issues to backlog for reassignment.

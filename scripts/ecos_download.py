@@ -199,14 +199,14 @@ def extract_attachment_url(comment_url: str) -> str | None:
     # Pattern for GitHub file attachments
     md_urls = re.findall(r"https://github\.com/[^\s)]+\.md", body)
     if md_urls:
-        return md_urls[0]
+        return str(md_urls[0])
 
     # Pattern for user-attachments
     attachment_urls = re.findall(
         r"https://github\.com/user-attachments/files/[^\s)]+", body
     )
     if attachment_urls:
-        return attachment_urls[0]
+        return str(attachment_urls[0])
 
     print("WARNING: No .md attachment found in comment")
     print(f"Comment body preview: {body[:200]}...")
@@ -331,7 +331,7 @@ def download_document(
     print(f"Downloaded and locked: {file_path}")
     print(f"SHA256: {sha256}")
 
-    return file_path
+    return Path(file_path)
 
 
 def lookup_documents(

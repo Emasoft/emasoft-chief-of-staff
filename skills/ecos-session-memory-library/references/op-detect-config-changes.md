@@ -7,6 +7,31 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Detect Config Changes During Session
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Steps](#steps)
+  - [Step 1: Read Current Config Files](#step-1-read-current-config-files)
+  - [Step 2: Compare Timestamps](#step-2-compare-timestamps)
+  - [Step 3: Perform Content Comparison (if timestamps differ)](#step-3-perform-content-comparison-if-timestamps-differ)
+  - [Step 4: Identify Changed Sections](#step-4-identify-changed-sections)
+- [Config Change Detected](#config-change-detected)
+  - [Changed Sections](#changed-sections)
+  - [Step 5: Log in activeContext.md](#step-5-log-in-activecontextmd)
+- [Session Notes](#session-notes)
+  - [Step 6: Trigger Conflict Resolution if Critical](#step-6-trigger-conflict-resolution-if-critical)
+- [Change Classification](#change-classification)
+- [Detection Methods](#detection-methods)
+  - [Method 1: Timestamp-Based (Fast)](#method-1-timestamp-based-fast)
+  - [Method 2: Hash-Based (Accurate)](#method-2-hash-based-accurate)
+- [Checklist](#checklist)
+- [Periodic Check Schedule](#periodic-check-schedule)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Detect when configuration files have changed during a session to identify drift and trigger conflict resolution if needed.

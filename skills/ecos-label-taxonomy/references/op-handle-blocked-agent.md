@@ -7,6 +7,23 @@ procedure: "support-skill"
 
 # Operation: Handle Blocked Agent
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Update Status to Blocked](#step-1-update-status-to-blocked)
+  - [Step 2: Add Comment Explaining Blocker](#step-2-add-comment-explaining-blocker)
+  - [Step 3: Determine Escalation Level](#step-3-determine-escalation-level)
+  - [Step 4: Escalate to Human (if needed)](#step-4-escalate-to-human-if-needed)
+  - [Step 5: Notify via AI Maestro](#step-5-notify-via-ai-maestro)
+  - [Step 6: Verify Labels](#step-6-verify-labels)
+- [Example](#example)
+- [Resolving a Blocker](#resolving-a-blocker)
+- [Error Handling](#error-handling)
+
 ## Purpose
 
 When an agent reports it's blocked on an issue, update the issue status and determine next steps (escalate to human or wait for resolution).

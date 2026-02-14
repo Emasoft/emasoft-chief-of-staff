@@ -9,6 +9,28 @@ version: 1.0.0
 
 # Validate Handoff Document
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Check Required Fields](#step-1-check-required-fields)
+  - [Step 2: Verify UUID Is Unique](#step-2-verify-uuid-is-unique)
+  - [Step 3: Verify Target Agent Exists](#step-3-verify-target-agent-exists)
+  - [Step 4: Verify Referenced Files Exist](#step-4-verify-referenced-files-exist)
+  - [Step 5: Check for Placeholder Markers](#step-5-check-for-placeholder-markers)
+  - [Step 6: Validate Markdown Format](#step-6-validate-markdown-format)
+  - [Step 7: Verify Current State Is Accurate](#step-7-verify-current-state-is-accurate)
+  - [Step 8: Run Validation Script (If Available)](#step-8-run-validation-script-if-available)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Complete Handoff Validation](#example-complete-handoff-validation)
+  - [Example: Fixing Common Validation Issues](#example-fixing-common-validation-issues)
+  - [Example: Validation Script Usage](#example-validation-script-usage)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Before sending any handoff document to an agent

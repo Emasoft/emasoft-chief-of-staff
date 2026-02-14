@@ -7,6 +7,34 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Handle Config Version Conflicts
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Conflict Types](#conflict-types)
+- [Steps](#steps)
+  - [Step 1: Classify the Conflict](#step-1-classify-the-conflict)
+- [Conflict Classification](#conflict-classification)
+  - [Step 2A: Resolve Type A (Non-Breaking)](#step-2a-resolve-type-a-non-breaking)
+- [Type A Resolution](#type-a-resolution)
+  - [Step 2B: Resolve Type B (Breaking-Future)](#step-2b-resolve-type-b-breaking-future)
+- [Type B Resolution](#type-b-resolution)
+  - [Step 2C: Resolve Type C (Breaking-Immediate)](#step-2c-resolve-type-c-breaking-immediate)
+- [Type C Resolution](#type-c-resolution)
+  - [Step 2D: Resolve Type D (Irreconcilable)](#step-2d-resolve-type-d-irreconcilable)
+- [Type D Resolution](#type-d-resolution)
+  - [Step 3: Update Records](#step-3-update-records)
+- [Decision Tree](#decision-tree)
+- [Checklist](#checklist)
+  - [For All Types](#for-all-types)
+  - [For Type A](#for-type-a)
+  - [For Type B](#for-type-b)
+  - [For Type C](#for-type-c)
+  - [For Type D](#for-type-d)
+- [Output](#output)
+- [Related References](#related-references)
+
 ## Purpose
 
 Resolve conflicts when configuration changes during a session create incompatibilities with current work.

@@ -7,6 +7,23 @@ procedure: "support-skill"
 
 # Operation: Assign Agent to Issue
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Issue Exists](#step-1-verify-issue-exists)
+  - [Step 2: Remove Existing Assignment (if any)](#step-2-remove-existing-assignment-if-any)
+  - [Step 3: Add Assignment Label](#step-3-add-assignment-label)
+  - [Step 4: Update Status from Backlog to Ready](#step-4-update-status-from-backlog-to-ready)
+  - [Step 5: Update Team Registry](#step-5-update-team-registry)
+  - [Step 6: Verify Assignment](#step-6-verify-assignment)
+- [Example](#example)
+- [Error Handling](#error-handling)
+- [Rollback](#rollback)
+
 ## Purpose
 
 Assign a newly spawned or existing agent to a GitHub issue by applying the appropriate assignment label and updating status.

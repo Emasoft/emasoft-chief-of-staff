@@ -7,6 +7,23 @@ procedure: "support-skill"
 
 # Operation: Sync Registry with Labels
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Load Current Registry](#step-1-load-current-registry)
+  - [Step 2: For Each Agent, Compare Registry vs Labels](#step-2-for-each-agent-compare-registry-vs-labels)
+  - [Step 3: Identify Discrepancies](#step-3-identify-discrepancies)
+  - [Step 4: Reconcile Registry to Match Labels](#step-4-reconcile-registry-to-match-labels)
+  - [Step 5: Handle Orphaned Labels](#step-5-handle-orphaned-labels)
+  - [Step 6: Log Sync Results](#step-6-log-sync-results)
+- [Example](#example)
+- [Automated Sync Script](#automated-sync-script)
+- [Error Handling](#error-handling)
+
 ## Purpose
 
 Ensure the team registry at `.emasoft/team-registry.json` stays synchronized with GitHub issue assignment labels. Detect and resolve discrepancies.

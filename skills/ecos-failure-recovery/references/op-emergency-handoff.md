@@ -7,6 +7,24 @@ parent-skill: ecos-failure-recovery
 
 # Operation: Emergency Work Handoff
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Emergency vs Regular Handoff](#emergency-vs-regular-handoff)
+- [Steps](#steps)
+  - [Step 1: Identify Critical Tasks](#step-1-identify-critical-tasks)
+  - [Step 2: Notify Orchestrator](#step-2-notify-orchestrator)
+  - [Step 3: Create Emergency Handoff Documentation](#step-3-create-emergency-handoff-documentation)
+  - [Step 4: Assign Work to Receiving Agent](#step-4-assign-work-to-receiving-agent)
+  - [Step 5: Monitor Progress](#step-5-monitor-progress)
+  - [Step 6: Post-Emergency Reconciliation](#step-6-post-emergency-reconciliation)
+- [Checklist](#checklist)
+- [Handoff Validation](#handoff-validation)
+- [Output](#output)
+- [Related References](#related-references)
+
 ## Purpose
 
 Transfer critical work immediately when deadlines cannot wait for the full agent replacement protocol.

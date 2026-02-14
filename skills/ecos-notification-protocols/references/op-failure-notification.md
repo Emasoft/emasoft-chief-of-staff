@@ -9,6 +9,27 @@ version: 1.0.0
 
 # Failure Notification
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Capture Error Details](#step-1-capture-error-details)
+  - [Step 2: Compose Failure Message](#step-2-compose-failure-message)
+  - [Step 3: Send Failure Notification](#step-3-send-failure-notification)
+  - [Step 4: Provide Recovery Guidance](#step-4-provide-recovery-guidance)
+  - [Step 5: Log Failure](#step-5-log-failure)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example 1: Skill Installation Failure](#example-1-skill-installation-failure)
+  - [Example 2: Agent Restart Failure](#example-2-agent-restart-failure)
+  - [Example 3: Configuration Change Failure](#example-3-configuration-change-failure)
+  - [Example 4: Timeout Failure Notification](#example-4-timeout-failure-notification)
+- [Error Severity Levels](#error-severity-levels)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation when:

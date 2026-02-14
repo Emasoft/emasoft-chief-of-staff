@@ -1,5 +1,51 @@
 # Sub-Agent Role Boundaries Template
 
+
+## Contents
+
+- [Agent File Structure](#agent-file-structure)
+  - [1. YAML Frontmatter (Required)](#1-yaml-frontmatter-required)
+  - [2. Agent Title and Role Description](#2-agent-title-and-role-description)
+  - [3. Terminology Section (Optional but Recommended)](#3-terminology-section-optional-but-recommended)
+- [Terminology](#terminology)
+  - [4. Core Responsibilities](#4-core-responsibilities)
+- [Core Responsibilities](#core-responsibilities)
+  - [1. [Primary Responsibility]](#1-primary-responsibility)
+  - [2. [Secondary Responsibility]](#2-secondary-responsibility)
+  - [3. [Tertiary Responsibility]](#3-tertiary-responsibility)
+  - [5. Iron Rules (Required)](#5-iron-rules-required)
+- [Iron Rules](#iron-rules)
+- [Worker Designation](#worker-designation)
+  - [Sub-Agent vs Coordinator](#sub-agent-vs-coordinator)
+  - [Role Boundaries](#role-boundaries)
+- [Output Format](#output-format)
+  - [Completion Reports](#completion-reports)
+  - [Status Values](#status-values)
+  - [Log File Format](#log-file-format)
+- [Communication Rules](#communication-rules)
+  - [Inter-Agent Messaging (AI Maestro)](#inter-agent-messaging-ai-maestro)
+- [Tool Restrictions](#tool-restrictions)
+  - [Allowed Tools by Agent Type](#allowed-tools-by-agent-type)
+  - [Tool Usage Guidelines](#tool-usage-guidelines)
+  - [Command-Line Tools](#command-line-tools)
+- [Error Handling Pattern](#error-handling-pattern)
+- [Error Handling](#error-handling)
+- [Procedure Template](#procedure-template)
+- [Procedures](#procedures)
+  - [Procedure [N]: [Action Name]](#procedure-n-action-name)
+- [Example Usage](#example-usage)
+  - [Minimal Sub-Agent Template](#minimal-sub-agent-template)
+- [Core Responsibilities](#core-responsibilities)
+  - [1. [Responsibility 1]](#1-responsibility-1)
+  - [2. [Responsibility 2]](#2-responsibility-2)
+- [Iron Rules](#iron-rules)
+- [Procedures](#procedures)
+  - [Procedure 1: [Action Name]](#procedure-1-action-name)
+- [Error Handling](#error-handling)
+- [Examples](#examples)
+- [Validation Checklist](#validation-checklist)
+- [References](#references)
+
 This template defines the standard structure and boundaries for ECOS sub-agents. All ECOS sub-agents should follow this pattern to maintain consistency and prevent scope creep.
 
 ---

@@ -7,6 +7,28 @@ parent-skill: ecos-resource-monitoring
 
 # Operation: Handle Resource Alert
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Alert Severity Levels](#alert-severity-levels)
+- [Steps](#steps)
+  - [Step 1: Identify Alert Type](#step-1-identify-alert-type)
+  - [Step 2: Assess Severity](#step-2-assess-severity)
+- [Alert Assessment](#alert-assessment)
+  - [Step 3: Take Immediate Action](#step-3-take-immediate-action)
+  - [Step 4: Notify Relevant Parties](#step-4-notify-relevant-parties)
+  - [Step 5: Document Incident](#step-5-document-incident)
+- [Resource Alert Incident](#resource-alert-incident)
+- [Immediate Actions Taken](#immediate-actions-taken)
+- [Resolution](#resolution)
+- [Prevention](#prevention)
+- [Checklist](#checklist)
+- [Alert Response Matrix](#alert-response-matrix)
+- [Output](#output)
+- [Related References](#related-references)
+
 ## Purpose
 
 Respond to resource threshold violations with appropriate actions to maintain system health and agent operations.

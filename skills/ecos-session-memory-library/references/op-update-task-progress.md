@@ -7,6 +7,33 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Update Task Progress
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Task States](#task-states)
+- [Steps](#steps)
+  - [Step 1: Identify Changed Task](#step-1-identify-changed-task)
+  - [Step 2: Open progress.md](#step-2-open-progressmd)
+  - [Step 3: Update Task Status](#step-3-update-task-status)
+- [Completed Tasks](#completed-tasks)
+- [Blocked Tasks](#blocked-tasks)
+- [Active Tasks](#active-tasks)
+  - [Step 4: Document Blockers (if any)](#step-4-document-blockers-if-any)
+  - [Step 5: Update Dependencies](#step-5-update-dependencies)
+- [Active Tasks](#active-tasks)
+  - [Step 6: Update Timestamp](#step-6-update-timestamp)
+- [Checklist](#checklist)
+- [Progress File Structure](#progress-file-structure)
+- [Active Tasks](#active-tasks)
+- [Completed Tasks](#completed-tasks)
+- [Blocked Tasks](#blocked-tasks)
+- [Paused Tasks](#paused-tasks)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Track task status changes, completions, blockers, and dependencies in progress.md.

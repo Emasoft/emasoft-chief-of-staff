@@ -9,6 +9,24 @@ version: 1.0.0
 
 # Assess Role Requirements
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Extract Capabilities from Requirements](#step-1-extract-capabilities-from-requirements)
+  - [Step 2: Map Capabilities to Agent Types](#step-2-map-capabilities-to-agent-types)
+  - [Step 3: Perform Gap Analysis](#step-3-perform-gap-analysis)
+  - [Step 4: Assign Priorities](#step-4-assign-priorities)
+  - [Step 5: Create Staffing Recommendation](#step-5-create-staffing-recommendation)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Web Authentication Feature](#example-web-authentication-feature)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+- [Detailed Reference](#detailed-reference)
+
 ## When to Use
 
 Perform this operation when:

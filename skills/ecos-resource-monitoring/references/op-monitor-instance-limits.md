@@ -7,6 +7,24 @@ parent-skill: ecos-resource-monitoring
 
 # Operation: Monitor Instance Limits
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Steps](#steps)
+  - [Step 1: Count Active Sessions](#step-1-count-active-sessions)
+  - [Step 2: Check API Rate Limits](#step-2-check-api-rate-limits)
+  - [Step 3: Verify Concurrency Headroom](#step-3-verify-concurrency-headroom)
+  - [Step 4: Assess Scaling Needs](#step-4-assess-scaling-needs)
+- [Scaling Assessment](#scaling-assessment)
+  - [Step 5: Document Instance State](#step-5-document-instance-state)
+- [Checklist](#checklist)
+- [Instance Limit Thresholds](#instance-limit-thresholds)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Track active agent sessions, API rate limits, and concurrency constraints to ensure team capacity is maintained.

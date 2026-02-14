@@ -7,6 +7,24 @@ procedure: "support-skill"
 
 # Operation: Add Project to Registry
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Registry File Exists](#step-1-verify-registry-file-exists)
+  - [Step 2: Gather Project Information](#step-2-gather-project-information)
+  - [Step 3: Validate GitHub Repository](#step-3-validate-github-repository)
+  - [Step 4: Add Project Entry](#step-4-add-project-entry)
+  - [Step 5: Verify Entry Added](#step-5-verify-entry-added)
+  - [Step 6: Initialize Project Labels (if needed)](#step-6-initialize-project-labels-if-needed)
+- [Example](#example)
+- [Registry Entry Schema](#registry-entry-schema)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Register a new project in the Chief of Staff's project registry for multi-project management and tracking.

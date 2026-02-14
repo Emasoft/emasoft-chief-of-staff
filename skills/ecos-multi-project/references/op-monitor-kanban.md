@@ -7,6 +7,25 @@ procedure: "support-skill"
 
 # Operation: Monitor Kanban Board
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Load Project Configuration](#step-1-load-project-configuration)
+  - [Step 2: Fetch Recent Changes](#step-2-fetch-recent-changes)
+  - [Step 3: Detect Change Types](#step-3-detect-change-types)
+  - [Step 4: Respond to External Changes](#step-4-respond-to-external-changes)
+  - [Step 5: Update Local Registry](#step-5-update-local-registry)
+  - [Step 6: Log Monitoring Results](#step-6-log-monitoring-results)
+- [Change Types to Monitor](#change-types-to-monitor)
+- [Example](#example)
+- [Polling Schedule](#polling-schedule)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Proactively poll the GitHub Project Kanban board to detect external changes (by humans or other systems) and respond appropriately.

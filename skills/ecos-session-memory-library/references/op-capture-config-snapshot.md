@@ -7,6 +7,34 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Capture Config Snapshot at Session Start
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Config Snapshot Purpose](#config-snapshot-purpose)
+- [Steps](#steps)
+  - [Step 1: Identify Config Files](#step-1-identify-config-files)
+  - [Step 2: Create Snapshot Header](#step-2-create-snapshot-header)
+- [Source Files](#source-files)
+  - [Step 3: Copy Config Content](#step-3-copy-config-content)
+- [[Config File Name]](#config-file-name)
+  - [Content](#content)
+  - [Step 4: Calculate File Hashes](#step-4-calculate-file-hashes)
+  - [Step 5: Save Snapshot](#step-5-save-snapshot)
+  - [Step 6: Record in activeContext.md](#step-6-record-in-activecontextmd)
+- [Session Notes](#session-notes)
+- [Checklist](#checklist)
+- [Snapshot Structure](#snapshot-structure)
+- [Source Files](#source-files)
+- [team-config.yaml](#team-configyaml)
+  - [Content](#content)
+- [project-rules.md](#project-rulesmd)
+  - [Content](#content)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Capture configuration state at session start to detect drift and maintain consistency throughout the session.

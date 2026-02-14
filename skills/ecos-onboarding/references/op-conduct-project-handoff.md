@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Conduct Project Handoff
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Gather Project State](#step-1-gather-project-state)
+  - [Step 2: Compose Project Handoff Document](#step-2-compose-project-handoff-document)
+  - [Step 3: Validate Handoff Document](#step-3-validate-handoff-document)
+  - [Step 4: Send Project Handoff](#step-4-send-project-handoff)
+  - [Step 5: Verify Comprehension](#step-5-verify-comprehension)
+  - [Step 6: Log Handoff](#step-6-log-handoff)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: API Project Handoff](#example-api-project-handoff)
+  - [Example: Emergency Mid-Project Handoff](#example-emergency-mid-project-handoff)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Onboarding agent to specific project work

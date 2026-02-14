@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Reindex Skills for PSS
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Validate Skills First](#step-1-validate-skills-first)
+  - [Step 2: Trigger Reindex](#step-2-trigger-reindex)
+  - [Step 3: Verify Index Updated](#step-3-verify-index-updated)
+  - [Step 4: Test Discovery](#step-4-test-discovery)
+  - [Step 5: Check Keywords Extracted](#step-5-check-keywords-extracted)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Full Reindex After Plugin Update](#example-full-reindex-after-plugin-update)
+  - [Example: Checking Why Skill Not Discovered](#example-checking-why-skill-not-discovered)
+  - [Example: Two-Pass Index Generation](#example-two-pass-index-generation)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - After adding new skills to a plugin

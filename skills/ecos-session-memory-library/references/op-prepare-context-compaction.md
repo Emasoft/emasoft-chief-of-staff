@@ -7,6 +7,31 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Prepare for Context Compaction
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Context Compaction Risks](#context-compaction-risks)
+- [Steps](#steps)
+  - [Step 1: Check Context Usage](#step-1-check-context-usage)
+  - [Step 2: Update All Memory Files](#step-2-update-all-memory-files)
+  - [Step 3: Run Validation](#step-3-run-validation)
+  - [Step 4: Write to Disk](#step-4-write-to-disk)
+  - [Step 5: Create Backup (Optional)](#step-5-create-backup-optional)
+  - [Step 6: Confirm Ready](#step-6-confirm-ready)
+- [Pre-Compaction Checklist Complete](#pre-compaction-checklist-complete)
+- [Pre-Compaction Checklist](#pre-compaction-checklist)
+  - [Preparation Phase](#preparation-phase)
+  - [Update Phase](#update-phase)
+  - [Backup Phase](#backup-phase)
+  - [Validation Phase](#validation-phase)
+  - [Final Phase](#final-phase)
+- [Output](#output)
+- [After Compaction](#after-compaction)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Ensure all session memory is fully updated and persisted before context compaction to survive the operation.

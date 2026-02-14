@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Send Team Messages
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Recipients](#step-1-identify-recipients)
+  - [Step 2: Compose Message with Priority](#step-2-compose-message-with-priority)
+  - [Step 3: Send Message](#step-3-send-message)
+  - [Step 4: Confirm Delivery](#step-4-confirm-delivery)
+  - [Step 5: Log in Coordination State](#step-5-log-in-coordination-state)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Broadcasting Sprint Start](#example-broadcasting-sprint-start)
+  - [Example: Targeted Instruction to Developer](#example-targeted-instruction-to-developer)
+  - [Example: Multi-Recipient Status Request](#example-multi-recipient-status-request)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation when:

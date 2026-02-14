@@ -7,6 +7,25 @@ procedure: "support-skill"
 
 # Operation: Request Approval
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Operation Type](#step-1-identify-operation-type)
+  - [Step 2: Generate Request ID](#step-2-generate-request-id)
+  - [Step 3: Compose Approval Request](#step-3-compose-approval-request)
+  - [Step 4: Send Request via AI Maestro](#step-4-send-request-via-ai-maestro)
+  - [Step 5: Register Pending Approval](#step-5-register-pending-approval)
+  - [Step 6: Await Response](#step-6-await-response)
+  - [Step 7: Handle Decision](#step-7-handle-decision)
+- [Example](#example)
+- [Request Message Format](#request-message-format)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Request approval from the Assistant Manager (EAMA) before executing privileged operations such as agent spawn, terminate, hibernate, wake, or plugin install.

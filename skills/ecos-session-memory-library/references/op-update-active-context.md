@@ -7,6 +7,33 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Update Active Context
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Update Triggers](#update-triggers)
+- [Steps](#steps)
+  - [Step 1: Identify What Changed](#step-1-identify-what-changed)
+  - [Step 2: Open activeContext.md](#step-2-open-activecontextmd)
+  - [Step 3: Update Relevant Section](#step-3-update-relevant-section)
+- [Current Focus](#current-focus)
+- [Recent Decisions](#recent-decisions)
+- [Open Questions](#open-questions)
+- [Session Notes](#session-notes)
+  - [Step 4: Write Changes Immediately](#step-4-write-changes-immediately)
+  - [Step 5: Update Timestamp](#step-5-update-timestamp)
+- [Checklist](#checklist)
+- [Update Patterns](#update-patterns)
+  - [Pattern 1: Task Switch](#pattern-1-task-switch)
+- [Current Focus](#current-focus)
+  - [Pattern 2: Decision Recording](#pattern-2-decision-recording)
+- [Recent Decisions](#recent-decisions)
+  - [Pattern 3: Pre-Compaction Update](#pattern-3-pre-compaction-update)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Keep activeContext.md current with the agent's focus, decisions, and work state.

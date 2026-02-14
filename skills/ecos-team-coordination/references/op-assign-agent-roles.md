@@ -9,6 +9,24 @@ version: 1.0.0
 
 # Assign Agent Roles
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Required Role](#step-1-identify-required-role)
+  - [Step 2: Match Agent Capabilities](#step-2-match-agent-capabilities)
+  - [Step 3: Send Role Assignment Message](#step-3-send-role-assignment-message)
+  - [Step 4: Confirm Acceptance](#step-4-confirm-acceptance)
+  - [Step 5: Update Team Roster](#step-5-update-team-roster)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Assigning Code Reviewer Role](#example-assigning-code-reviewer-role)
+  - [Example: Reassigning Role During Restructure](#example-reassigning-role-during-restructure)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation when:

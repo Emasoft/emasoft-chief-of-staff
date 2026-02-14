@@ -9,6 +9,29 @@ version: 1.0.0
 
 # Configure PSS Integration
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Understand PSS Algorithm](#step-1-understand-pss-algorithm)
+  - [Step 2: Optimize Skill Description](#step-2-optimize-skill-description)
+  - [Step 3: Add Activation Keywords Naturally](#step-3-add-activation-keywords-naturally)
+- [Overview](#overview)
+  - [Step 4: Configure Categories (If Using)](#step-4-configure-categories-if-using)
+  - [Step 5: Add Co-usage Hints](#step-5-add-co-usage-hints)
+- [Related Skills](#related-skills)
+  - [Step 6: Reindex and Test](#step-6-reindex-and-test)
+  - [Step 7: Iterate Based on Results](#step-7-iterate-based-on-results)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Optimizing Agent Lifecycle Skill](#example-optimizing-agent-lifecycle-skill)
+  - [Example: Testing Discovery](#example-testing-discovery)
+  - [Example: Debugging Poor Discovery](#example-debugging-poor-discovery)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Optimizing skill discovery for specific queries

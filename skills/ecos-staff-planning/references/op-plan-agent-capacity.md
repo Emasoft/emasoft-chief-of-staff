@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Plan Agent Capacity
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Create Agent Inventory](#step-1-create-agent-inventory)
+- [Agent Inventory](#agent-inventory)
+  - [Step 2: Estimate Task Requirements](#step-2-estimate-task-requirements)
+  - [Step 3: Calculate Task Allocation](#step-3-calculate-task-allocation)
+  - [Step 4: Identify Bottlenecks](#step-4-identify-bottlenecks)
+  - [Step 5: Recommend Mitigations](#step-5-recommend-mitigations)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Sprint Capacity Planning](#example-sprint-capacity-planning)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+- [Detailed Reference](#detailed-reference)
+
 ## When to Use
 
 Perform this operation when:

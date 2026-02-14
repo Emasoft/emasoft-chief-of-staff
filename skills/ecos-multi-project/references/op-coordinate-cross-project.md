@@ -7,6 +7,35 @@ procedure: "support-skill"
 
 # Operation: Coordinate Cross-Project Work
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Map Project Dependencies](#step-1-map-project-dependencies)
+- [Dependency Map](#dependency-map)
+  - [Projects Involved](#projects-involved)
+  - [Dependency Graph](#dependency-graph)
+  - [Blocking Dependencies](#blocking-dependencies)
+  - [Step 2: Create Cross-Project Issues](#step-2-create-cross-project-issues)
+  - [Step 3: Create Coordination Tracking](#step-3-create-coordination-tracking)
+  - [Dependencies](#dependencies)
+  - [Checkpoints](#checkpoints)
+  - [Communication](#communication)
+  - [Step 4: Sequence Work Execution](#step-4-sequence-work-execution)
+  - [Step 5: Monitor Checkpoints](#step-5-monitor-checkpoints)
+  - [Step 6: Reconcile States](#step-6-reconcile-states)
+- [Example](#example)
+- [Cross-Project Coordination Plan](#cross-project-coordination-plan)
+  - [Projects Involved](#projects-involved)
+  - [Dependency Chain](#dependency-chain)
+  - [Execution Steps](#execution-steps)
+  - [Checkpoints](#checkpoints)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Manage work that spans multiple projects, handling dependencies, sequencing, and synchronization between project boundaries.

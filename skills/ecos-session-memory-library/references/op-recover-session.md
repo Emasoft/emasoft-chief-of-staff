@@ -7,6 +7,34 @@ parent-skill: ecos-session-memory-library
 
 # Operation: Recover Session After Interruption
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Steps](#steps)
+  - [Step 1: Load All Memory Files](#step-1-load-all-memory-files)
+  - [Step 2: Read activeContext.md for Work State](#step-2-read-activecontextmd-for-work-state)
+- [Recovery: Current State](#recovery-current-state)
+  - [Step 3: Read progress.md for Task State](#step-3-read-progressmd-for-task-state)
+- [Recovery: Task State](#recovery-task-state)
+  - [Step 4: Validate Memory Consistency](#step-4-validate-memory-consistency)
+- [Recovery: Validation](#recovery-validation)
+  - [Step 5: Ask User to Confirm Resumption](#step-5-ask-user-to-confirm-resumption)
+- [Session Recovery Summary](#session-recovery-summary)
+  - [State to Resume](#state-to-resume)
+  - [Shall I resume from this state?](#shall-i-resume-from-this-state)
+  - [Step 6: Update Session Start](#step-6-update-session-start)
+- [Session Notes](#session-notes)
+- [Recovery Scenarios](#recovery-scenarios)
+  - [Scenario 1: Clean Resume (< 24 hours)](#scenario-1-clean-resume-24-hours)
+  - [Scenario 2: Long Gap (> 24 hours)](#scenario-2-long-gap-24-hours)
+  - [Scenario 3: Corrupted Files](#scenario-3-corrupted-files)
+- [Checklist](#checklist)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Restore session state after unexpected termination, manual interruption, or long breaks.

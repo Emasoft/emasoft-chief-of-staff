@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Pre-Operation Notification
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Affected Agents](#step-1-identify-affected-agents)
+  - [Step 2: Compose Notification Message](#step-2-compose-notification-message)
+  - [Step 3: Send Notification](#step-3-send-notification)
+  - [Step 4: Track Acknowledgments](#step-4-track-acknowledgments)
+  - [Step 5: Handle Timeout](#step-5-handle-timeout)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example 1: Skill Installation Notification](#example-1-skill-installation-notification)
+  - [Example 2: Timeout Final Notice](#example-2-timeout-final-notice)
+  - [Example 3: System Maintenance Broadcast](#example-3-system-maintenance-broadcast)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation BEFORE:

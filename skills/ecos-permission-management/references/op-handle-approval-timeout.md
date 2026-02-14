@@ -7,6 +7,24 @@ procedure: "support-skill"
 
 # Operation: Handle Approval Timeout
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Check Request Age](#step-1-check-request-age)
+  - [Step 2: Send Reminder at 60 Seconds](#step-2-send-reminder-at-60-seconds)
+  - [Step 3: Send Urgent Notification at 90 Seconds](#step-3-send-urgent-notification-at-90-seconds)
+  - [Step 4: Handle Timeout at 120 Seconds](#step-4-handle-timeout-at-120-seconds)
+- [Example](#example)
+- [Escalation Timeline](#escalation-timeline)
+- [Default Timeout Actions](#default-timeout-actions)
+- [Autonomous Mode](#autonomous-mode)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Handle situations where approval requests do not receive timely responses, including sending reminders, escalating urgency, and making proceed/abort decisions.

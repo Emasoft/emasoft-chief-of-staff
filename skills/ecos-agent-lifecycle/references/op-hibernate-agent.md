@@ -9,6 +9,24 @@ version: 1.0.0
 
 # Hibernate Agent
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Confirm Agent Is Idle](#step-1-confirm-agent-is-idle)
+  - [Step 2: Send Hibernation Warning](#step-2-send-hibernation-warning)
+  - [Step 3: Request State Capture](#step-3-request-state-capture)
+  - [Step 4: Execute Hibernation](#step-4-execute-hibernation)
+  - [Step 5: Update Team Registry](#step-5-update-team-registry)
+  - [Step 6: Log Hibernation Event](#step-6-log-hibernation-event)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Hibernating Idle Developer at End of Day](#example-hibernating-idle-developer-at-end-of-day)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Agent is idle but may be needed later

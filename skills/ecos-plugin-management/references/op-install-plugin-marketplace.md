@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Install Plugin from Marketplace
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Check Marketplace Registration](#step-1-check-marketplace-registration)
+  - [Step 2: Check Plugin Availability](#step-2-check-plugin-availability)
+  - [Step 3: Install Plugin](#step-3-install-plugin)
+  - [Step 4: Verify Installation](#step-4-verify-installation)
+  - [Step 5: RESTART Claude Code](#step-5-restart-claude-code)
+  - [Step 6: Verify Plugin Loaded](#step-6-verify-plugin-loaded)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Installing Perfect Skill Suggester](#example-installing-perfect-skill-suggester)
+  - [Example: Installing Orchestrator Agent Plugin](#example-installing-orchestrator-agent-plugin)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Setting up a new agent that requires a plugin

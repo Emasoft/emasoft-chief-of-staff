@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Maintain Teammate Awareness
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Poll AI Maestro for Active Sessions](#step-1-poll-ai-maestro-for-active-sessions)
+  - [Step 2: Query Each Agent's Status](#step-2-query-each-agents-status)
+  - [Step 3: Update Team Roster](#step-3-update-team-roster)
+  - [Step 4: Identify Inactive Agents](#step-4-identify-inactive-agents)
+  - [Step 5: Flag Issues](#step-5-flag-issues)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Initial Team State Discovery](#example-initial-team-state-discovery)
+  - [Example: Pre-Task Assignment Check](#example-pre-task-assignment-check)
+  - [Example: Team Status Report Generation](#example-team-status-report-generation)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation when:

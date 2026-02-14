@@ -7,6 +7,30 @@ parent-skill: ecos-performance-tracking
 
 # Operation: Collect Performance Metrics
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Metric Categories](#metric-categories)
+- [Steps](#steps)
+  - [Step 1: Define Metrics to Track](#step-1-define-metrics-to-track)
+- [Agent Metrics Template](#agent-metrics-template)
+  - [Task Metrics](#task-metrics)
+  - [Quality Metrics](#quality-metrics)
+  - [Efficiency Metrics](#efficiency-metrics)
+  - [Communication Metrics](#communication-metrics)
+  - [Step 2: Capture Data at Task Completion](#step-2-capture-data-at-task-completion)
+  - [Step 3: Aggregate Over Time Periods](#step-3-aggregate-over-time-periods)
+  - [Step 4: Validate Data Quality](#step-4-validate-data-quality)
+- [Data Quality Check](#data-quality-check)
+  - [Step 5: Store Metrics](#step-5-store-metrics)
+- [Checklist](#checklist)
+- [Metric Collection Automation](#metric-collection-automation)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Systematically collect quantifiable metrics about agent behavior, output quality, and efficiency.

@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Configure Local Plugin Directory
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Plugin Directory Structure](#step-1-verify-plugin-directory-structure)
+  - [Step 2: Verify plugin.json Manifest](#step-2-verify-pluginjson-manifest)
+  - [Step 3: Make Scripts Executable](#step-3-make-scripts-executable)
+  - [Step 4: Launch Claude Code with --plugin-dir](#step-4-launch-claude-code-with-plugin-dir)
+  - [Step 5: Verify Plugin Loaded](#step-5-verify-plugin-loaded)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Setting Up Local Development Plugin](#example-setting-up-local-development-plugin)
+  - [Example: Loading Multiple Development Plugins](#example-loading-multiple-development-plugins)
+  - [Example: Copying Plugin for Agent](#example-copying-plugin-for-agent)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Developing a new plugin locally

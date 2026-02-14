@@ -7,6 +7,25 @@ procedure: "support-skill"
 
 # Operation: Track Pending Approvals
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Initialize Tracking File](#step-1-initialize-tracking-file)
+  - [Step 2: Register New Request](#step-2-register-new-request)
+  - [Step 3: Check Pending Requests Status](#step-3-check-pending-requests-status)
+  - [Step 4: Poll for Responses](#step-4-poll-for-responses)
+  - [Step 5: Check for Timeouts](#step-5-check-for-timeouts)
+  - [Step 6: Update Tracking on Resolution](#step-6-update-tracking-on-resolution)
+  - [Step 7: Generate Status Report](#step-7-generate-status-report)
+- [Example](#example)
+- [Tracking State Schema](#tracking-state-schema)
+- [Error Handling](#error-handling)
+- [Notes](#notes)
+
 ## Purpose
 
 Maintain tracking of all outstanding approval requests to manage multiple concurrent operations and ensure timely responses.

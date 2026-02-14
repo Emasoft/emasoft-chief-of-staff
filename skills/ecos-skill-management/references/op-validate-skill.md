@@ -9,6 +9,26 @@ version: 1.0.0
 
 # Validate Skill Structure
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Install skills-ref (If Needed)](#step-1-install-skills-ref-if-needed)
+  - [Step 2: Run skills-ref Validate](#step-2-run-skills-ref-validate)
+  - [Step 3: Check YAML Frontmatter](#step-3-check-yaml-frontmatter)
+  - [Step 4: Verify Directory Structure](#step-4-verify-directory-structure)
+  - [Step 5: Check Reference Links](#step-5-check-reference-links)
+  - [Step 6: Validate TOC Accuracy](#step-6-validate-toc-accuracy)
+  - [Step 7: Read Skill Properties](#step-7-read-skill-properties)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Complete Skill Validation](#example-complete-skill-validation)
+  - [Example: Fixing Common Validation Errors](#example-fixing-common-validation-errors)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Before publishing a skill

@@ -7,6 +7,24 @@ parent-skill: ecos-failure-recovery
 
 # Operation: Replace Agent
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Critical Consideration](#critical-consideration)
+- [Steps](#steps)
+  - [Phase 1: Confirm Failure and Preserve Artifacts](#phase-1-confirm-failure-and-preserve-artifacts)
+  - [Phase 2: Request Manager Approval](#phase-2-request-manager-approval)
+  - [Phase 3: Create Replacement Agent](#phase-3-create-replacement-agent)
+  - [Phase 4: Notify Orchestrator](#phase-4-notify-orchestrator)
+  - [Phase 5: Send Handoff to New Agent](#phase-5-send-handoff-to-new-agent)
+  - [Phase 6: Cleanup and Close Incident](#phase-6-cleanup-and-close-incident)
+- [Checklist](#checklist)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Create a replacement agent when recovery fails or failure is terminal, ensuring work continuity and proper handoff.

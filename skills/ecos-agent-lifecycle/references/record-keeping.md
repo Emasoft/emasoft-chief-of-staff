@@ -1,5 +1,31 @@
 # Record-Keeping and Logging
 
+
+## Contents
+
+- [Lifecycle Log](#lifecycle-log)
+- [Approval Requests Log](#approval-requests-log)
+- [Team Assignments Log](#team-assignments-log)
+- [Project: svgbbox-library](#project-svgbbox-library)
+- [Project: auth-service](#project-auth-service)
+- [Operation Audit Trail](#operation-audit-trail)
+- [Log Maintenance](#log-maintenance)
+- [Log Access](#log-access)
+- [Agent Registry Structures](#agent-registry-structures)
+  - [Central Agent Registry](#central-agent-registry)
+  - [Team Registry (Project-Level)](#team-registry-project-level)
+- [Session State Formats](#session-state-formats)
+  - [Hibernation State Snapshot](#hibernation-state-snapshot)
+  - [Health Check Response Format](#health-check-response-format)
+  - [Team Status Report Format](#team-status-report-format)
+- [Log Query Examples](#log-query-examples)
+  - [Get recent spawns](#get-recent-spawns)
+  - [Find all operations for specific agent](#find-all-operations-for-specific-agent)
+  - [Check hibernation/wake cycles](#check-hibernationwake-cycles)
+  - [Get approval decisions from current month](#get-approval-decisions-from-current-month)
+  - [Trace specific operation by request ID](#trace-specific-operation-by-request-id)
+- [Best Practices](#best-practices)
+
 **CRITICAL:** All ECOS operations MUST be logged for audit, debugging, and accountability.
 
 ---

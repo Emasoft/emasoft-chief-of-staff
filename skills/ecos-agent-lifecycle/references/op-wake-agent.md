@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Wake Hibernated Agent
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Agent Is Hibernated](#step-1-verify-agent-is-hibernated)
+  - [Step 2: Check Resource Availability](#step-2-check-resource-availability)
+  - [Step 3: Execute Wake Command](#step-3-execute-wake-command)
+  - [Step 4: Verify Agent Is Responsive](#step-4-verify-agent-is-responsive)
+  - [Step 5: Restore State (If Needed)](#step-5-restore-state-if-needed)
+  - [Step 6: Update Team Registry](#step-6-update-team-registry)
+  - [Step 7: Log Wake Event](#step-7-log-wake-event)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Waking Agent for Morning Work Session](#example-waking-agent-for-morning-work-session)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - New work available for a hibernated agent

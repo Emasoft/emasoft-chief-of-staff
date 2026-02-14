@@ -156,6 +156,78 @@ Use the `ai-maestro-agents-management` skill to list all active sessions and the
 
 **Verify**: all expected team members appear in the list with correct status.
 
+### Example 4: Full Coordination Workflow with Input/Output
+
+This example shows a complete team coordination cycle with concrete inputs and outputs.
+
+**Input:** User requests a new team for project "auth-service"
+
+```
+User message: "Set up a team for the auth-service project.
+I need an architect, an orchestrator, and two programmers."
+```
+
+**Output:** ECOS creates the team and confirms formation
+
+```
+[TEAM-FORMED] auth-service
+  Agents spawned:
+    - eaa-auth-service-architect (Architect) - ACTIVE
+    - eoa-auth-service-orchestrator (Orchestrator) - ACTIVE
+    - auth-service-programmer-001 (Programmer) - ACTIVE
+    - auth-service-programmer-002 (Programmer) - ACTIVE
+  Registry: .emasoft/team-registry.json updated
+  Messages sent: 4 role assignments delivered
+```
+
+### Example 5: Role Assignment with Input/Output
+
+**Input:** ECOS assigns a code reviewer role to an existing agent
+
+```json
+{
+  "to": "eia-feature-reviewer",
+  "subject": "Role Assignment: Code Reviewer for auth-service",
+  "priority": "high",
+  "content": {
+    "type": "role-assignment",
+    "message": "You are assigned as Code Reviewer for auth-service. Responsibilities: review all PRs, enforce code standards, verify test coverage above 80%."
+  }
+}
+```
+
+**Output:** Agent acknowledges the role assignment
+
+```json
+{
+  "from": "eia-feature-reviewer",
+  "subject": "Role Accepted: Code Reviewer for auth-service",
+  "content": {
+    "type": "role-acceptance",
+    "message": "Role accepted. Ready to review PRs for auth-service."
+  }
+}
+```
+
+### Example 6: Team Status Query with Input/Output
+
+**Input:** Query team status via AI Maestro API
+
+```bash
+curl -s "http://localhost:23000/api/sessions" | jq '.sessions[] | select(.project == "auth-service")'
+```
+
+**Output:** Current team status result
+
+```json
+[
+  {"name": "eaa-auth-service-architect", "role": "Architect", "status": "active", "last_seen": "2026-02-14T10:30:00Z"},
+  {"name": "eoa-auth-service-orchestrator", "role": "Orchestrator", "status": "active", "last_seen": "2026-02-14T10:29:45Z"},
+  {"name": "auth-service-programmer-001", "role": "Programmer", "status": "active", "last_seen": "2026-02-14T10:28:12Z"},
+  {"name": "auth-service-programmer-002", "role": "Programmer", "status": "idle", "last_seen": "2026-02-14T10:15:00Z"}
+]
+```
+
 ## Error Handling
 
 ### Issue: Agent does not respond to role assignment

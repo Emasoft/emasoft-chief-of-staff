@@ -7,6 +7,26 @@ procedure: "support-skill"
 
 # Operation: Sync GitHub Projects
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Load Project Configuration](#step-1-load-project-configuration)
+  - [Step 2: Find GitHub Project Board](#step-2-find-github-project-board)
+  - [Step 3: Fetch Project Items](#step-3-fetch-project-items)
+  - [Step 4: Compare with Local State](#step-4-compare-with-local-state)
+  - [Step 5: Apply Sync Direction](#step-5-apply-sync-direction)
+  - [Step 6: Update Last Sync Timestamp](#step-6-update-last-sync-timestamp)
+  - [Step 7: Log Sync Results](#step-7-log-sync-results)
+- [Example](#example)
+- [Sync Strategies](#sync-strategies)
+- [Error Handling](#error-handling)
+- [Conflict Resolution](#conflict-resolution)
+- [Notes](#notes)
+
 ## Purpose
 
 Synchronize the local project registry with GitHub Projects board to maintain consistent state between local tracking and remote project management.

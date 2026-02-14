@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Post-Operation Notification
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Confirm Operation Completed](#step-1-confirm-operation-completed)
+  - [Step 2: Compose Success Message](#step-2-compose-success-message)
+  - [Step 3: Send Confirmation](#step-3-send-confirmation)
+  - [Step 4: Request Verification](#step-4-request-verification)
+  - [Step 5: Log Outcome](#step-5-log-outcome)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example 1: Skill Installation Complete](#example-1-skill-installation-complete)
+  - [Example 2: Agent Restart Complete](#example-2-agent-restart-complete)
+  - [Example 3: System Maintenance Complete Broadcast](#example-3-system-maintenance-complete-broadcast)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 Trigger this operation AFTER:

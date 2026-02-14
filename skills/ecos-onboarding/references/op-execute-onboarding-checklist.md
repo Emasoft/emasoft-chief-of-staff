@@ -9,6 +9,23 @@ version: 1.0.0
 
 # Execute Onboarding Checklist
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Initiate Onboarding Session](#step-1-initiate-onboarding-session)
+  - [Step 2: Verify Agent Identity](#step-2-verify-agent-identity)
+  - [Step 3: Work Through Core Checklist](#step-3-work-through-core-checklist)
+  - [Step 4: Confirm Completion](#step-4-confirm-completion)
+  - [Step 5: Document Onboarding](#step-5-document-onboarding)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Complete Onboarding for New Developer](#example-complete-onboarding-for-new-developer)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - New agent joins the team

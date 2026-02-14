@@ -9,6 +9,26 @@ version: 1.0.0
 
 # Generate Agent Prompt XML
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Skills to Include](#step-1-identify-skills-to-include)
+  - [Step 2: Generate XML with skills-ref](#step-2-generate-xml-with-skills-ref)
+  - [Step 3: Save to File (Optional)](#step-3-save-to-file-optional)
+  - [Step 4: Integrate into Agent Prompt](#step-4-integrate-into-agent-prompt)
+  - [Step 5: Verify Integration](#step-5-verify-integration)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Generate XML for ECOS Skills](#example-generate-xml-for-ecos-skills)
+  - [Example: Save and Use in Agent Definition](#example-save-and-use-in-agent-definition)
+  - [Example: Programmatic Generation](#example-programmatic-generation)
+  - [Example: Dynamic Skill List](#example-dynamic-skill-list)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Creating agent system prompts that need skill awareness

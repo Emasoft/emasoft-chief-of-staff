@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Create Staffing Templates
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify the Scenario](#step-1-identify-the-scenario)
+  - [Step 2: Define Required Roles](#step-2-define-required-roles)
+  - [Step 3: Define Task Assignments](#step-3-define-task-assignments)
+  - [Step 4: Define Constraints](#step-4-define-constraints)
+  - [Step 5: Validate and Store Template](#step-5-validate-and-store-template)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Creating a Code Review Template](#example-creating-a-code-review-template)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+- [Detailed Reference](#detailed-reference)
+- [Built-in Templates Reference](#built-in-templates-reference)
+
 ## When to Use
 
 Perform this operation when:

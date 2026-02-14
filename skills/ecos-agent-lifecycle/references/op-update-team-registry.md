@@ -9,6 +9,24 @@ version: 1.0.0
 
 # Update Team Registry
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Identify Update Type](#step-1-identify-update-type)
+  - [Step 2: Execute Registry Update](#step-2-execute-registry-update)
+  - [Step 3: Verify Update](#step-3-verify-update)
+  - [Step 4: Publish Update to Team (Optional)](#step-4-publish-update-to-team-optional)
+  - [Step 5: Backup Registry (Recommended)](#step-5-backup-registry-recommended)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Complete Agent Addition Flow](#example-complete-agent-addition-flow)
+  - [Example: Status Change After Hibernation](#example-status-change-after-hibernation)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - After spawning a new agent

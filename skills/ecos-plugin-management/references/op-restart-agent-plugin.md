@@ -9,6 +9,22 @@ version: 1.0.0
 
 # Restart Agent After Plugin Changes
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [For Local Agent (Self)](#for-local-agent-self)
+  - [For Remote Agents](#for-remote-agents)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Restarting Self After Plugin Install](#example-restarting-self-after-plugin-install)
+  - [Example: Restarting Remote Agent](#example-restarting-remote-agent)
+  - [Example: Batch Restart Multiple Agents](#example-batch-restart-multiple-agents)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - After installing a plugin locally (self-install)

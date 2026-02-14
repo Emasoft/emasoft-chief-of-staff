@@ -7,6 +7,20 @@ parent-skill: ecos-failure-recovery
 
 # Operation: Classify Failure Severity
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Failure Categories](#failure-categories)
+- [Steps](#steps)
+- [Decision Matrix](#decision-matrix)
+- [Checklist](#checklist)
+- [Output](#output)
+- [Incident Log Entry Format](#incident-log-entry-format)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Classify a detected failure as transient, recoverable, or terminal to determine the appropriate response strategy.

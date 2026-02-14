@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Install Plugin on Remote Agent
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Target Agent Exists](#step-1-verify-target-agent-exists)
+  - [Step 2: Add Marketplace to Remote Agent (If Needed)](#step-2-add-marketplace-to-remote-agent-if-needed)
+  - [Step 3: Install Plugin](#step-3-install-plugin)
+  - [Step 4: Verify Installation](#step-4-verify-installation)
+  - [Step 5: Send Notification (Optional)](#step-5-send-notification-optional)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Installing Plugin on Multiple Agents](#example-installing-plugin-on-multiple-agents)
+  - [Example: Remote Marketplace Management](#example-remote-marketplace-management)
+  - [Example: Remote Plugin Operations](#example-remote-plugin-operations)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Adding plugins to agents running in other tmux sessions

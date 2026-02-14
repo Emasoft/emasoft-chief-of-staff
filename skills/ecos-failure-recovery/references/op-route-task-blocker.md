@@ -7,6 +7,23 @@ parent-skill: ecos-failure-recovery
 
 # Operation: Route Task Blocker
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Decision Tree](#decision-tree)
+- [Steps](#steps)
+  - [Step 1: Receive and Classify Escalation](#step-1-receive-and-classify-escalation)
+  - [Step 2A: Handle Directly (If ECOS Can Resolve)](#step-2a-handle-directly-if-ecos-can-resolve)
+  - [Step 2B: Route to EAMA (If User Decision Needed)](#step-2b-route-to-eama-if-user-decision-needed)
+  - [Step 3: Wait for Resolution](#step-3-wait-for-resolution)
+  - [Step 4: Route Resolution Back to EOA](#step-4-route-resolution-back-to-eoa)
+- [Checklist: Routing a Task Blocker](#checklist-routing-a-task-blocker)
+- [Checklist: When EAMA Returns a Resolution](#checklist-when-eama-returns-a-resolution)
+- [Output](#output)
+- [Related References](#related-references)
+
 ## Purpose
 
 Determine how to handle task blocker escalations - resolve directly if within ECOS authority, or route to EAMA if user decision required.

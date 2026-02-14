@@ -7,6 +7,29 @@ parent-skill: ecos-performance-tracking
 
 # Operation: Analyze Strengths and Weaknesses
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Steps](#steps)
+  - [Step 1: Review Collected Metrics](#step-1-review-collected-metrics)
+  - [Step 2: Identify Performance Patterns](#step-2-identify-performance-patterns)
+  - [Step 3: Compare Against Benchmarks](#step-3-compare-against-benchmarks)
+  - [Step 4: Document Findings](#step-4-document-findings)
+- [Strengths](#strengths)
+- [Weaknesses](#weaknesses)
+- [Recommendations](#recommendations)
+  - [Step 5: Make Recommendations](#step-5-make-recommendations)
+- [Checklist](#checklist)
+- [Example Analysis Output](#example-analysis-output)
+- [Strengths](#strengths)
+- [Weaknesses](#weaknesses)
+- [Recommendations](#recommendations)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Identify what each agent does well and where they struggle, enabling better task assignment and team optimization.

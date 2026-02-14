@@ -7,6 +7,39 @@ parent-skill: ecos-performance-tracking
 
 # Operation: Generate Performance Report
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Report Types](#report-types)
+- [Steps](#steps)
+  - [Step 1: Aggregate Metrics](#step-1-aggregate-metrics)
+  - [Step 2: Format for Audience](#step-2-format-for-audience)
+- [Quick Stats](#quick-stats)
+- [Highlights](#highlights)
+- [Concerns](#concerns)
+- [Tomorrow's Focus](#tomorrows-focus)
+- [Team Overview](#team-overview)
+- [Top Performers](#top-performers)
+- [Areas for Improvement](#areas-for-improvement)
+- [Agent Breakdown](#agent-breakdown)
+- [Recommendations](#recommendations)
+- [Next Week Focus](#next-week-focus)
+- [Summary](#summary)
+- [Task Breakdown](#task-breakdown)
+- [Strengths This Period](#strengths-this-period)
+- [Areas to Improve](#areas-to-improve)
+- [Comparison to Previous Period](#comparison-to-previous-period)
+  - [Step 3: Include Analysis](#step-3-include-analysis)
+  - [Step 4: Provide Recommendations](#step-4-provide-recommendations)
+- [Action Items](#action-items)
+  - [Step 5: Distribute Report](#step-5-distribute-report)
+- [Checklist](#checklist)
+- [Output](#output)
+- [Report File Locations](#report-file-locations)
+- [Related References](#related-references)
+
 ## Purpose
 
 Create formatted performance reports for stakeholders, summarizing team and individual metrics with actionable insights.

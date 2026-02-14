@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Terminate Agent
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Verify Work Is Complete](#step-1-verify-work-is-complete)
+  - [Step 2: Save Final State (Optional but Recommended)](#step-2-save-final-state-optional-but-recommended)
+  - [Step 3: Send Termination Warning](#step-3-send-termination-warning)
+  - [Step 4: Execute Termination](#step-4-execute-termination)
+  - [Step 5: Update Team Registry](#step-5-update-team-registry)
+  - [Step 6: Cleanup Resources](#step-6-cleanup-resources)
+  - [Step 7: Log Termination](#step-7-log-termination)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Terminating a Completed Developer Agent](#example-terminating-a-completed-developer-agent)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Agent task is complete and no further work expected

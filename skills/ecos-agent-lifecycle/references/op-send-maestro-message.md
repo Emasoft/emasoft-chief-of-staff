@@ -9,6 +9,27 @@ version: 1.0.0
 
 # Send AI Maestro Message
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Determine Message Type](#step-1-determine-message-type)
+  - [Step 2: Determine Priority](#step-2-determine-priority)
+  - [Step 3: Compose Message Content](#step-3-compose-message-content)
+  - [Step 4: Send Message](#step-4-send-message)
+  - [Step 5: Verify Delivery (Optional)](#step-5-verify-delivery-optional)
+  - [Step 6: Wait for Response (If Expected)](#step-6-wait-for-response-if-expected)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Role Assignment Message](#example-role-assignment-message)
+  - [Example: Status Request Message](#example-status-request-message)
+  - [Example: Hibernation Warning Message](#example-hibernation-warning-message)
+  - [Example: Team Broadcast Message](#example-team-broadcast-message)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Communicating with remote agents

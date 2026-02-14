@@ -9,6 +9,25 @@ version: 1.0.0
 
 # Spawn New Agent
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Determine Agent Type and Session Name](#step-1-determine-agent-type-and-session-name)
+  - [Step 2: Setup Plugin for Agent](#step-2-setup-plugin-for-agent)
+  - [Step 3: Create Agent Instance](#step-3-create-agent-instance)
+  - [Step 4: Verify Initialization](#step-4-verify-initialization)
+  - [Step 5: Register in Team Registry](#step-5-register-in-team-registry)
+  - [Step 6: Send Welcome Message](#step-6-send-welcome-message)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Creating an Orchestrator for svgbbox Project](#example-creating-an-orchestrator-for-svgbbox-project)
+  - [Example: Creating a Programmer for svgbbox Project](#example-creating-a-programmer-for-svgbbox-project)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - A new task requires an agent instance

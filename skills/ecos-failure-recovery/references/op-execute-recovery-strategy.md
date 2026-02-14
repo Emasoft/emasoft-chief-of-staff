@@ -7,6 +7,25 @@ parent-skill: ecos-failure-recovery
 
 # Operation: Execute Recovery Strategy
 
+
+## Contents
+
+- [Purpose](#purpose)
+- [When To Use This Operation](#when-to-use-this-operation)
+- [Recovery Strategies](#recovery-strategies)
+- [Steps](#steps)
+  - [Strategy 1: Wait and Retry (Transient)](#strategy-1-wait-and-retry-transient)
+  - [Strategy 2: Restart Agent (Soft)](#strategy-2-restart-agent-soft)
+  - [Strategy 3: Restart Agent (Hard)](#strategy-3-restart-agent-hard)
+  - [Strategy 4: Hibernate-Wake Cycle](#strategy-4-hibernate-wake-cycle)
+  - [Strategy 5: Resource Adjustment](#strategy-5-resource-adjustment)
+- [Recovery Attempt Tracking](#recovery-attempt-tracking)
+- [Checklist](#checklist)
+- [Escalation Criteria](#escalation-criteria)
+- [Output](#output)
+- [Related References](#related-references)
+- [Next Operation](#next-operation)
+
 ## Purpose
 
 Attempt to restore a failed agent to operational status using appropriate recovery strategies based on failure classification.

@@ -9,6 +9,26 @@ version: 1.0.0
 
 # Validate Plugin Installation
 
+
+## Contents
+
+- [When to Use](#when-to-use)
+- [Prerequisites](#prerequisites)
+- [Procedure](#procedure)
+  - [Step 1: Run Claude Code Plugin Validate](#step-1-run-claude-code-plugin-validate)
+  - [Step 2: Validate plugin.json Manually](#step-2-validate-pluginjson-manually)
+  - [Step 3: Check Directory Structure](#step-3-check-directory-structure)
+  - [Step 4: Validate Hook Scripts](#step-4-validate-hook-scripts)
+  - [Step 5: Validate Agents (If Present)](#step-5-validate-agents-if-present)
+  - [Step 6: Validate Skills (If Present)](#step-6-validate-skills-if-present)
+  - [Step 7: Test Load](#step-7-test-load)
+- [Checklist](#checklist)
+- [Examples](#examples)
+  - [Example: Complete Plugin Validation](#example-complete-plugin-validation)
+  - [Example: Common Validation Fix Commands](#example-common-validation-fix-commands)
+- [Error Handling](#error-handling)
+- [Related Operations](#related-operations)
+
 ## When to Use
 
 - Before publishing a plugin
