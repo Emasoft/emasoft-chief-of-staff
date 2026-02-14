@@ -24,8 +24,8 @@
   - 4.4 Minor issues and style warnings
   - 4.5 Error handling strategies
 - 5.0 When using validation scripts
-  - 5.1 ecos_validate_skill.py for single validation
-  - 5.2 ecos_validate_all_skills.py for batch validation
+  - 5.1 validate_skill_comprehensive.py for single validation
+  - 5.2 validate_plugin.py for batch validation
   - 5.3 ecos_trigger_pss_reindex.py for reindexing
 - 6.0 When using validation commands
   - 6.1 /ecos-validate-skills command options
@@ -626,20 +626,20 @@ def send_reindex_request_with_retry(max_retries=3):
 
 The ecos-skill-management skill includes Python scripts for validation automation.
 
-### 5.1 ecos_validate_skill.py for single validation
+### 5.1 validate_skill_comprehensive.py for single validation
 
 Validates a single skill directory.
 
 **Usage:**
 ```bash
 # Basic validation
-uv run python scripts/ecos_validate_skill.py /path/to/skill
+uv run --with pyyaml python scripts/validate_skill_comprehensive.py /path/to/skill
 
 # With verbose output
-uv run python scripts/ecos_validate_skill.py /path/to/skill --verbose
+uv run --with pyyaml python scripts/validate_skill_comprehensive.py /path/to/skill --verbose
 
 # With auto-fix for minor issues
-uv run python scripts/ecos_validate_skill.py /path/to/skill --fix
+uv run --with pyyaml python scripts/validate_skill_comprehensive.py /path/to/skill --fix
 ```
 
 **What it does:**
@@ -655,23 +655,23 @@ uv run python scripts/ecos_validate_skill.py /path/to/skill --fix
 - `2`: Major errors found
 - `3`: Minor issues only
 
-### 5.2 ecos_validate_all_skills.py for batch validation
+### 5.2 validate_plugin.py for batch validation
 
-Validates all skills in a plugin or directory.
+Validates all skills in a plugin or directory. This is the universal plugin validator that discovers and validates all skills within a plugin directory.
 
 **Usage:**
 ```bash
 # Validate all skills in current directory
-uv run python scripts/ecos_validate_all_skills.py .
+uv run --with pyyaml python scripts/validate_plugin.py .
 
 # Validate all skills in a plugin
-uv run python scripts/ecos_validate_all_skills.py /path/to/plugin/skills
+uv run --with pyyaml python scripts/validate_plugin.py /path/to/plugin/skills
 
 # With verbose output
-uv run python scripts/ecos_validate_all_skills.py /path/to/plugin/skills --verbose
+uv run --with pyyaml python scripts/validate_plugin.py /path/to/plugin/skills --verbose
 
 # Generate JSON report
-uv run python scripts/ecos_validate_all_skills.py /path/to/plugin/skills --json
+uv run --with pyyaml python scripts/validate_plugin.py /path/to/plugin/skills --json
 ```
 
 **What it does:**

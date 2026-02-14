@@ -247,7 +247,7 @@ claude --plugin-dir ./OUTPUT_SKILLS/emasoft-chief-of-staff
 
 ```bash
 cd OUTPUT_SKILLS/emasoft-chief-of-staff
-uv run python scripts/ecos_validate_plugin.py --verbose
+uv run python scripts/validate_plugin.py . --verbose
 ```
 
 ## Cross-Plugin Coordination

@@ -100,13 +100,13 @@ Many plugins include validation scripts:
 ```bash
 # Using plugin's internal validator
 cd /path/to/my-plugin
-python scripts/validate_plugin.py
+uv run python scripts/validate_plugin.py . --verbose
 
 # With verbose output
-python scripts/validate_plugin.py --verbose
+uv run python scripts/validate_plugin.py . --verbose
 
 # Output as JSON
-python scripts/validate_plugin.py --json
+uv run python scripts/validate_plugin.py . --json
 ```
 
 ### 3.3.3 Manual inspection
